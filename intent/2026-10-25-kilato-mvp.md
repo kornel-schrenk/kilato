@@ -13,17 +13,18 @@ A web page that asks for your current location and shows what is within 1 km: si
 ## Affected users and systems
 
 - People strolling in the city with a phone, starting in Budapest, Hungary
-- The browser's location service
-- OpenStreetMap data from the Hungary extract, and geotagged articles from the Hungarian and English Wikipedia
+- The browser's location and language settings
+- OpenStreetMap data from the Hungary extract, and geotagged articles from the Hungarian and English Wikipedia, with their links to other language editions
 - OpenStreetMap map tiles
 - GitHub Actions to rebuild the data every week, and GitHub Pages for hosting
 
 ## Constraints
 
-- English UI. Place names stay as OpenStreetMap has them.
+- The UI follows the phone's language: Hungarian or English at launch, and English for any other language. The user can switch it in the page.
+- Place names show as OpenStreetMap has them. When OpenStreetMap knows the name in the UI language, it shows under the original, so it still matches the street sign.
 - Browser only at the start, with no login and no API keys, so it can be a static site on GitHub Pages.
 - The phone does not query OpenStreetMap or Wikipedia. Budapest's places and articles are prepared ahead of time, rebuilt every week and served with the page, so the data can be up to a week old.
-- Wikipedia links go to the Hungarian article first, and to the English one as well when it exists.
+- Wikipedia links go to the article in the phone's language first when it exists, then to the Hungarian one. Each link shows its language code, such as HU or EN.
 - Map tiles come from OpenStreetMap, within its tile usage policy: attribution on the map, no prefetching, no offline use.
 - Open data only, with the attribution its licences require.
 - The location itself is never sent anywhere. Map tiles, and any data loaded by area, show roughly which area is on screen. The page says what is sent where.
@@ -47,6 +48,6 @@ The open questions of the first draft, answered on 2026-10-27 from measurements 
 - **How good is the coverage in Budapest?** Good for sights and everyday places, thin for firms. Within 1 km of Újpest centre, OpenStreetMap has 331 shops and 70 cafés and restaurants, about two-thirds of them with opening hours, but only 36 offices. Hungarian Wikipedia has 3–7 times more nearby articles than English: 252 / 75 at Deák tér, 29 / 5 in Újpest centre, 15 / 2 in Csepel.
 - **Which map tiles can we use?** OpenStreetMap's own tiles. Their policy allows light interactive use with attribution, a normal browser Referer, and no prefetching or offline use. OpenFreeMap or a self-hosted Protomaps file are the fallbacks.
 - **How should "worth a look" weigh things?** The list has two orders, and category filters work with both. Nearest first is the default. Most relevant is one score that weighs distance, category, whether a place has a Wikipedia article and whether it is open now. The spec sets the weights.
-- **Hungarian or English Wikipedia first?** Hungarian first, English as well when it exists.
+- **Hungarian or English Wikipedia first?** The phone's language first when an article exists in it, then Hungarian. Links show language codes rather than flags. Flags stand for countries, not languages (English could be the UK or the US), and Windows does not draw flag emoji.
 - **How well must it work on slow mobile data?** Light enough for mobile data, with no hard target yet.
 - **Live queries or prepared data?** This question came up during planning. The answer is prepared data: the public Overpass servers failed 7 of 8 queries during planning, and their policy discourages public apps that rely on them.
