@@ -1,6 +1,6 @@
 # Intent: Kilátó, a pocket lookout tower
 
-Author: Kornel Schrenk · Status: draft
+Author: Kornel Schrenk · Status: accepted
 
 ## Problem
 
