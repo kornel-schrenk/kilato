@@ -24,6 +24,7 @@ A web page that asks for your current location and shows what is within 1 km: si
 - Place names show as OpenStreetMap has them. When OpenStreetMap knows the name in the UI language, it shows under the original, so it still matches the street sign.
 - Browser only at the start, with no login and no API keys, so it can be a static site on GitHub Pages.
 - The phone does not query OpenStreetMap or Wikipedia. Budapest's places and articles are prepared ahead of time, rebuilt every week and served with the page, so the data can be up to a week old.
+- The page shows how old its data is, so a stalled rebuild is visible.
 - Wikipedia links go to the article in the phone's language first when it exists, then to the Hungarian one. Each link shows its language code, such as HU or EN.
 - Map tiles come from OpenStreetMap, within its tile usage policy: attribution on the map, no prefetching, no offline use.
 - Open data only, with the attribution its licences require.
