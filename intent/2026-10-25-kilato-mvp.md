@@ -8,7 +8,7 @@ When I stroll in the city, I like to look around. I grab my phone and want to se
 
 ## Proposed outcome
 
-A web page that asks for your current location and shows what is within 1 km: sights, notable places and everyday businesses such as shops, cafés and services, on a map and in a list. The list puts the nearest first and can be filtered by category. A place shows whether it is open now, when its opening hours are known, and whether it has a Wikipedia article. The map and the list update as you walk. It runs in the phone's browser, with nothing to install and no account.
+A web page that asks for your current location and shows what is within 1 km: sights, notable places and everyday businesses such as shops, cafés and services, on a map and in a list. The list puts the nearest or the most relevant first and can be filtered by category. Nearest first is the default, and the user can switch to most relevant. A place shows whether it is open now, when its opening hours are known, and whether it has a Wikipedia article. The map and the list update as you walk. It runs in the phone's browser, with nothing to install and no account.
 
 ## Affected users and systems
 
@@ -36,7 +36,6 @@ A web page that asks for your current location and shows what is within 1 km: si
 
 - Jobs and events. They have no free data source that works without a key, so they would need a small server to hold API keys.
 - Firms and offices without a storefront. OpenStreetMap has few of them. Overture Maps has more, but they are mostly Facebook pages, parcel lockers and registered addresses.
-- Ranking places by how much they are worth a look. The list starts with distance only.
 - Cities other than Budapest. Elsewhere the page says it covers Budapest only for now.
 - Accounts and saved places.
 - Native apps.
@@ -47,7 +46,7 @@ The open questions of the first draft, answered on 2026-10-27 from measurements 
 
 - **How good is the coverage in Budapest?** Good for sights and everyday places, thin for firms. Within 1 km of Újpest centre, OpenStreetMap has 331 shops and 70 cafés and restaurants, about two-thirds of them with opening hours, but only 36 offices. Hungarian Wikipedia has 3–7 times more nearby articles than English: 252 / 75 at Deák tér, 29 / 5 in Újpest centre, 15 / 2 in Csepel.
 - **Which map tiles can we use?** OpenStreetMap's own tiles. Their policy allows light interactive use with attribution, a normal browser Referer, and no prefetching or offline use. OpenFreeMap or a self-hosted Protomaps file are the fallbacks.
-- **How should "worth a look" weigh things?** By distance only: nearest first, with category filters. Opening hours and Wikipedia articles show as labels and do not change the order.
+- **How should "worth a look" weigh things?** The list has two orders, and category filters work with both. Nearest first is the default. Most relevant is one score that weighs distance, category, whether a place has a Wikipedia article and whether it is open now. The spec sets the weights.
 - **Hungarian or English Wikipedia first?** Hungarian first, English as well when it exists.
 - **How well must it work on slow mobile data?** Light enough for mobile data, with no hard target yet.
 - **Live queries or prepared data?** This question came up during planning. The answer is prepared data: the public Overpass servers failed 7 of 8 queries during planning, and their policy discourages public apps that rely on them.
