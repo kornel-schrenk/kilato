@@ -1,0 +1,105 @@
+AC2 and AC3: the shared fixture in e2e/fixtures.ts. Tested head: 653f5ec.
+
+===== AC3 FAILURE: the witness spec. To reproduce, save the part between the markers as e2e/qa-guard.spec.ts and run: npx playwright test e2e/qa-guard.spec.ts
+--- begin spec
+import { test } from './fixtures'
+
+// Each test only makes one request that is not one of the three allowed kinds.
+// The AC says the fixture fails the test. "Expected to fail, but passed" means it let it through.
+for (const path of ['/outside.json', '/data/manifest.json', '/kilato/missing.js']) {
+  test(`a same-origin request to ${path} fails the test`, async ({ page }) => {
+    test.fail()
+    await page.goto('/kilato/')
+    await page.evaluate((target) => fetch(target).catch(() => null), path)
+  })
+}
+--- end spec
+
+===== witness results
+##### head 653f5ec, unchanged fixture
+exit=1
+  1) e2e/qa-guard.spec.ts:6:3 › a same-origin request to /outside.json fails the test
+    Expected to fail, but passed.
+  2) e2e/qa-guard.spec.ts:6:3 › a same-origin request to /data/manifest.json fails the test
+    Expected to fail, but passed.
+  3) e2e/qa-guard.spec.ts:6:3 › a same-origin request to /kilato/missing.js fails the test
+    Expected to fail, but passed.
+  3 failed
+##### trial guard: same origin passes only under /kilato/ and only if the file exists in dist/
+witness exit=0
+  3 passed (6.0s)
+full page suite exit=0 (own Chromium)
+  10 passed (7.9s)
+full page suite exit=0 (system Chromium)
+  10 passed (15.1s)
+
+===== what the preview server answers for those paths, and other paths under the data route
+ "/outside.json": [ 404, "text/plain", "The server is configured with a public base URL of /kilato/ " ],
+"/data/manifest.json": [ 404, "text/plain", "The server is configured with a public base URL of /kilato/ " ],
+"/kilato/missing.js": [ 200, "text/html", "<!doctype html>\n<html lang=\"en\">\n <head>\n <meta charset=" ],
+"/kilato/data": [ 200, "text/html", "<!doctype html>\n<html lang=\"en\">\n <head>\n <meta charset=" ],
+"/kilato/data/manifest.json?v=1": [ 200, "application/json", "{\n \"version\": 1,\n \"builtAt\": \"2026-11-02T03:17:00.000Z\",\n " ],
+"/kilato/data/..%2f..%2f..%2fpackage.json": [ 404, null, "" ],
+"/kilato/data/%2e%2e/%2e%2e/package.json": [ 404, "text/plain", "The server is configured with a public base URL of /kilato/ " ]}
+
+===== request types the guard catches and misses. Each probe makes one request to https://example.invalid/ under test.fail().
+caught (test failed as it should): img, script, stylesheet, iframe, sendBeacon, EventSource, XMLHttpRequest, keepalive fetch, popup, dedicated worker, prefetch link, CSS background, location navigation, page.goto, a localhost alias of the same port
+missed (Expected to fail, but passed): SharedWorker, /outside.json, /data/manifest.json
+SharedWorker detail: its fetch reached a local sink on 127.0.0.1 (the sink logged /shared-worker), while a dedicated worker and a plain fetch to the same sink were stopped. Playwright's routes do not see it.
+Directory path: fetch('/kilato/data/') fails the test with EISDIR instead of a 404.
+Service workers: navigator.serviceWorker.register resolves but registers nothing (no request for sw.js, no controller).
+
+===== blank tile
+test/fixtures/tile.png decodes to 256 x 256, 8-bit greyscale, one pixel value (242) in every position.
+
+===== mutations of the delivered code, each on a fresh build. Every mutant fails exactly the test that guards it.
+### own files aborted instead of passed through: exit=1
+  1) e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó
+  2) e2e/fixtures.spec.ts:28:1 › a tile request gets the blank tile
+  3) e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/
+  4) e2e/fixtures.spec.ts:42:1 › a data request gets the file from site-data
+  4 passed (16.3s)
+  5) e2e/page.spec.ts:13:1 › Preact renders into the page
+  6) e2e/fixtures.spec.ts:50:1 › a data file that does not exist gets a 404
+  6 failed
+### tile answered with the wrong file: exit=1
+  1) e2e/fixtures.spec.ts:28:1 › a tile request gets the blank tile
+  1 failed
+  9 passed (10.6s)
+### tile host matched by prefix: exit=1
+  1) e2e/fixtures.spec.ts:12:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test
+  1 failed
+  9 passed (10.1s)
+### data served from the wrong folder: exit=1
+  1) e2e/fixtures.spec.ts:42:1 › a data request gets the file from site-data
+  1 failed
+  9 passed (10.5s)
+### missing data file answered 200: exit=1
+  1) e2e/fixtures.spec.ts:50:1 › a data file that does not exist gets a 404
+  1 failed
+  9 passed (8.3s)
+### teardown check removed: exit=1
+  1) e2e/fixtures.spec.ts:12:3 › a request to https://example.invalid/ fails the test
+  2) e2e/fixtures.spec.ts:12:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test
+  3) e2e/fixtures.spec.ts:12:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test
+  4) e2e/fixtures.spec.ts:18:1 › an unexpected WebSocket fails the test
+  4 failed
+  6 passed (16.0s)
+### WebSocket not recorded: exit=1
+  1) e2e/fixtures.spec.ts:18:1 › an unexpected WebSocket fails the test
+  1 failed
+  9 passed (10.3s)
+### cross-origin not recorded: exit=1
+  1) e2e/fixtures.spec.ts:12:3 › a request to https://example.invalid/ fails the test
+  2) e2e/fixtures.spec.ts:12:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test
+  3) e2e/fixtures.spec.ts:12:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test
+  3 failed
+  7 passed (14.3s)
+### base dropped from the build: exit=1
+  1) e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/
+  1 failed
+  9 passed (13.8s)
+### title changed: exit=1
+  1) e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó
+  1 failed
+  9 passed (13.2s)
