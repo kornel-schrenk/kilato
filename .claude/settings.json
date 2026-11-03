@@ -110,5 +110,9 @@
       "Bash(npx vitest:*)",
       "Bash(npx tsc:*)"
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"$(git rev-parse --show-toplevel)/.claude/statusline.sh\""
   }
 }
