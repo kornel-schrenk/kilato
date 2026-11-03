@@ -40,7 +40,7 @@ Issues live in GitHub Issues on [kornel-schrenk/kilato](https://github.com/korne
 | Blocked by | `- #N — why` bullets, or a bare `- None.` · NEVER "None — but #N first" |
 | Labels | `money`, `auth`, `schema` route the merge to a human (merge_policy) · `schema` = destructive only (DROP/TRUNCATE/RENAME); additive migrations need no label |
 | Human-only step | a `needs-you: <command>` line in the PR body → 🙋 Blocked until done |
-| Size | one card = one PR under 400 changed lines (`merge_policy.auto_max_lines`) · bigger → split with `/to-tickets` |
+| Size | one card = one PR · no line cap on this project (`merge_policy.auto_max_lines` is 0) |
 
 For recurring PR fixes, keep these sections. Context names the permitting shared boundary
 and prior failing input/action; Evidence cites the prior PRs/findings. Fix names the intended

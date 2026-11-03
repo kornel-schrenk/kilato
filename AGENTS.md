@@ -26,6 +26,7 @@ Read the stage from the artifacts. The newest accepted artifact in the table abo
 - Commit and PR titles: `<emoji> [type] scope: subject`. Types: 📝 docs, ✨ feat, 🐛 fix, 🔧 chore, ♻️ refactor, 🧪 test.
 - Product constraints (data sources, privacy, languages, licences) live in the accepted intent and spec. Read them there, and don't restate them here.
 - There is no stack, build command or test command yet. Add them here when the first build issue sets them up.
+- There is no limit on a PR's size. `merge_policy.auto_max_lines` is 0, and that overrides the 400-line default in the super-board skills. Don't hold, stop or split a card because of its line count.
 
 <!-- super-board:begin v3.3.0 (managed; edits inside are overwritten on upgrade) -->
 ## Super Board
@@ -50,7 +51,7 @@ Board: Backlog · Ready · Building · QA · Review · Blocked · Done. Labels r
 |---|---|
 | Config | `.claude/super-board/configs/<slug>.json` |
 | Isolation | 1 card · 1 worktree · 1 branch |
-| Merge | auto for normal changes · money, auth, destructive schema (DROP/TRUNCATE/RENAME) → human · PR > 400 changed lines → human |
+| Merge | auto for normal changes · money, auth, destructive schema (DROP/TRUNCATE/RENAME) → human |
 | Migrations | additive → robot migrates allowed DBs only · live DB ALWAYS → 🙋 needs you |
 | Blocked card | block-template comment · last line `blocked-by:` · 🙋 = needs you |
 | Secrets | NEVER read `.env`; key names via `.claude/bin/super-board-env-check.sh` |

@@ -438,7 +438,7 @@ These steps are for the product owner, not for issues.
 
 ## Build order
 
-The issues are cut from this list once this spec is accepted. Each one is one PR under 400 changed lines, and each one cites the sections it builds.
+The issues are cut from this list once this spec is accepted. Each one is one PR, and each one cites the sections it builds.
 
 | # | Issue | Builds | Blocked by |
 |---|---|---|---|
