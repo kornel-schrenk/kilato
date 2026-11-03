@@ -1,6 +1,6 @@
 # Spec: Kilátó MVP
 
-Intent: [Kilátó, a pocket lookout tower](../intent/2026-10-25-kilato-mvp.md) · Author: Claude, from the accepted intent · Status: draft
+Intent: [Kilátó, a pocket lookout tower](../intent/2026-10-25-kilato-mvp.md) · Author: Claude, from the accepted intent · Status: accepted
 
 This spec says how to build the accepted intent. It settles the stack, the data files, the rules the page follows and the tests, so each issue cut from it can be built without guessing. The product constraints stay in the intent, and this spec doesn't repeat them.
 
