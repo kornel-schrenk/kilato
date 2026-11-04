@@ -1,0 +1,93 @@
+{"type":"Feature","id":"n2000000001","geometry":{"type":"Point","coordinates":[19.055317,47.4975]},"properties":{"name":"Minta Látványosság","tourism":"attraction"}}
+{"type":"Feature","id":"n2000000002","geometry":{"type":"Point","coordinates":[19.0534566,47.4981456]},"properties":{"name":"Minta Múzeum","tourism":"museum","name:en":"Sample Museum","opening_hours":"Tu-Su 10:00-18:00; PH off"}}
+{"type":"Feature","id":"n2000000003","geometry":{"type":"Point","coordinates":[19.0546597,47.4962709]},"properties":{"name":"Minta Galéria","tourism":"gallery","opening_hours":"Tu-Su 10:00-18:00"}}
+{"type":"Feature","id":"n2000000004","geometry":{"type":"Point","coordinates":[19.0558152,47.4986585]},"properties":{"name":"Minta Kilátó","tourism":"viewpoint"}}
+{"type":"Feature","id":"n2000000005","geometry":{"type":"Point","coordinates":[19.0520864,47.4972117]},"properties":{"name":"Minta Szobor","tourism":"artwork"}}
+{"type":"Feature","id":"n2000000006","geometry":{"type":"Point","coordinates":[19.0567863,47.4965178]},"properties":{"name":"Minta Állatkert","tourism":"zoo","opening_hours":"Mo-Su 09:00-17:00"}}
+{"type":"Feature","id":"n2000000007","geometry":{"type":"Point","coordinates":[19.0537353,47.4994212]},"properties":{"name":"Minta Akvárium","tourism":"aquarium"}}
+{"type":"Feature","id":"n2000000008","geometry":{"type":"Point","coordinates":[19.0530416,47.4956035]},"properties":{"name":"Minta Vidámpark","tourism":"theme_park"}}
+{"type":"Feature","id":"n2000000009","geometry":{"type":"Point","coordinates":[19.0576642,47.4982804]},"properties":{"name":"Minta Emlékmű","historic":"monument"}}
+{"type":"Feature","id":"n2000000010","geometry":{"type":"Point","coordinates":[19.0512082,47.4984177]},"properties":{"name":"Minta Emlékhely","historic":"memorial","memorial":"statue"}}
+{"type":"Feature","id":"n2000000011","geometry":{"type":"Point","coordinates":[19.0560869,47.4952098]},"properties":{"name":"Minta Határkő","historic":"boundary_stone"}}
+{"type":"Feature","id":"n2000000012","geometry":{"type":"Point","coordinates":[19.0556727,47.5000249]},"properties":{"name":"Minta Templom","amenity":"place_of_worship"}}
+{"type":"Feature","id":"n2000000013","geometry":{"type":"Point","coordinates":[19.0509656,47.4961167]},"properties":{"name":"Minta Szökőkút","amenity":"fountain"}}
+{"type":"Feature","id":"n2000000014","geometry":{"type":"Point","coordinates":[19.0586463,47.4968844]},"properties":{"name":"Minta Kávézó","amenity":"cafe","name:en":"Sample Café","opening_hours":"Mo-Su 07:00-22:00"}}
+{"type":"Feature","id":"n2000000015","geometry":{"type":"Point","coordinates":[19.0519696,47.4999308]},"properties":{"name":"Minta Étterem","amenity":"restaurant","opening_hours":"Mo-Su 11:00-23:00"}}
+{"type":"Feature","id":"n2000000016","geometry":{"type":"Point","coordinates":[19.0539154,47.4944533]},"properties":{"name":"Minta Gyorsétterem","amenity":"fast_food"}}
+{"type":"Feature","id":"n2000000017","geometry":{"type":"Point","coordinates":[19.0580888,47.4995427]},"properties":{"name":"Minta Bár","amenity":"bar","opening_hours":"Mo-Th 16:00-24:00; Fr-Sa 16:00-02:00"}}
+{"type":"Feature","id":"n2000000018","geometry":{"type":"Point","coordinates":[19.0496707,47.4976349]},"properties":{"name":"Minta Söröző","amenity":"pub"}}
+{"type":"Feature","id":"n2000000019","geometry":{"type":"Point","coordinates":[19.0580226,47.4951325]},"properties":{"name":"Minta Sörkert","amenity":"biergarten"}}
+{"type":"Feature","id":"n2000000020","geometry":{"type":"Point","coordinates":[19.0542643,47.5009421]},"properties":{"name":"Minta Fagylaltozó","amenity":"ice_cream"}}
+{"type":"Feature","id":"n2000000021","geometry":{"type":"Point","coordinates":[19.0511482,47.4947874]},"properties":{"name":"Minta Ételudvar","amenity":"food_court"}}
+{"type":"Feature","id":"n2000000022","geometry":{"type":"Point","coordinates":[19.0598096,47.4979825]},"properties":{"name":"Minta Pékség","shop":"bakery","opening_hours":"Mo-Fr 06:00-18:00; Sa 07:00-13:00; PH off"}}
+{"type":"Feature","id":"n2000000023","geometry":{"type":"Point","coordinates":[19.0500012,47.499614]},"properties":{"name":"Minta Cukrászda","shop":"pastry"}}
+{"type":"Feature","id":"n2000000024","geometry":{"type":"Point","coordinates":[19.0557293,47.4938095]},"properties":{"name":"Minta Színház","amenity":"theatre"}}
+{"type":"Feature","id":"n2000000025","geometry":{"type":"Point","coordinates":[19.0573434,47.5008512]},"properties":{"name":"Minta Mozi","amenity":"cinema"}}
+{"type":"Feature","id":"n2000000026","geometry":{"type":"Point","coordinates":[19.0489414,47.4963024]},"properties":{"name":"Minta Művelődési Ház","amenity":"arts_centre"}}
+{"type":"Feature","id":"n2000000027","geometry":{"type":"Point","coordinates":[19.0598994,47.4958152]},"properties":{"name":"Minta Könyvtár","amenity":"library","opening_hours":"Mo-Fr 09:00-17:00 unknown \"call ahead\""}}
+{"type":"Feature","id":"n2000000028","geometry":{"type":"Point","coordinates":[19.0521608,47.5012748]},"properties":{"name":"Minta Közösségi Ház","amenity":"community_centre"}}
+{"type":"Feature","id":"n2000000029","geometry":{"type":"Point","coordinates":[19.0524123,47.4935801]},"properties":{"name":"Minta Rendezvényterem","amenity":"events_venue"}}
+{"type":"Feature","id":"n2000000030","geometry":{"type":"Point","coordinates":[19.060055,47.4994718]},"properties":{"name":"Minta Klub","amenity":"nightclub"}}
+{"type":"Feature","id":"n2000000031","geometry":{"type":"Point","coordinates":[19.0483297,47.4985984]},"properties":{"name":"Minta Koncertterem","amenity":"music_venue"}}
+{"type":"Feature","id":"n2000000032","geometry":{"type":"Point","coordinates":[19.0580072,47.4938162]},"properties":{"name":"Minta Planetárium","amenity":"planetarium"}}
+{"type":"Feature","id":"n2000000033","geometry":{"type":"Point","coordinates":[19.0556157,47.5018843]},"properties":{"name":"Minta Park","leisure":"park"}}
+{"type":"Feature","id":"n2000000034","geometry":{"type":"Point","coordinates":[19.0492127,47.4947346]},"properties":{"name":"Minta Kert","leisure":"garden"}}
+{"type":"Feature","id":"n2000000035","geometry":{"type":"Point","coordinates":[19.0612634,47.4971216]},"properties":{"name":"Minta Játszótér","leisure":"playground"}}
+{"type":"Feature","id":"n2000000036","geometry":{"type":"Point","coordinates":[19.0498251,47.5009129]},"properties":{"name":"Minta Sportközpont","leisure":"sports_centre"}}
+{"type":"Feature","id":"n2000000037","geometry":{"type":"Point","coordinates":[19.0545341,47.4927857]},"properties":{"name":"Minta Edzőterem","leisure":"fitness_centre"}}
+{"type":"Feature","id":"n2000000038","geometry":{"type":"Point","coordinates":[19.0592539,47.5010392]},"properties":{"name":"Minta Uszoda","leisure":"swimming_pool"}}
+{"type":"Feature","id":"n2000000039","geometry":{"type":"Point","coordinates":[19.0473614,47.4970532]},"properties":{"name":"Minta Élményfürdő","leisure":"water_park"}}
+{"type":"Feature","id":"n2000000040","geometry":{"type":"Point","coordinates":[19.0602844,47.4945351]},"properties":{"name":"Minta Szabadulószoba","leisure":"escape_game"}}
+{"type":"Feature","id":"n2000000041","geometry":{"type":"Point","coordinates":[19.0531839,47.5023858]},"properties":{"name":"Minta Bowling","leisure":"bowling_alley"}}
+{"type":"Feature","id":"n2000000042","geometry":{"type":"Point","coordinates":[19.0505357,47.4932454]},"properties":{"name":"Minta Gyógyszertár","amenity":"pharmacy","opening_hours":"24/7"}}
+{"type":"Feature","id":"n2000000043","geometry":{"type":"Point","coordinates":[19.0617646,47.4988446]},"properties":{"name":"Minta Bank","amenity":"bank","opening_hours":"Mo-Fr 08:00-17:00"}}
+{"type":"Feature","id":"n2000000044","geometry":{"type":"Point","coordinates":[19.0477201,47.4998498]},"properties":{"name":"Minta Pénzváltó","amenity":"bureau_de_change"}}
+{"type":"Feature","id":"n2000000045","geometry":{"type":"Point","coordinates":[19.0571793,47.4926192]},"properties":{"name":"Minta Posta","amenity":"post_office"}}
+{"type":"Feature","id":"n2000000046","geometry":{"type":"Point","coordinates":[19.0574386,47.5023751]},"properties":{"name":"Minta Rendelőintézet","amenity":"clinic"}}
+{"type":"Feature","id":"n2000000047","geometry":{"type":"Point","coordinates":[19.0473802,47.4952212]},"properties":{"name":"Minta Orvosi Rendelő","amenity":"doctors"}}
+{"type":"Feature","id":"n2000000048","geometry":{"type":"Point","coordinates":[19.0621097,47.4959155]},"properties":{"name":"Minta Fogászat","amenity":"dentist"}}
+{"type":"Feature","id":"n2000000049","geometry":{"type":"Point","coordinates":[19.0504315,47.5021885]},"properties":{"name":"Minta Állatorvos","amenity":"veterinary"}}
+{"type":"Feature","id":"n2000000050","geometry":{"type":"Point","coordinates":[19.0527933,47.4921323]},"properties":{"name":"Minta Kórház","amenity":"hospital"}}
+{"type":"Feature","id":"n2000000051","geometry":{"type":"Point","coordinates":[19.0611938,47.5007113]},"properties":{"name":"Minta Rendőrség","amenity":"police"}}
+{"type":"Feature","id":"n2000000052","geometry":{"type":"Point","coordinates":[19.0462719,47.4981925]},"properties":{"name":"Minta Városháza","amenity":"townhall"}}
+{"type":"Feature","id":"n2000000053","geometry":{"type":"Point","coordinates":[19.0599264,47.4931945]},"properties":{"name":"Minta Benzinkút","amenity":"fuel"}}
+{"type":"Feature","id":"n2000000054","geometry":{"type":"Point","coordinates":[19.054808,47.5032038]},"properties":{"name":"Minta Autómosó","amenity":"car_wash"}}
+{"type":"Feature","id":"n2000000055","geometry":{"type":"Point","coordinates":[19.0485128,47.4933969]},"properties":{"name":"Minta Autókölcsönző","amenity":"car_rental"}}
+{"type":"Feature","id":"n2000000056","geometry":{"type":"Point","coordinates":[19.0630965,47.4977968]},"properties":{"name":"Minta Autósiskola","amenity":"driving_school"}}
+{"type":"Feature","id":"n2000000057","geometry":{"type":"Point","coordinates":[19.0478048,47.501236]},"properties":{"name":"Minta Fodrászat","shop":"hairdresser","opening_hours":"ask inside"}}
+{"type":"Feature","id":"n2000000058","geometry":{"type":"Point","coordinates":[19.0557107,47.4916397]},"properties":{"name":"Minta Szépségszalon","shop":"beauty"}}
+{"type":"Feature","id":"n2000000059","geometry":{"type":"Point","coordinates":[19.0595118,47.5024157]},"properties":{"name":"Minta Masszázs","shop":"massage"}}
+{"type":"Feature","id":"n2000000060","geometry":{"type":"Point","coordinates":[19.0458145,47.4961503]},"properties":{"name":"Minta Tetoválószalon","shop":"tattoo"}}
+{"type":"Feature","id":"n2000000061","geometry":{"type":"Point","coordinates":[19.0623193,47.4945081]},"properties":{"name":"Minta Mosoda","shop":"laundry"}}
+{"type":"Feature","id":"n2000000062","geometry":{"type":"Point","coordinates":[19.051704,47.5033208]},"properties":{"name":"Minta Patyolat","shop":"dry_cleaning"}}
+{"type":"Feature","id":"n2000000063","geometry":{"type":"Point","coordinates":[19.0507093,47.4918873]},"properties":{"name":"Minta Utazási Iroda","shop":"travel_agency"}}
+{"type":"Feature","id":"n2000000064","geometry":{"type":"Point","coordinates":[19.062976,47.4999285]},"properties":{"name":"Minta Fénymásoló","shop":"copyshop"}}
+{"type":"Feature","id":"n2000000065","geometry":{"type":"Point","coordinates":[19.045753,47.4995923]},"properties":{"name":"Minta Optika","shop":"optician"}}
+{"type":"Feature","id":"n2000000066","geometry":{"type":"Point","coordinates":[19.0588907,47.4919241]},"properties":{"name":"Minta Szabóság","shop":"tailor"}}
+{"type":"Feature","id":"n2000000067","geometry":{"type":"Point","coordinates":[19.0568571,47.503661]},"properties":{"name":"Minta Cipőjavító","shop":"shoe_repair"}}
+{"type":"Feature","id":"n2000000068","geometry":{"type":"Point","coordinates":[19.0465405,47.4940064]},"properties":{"name":"Minta Fotó","shop":"photo"}}
+{"type":"Feature","id":"n2000000069","geometry":{"type":"Point","coordinates":[19.0639324,47.4964372]},"properties":{"name":"Minta ABC","shop":"supermarket","opening_hours":"Mo-Sa 06:30-21:00; Su 08:00-18:00; PH off"}}
+{"type":"Feature","id":"n2000000070","geometry":{"type":"Point","coordinates":[19.048565,47.5026238]},"properties":{"name":"Minta Könyvesbolt","shop":"books"}}
+{"type":"Feature","id":"n2000000071","geometry":{"type":"Point","coordinates":[19.0537462,47.4909679]},"properties":{"name":"Minta Retró Bolt","shop":"vintage"}}
+{"type":"Feature","id":"n2000001001","geometry":{"type":"Point","coordinates":[19.0616393,47.5020043]},"properties":{"name":"Hungarian Bistro","name:hu":"Magyar Bisztró","name:en":"Hungarian Bistro","amenity":"restaurant"}}
+{"type":"Feature","id":"n2000001002","geometry":{"type":"Point","coordinates":[19.0446624,47.4974352]},"properties":{"name":"Minta Falatozó","name:hu":"Minta Falatozó","name:en":"Sample Diner","amenity":"fast_food"}}
+{"type":"Feature","id":"n2000001003","geometry":{"type":"Point","coordinates":[19.0618691,47.4930294]},"properties":{"name":"Múzeumkávézó","tourism":"museum","amenity":"cafe"}}
+{"type":"Feature","id":"n2000001004","geometry":{"type":"Point","coordinates":[19.0535312,47.5042034]},"properties":{"name":"Kávézó Pékség","amenity":"cafe","shop":"bakery"}}
+{"type":"Feature","id":"n2000001005","geometry":{"type":"Point","coordinates":[19.0484696,47.4920792]},"properties":{"name":"Könyves Mozi","amenity":"cinema","shop":"books"}}
+{"type":"Feature","id":"n2000001006","geometry":{"type":"Point","coordinates":[19.0644337,47.4987543]},"properties":{"name":"Régi Üzletház","historic":"building","shop":"vacant"}}
+{"type":"Feature","id":"a2400000200","geometry":{"type":"MultiPolygon","coordinates":[[[[19.0578,47.5024],[19.0592,47.5024],[19.0592,47.5032],[19.0578,47.5032],[19.0578,47.5024]]]]},"properties":{"name":"Magyar Állami Operaház","name:en":"Hungarian State Opera","amenity":"theatre","wikidata":"Q36833","wikipedia":"hu:Magyar Állami Operaház","opening_hours":"Mo-Su 10:00-20:00"}}
+{"type":"Feature","id":"a2400000400","geometry":{"type":"MultiPolygon","coordinates":[[[[19.0476,47.4986],[19.0484,47.4986],[19.0484,47.4992],[19.0476,47.4992],[19.0476,47.4986]]]]},"properties":{"name":"Gresham-palota","name:en":"Gresham Palace","historic":"building","wikipedia":"en:Gresham_Palace"}}
+{"type":"Feature","id":"a240000601","geometry":{"type":"MultiPolygon","coordinates":[[[[19.0515,47.4978],[19.0535,47.4978],[19.0535,47.499],[19.0515,47.499],[19.0515,47.4978]],[[19.0522,47.4982],[19.0528,47.4982],[19.0528,47.4986],[19.0522,47.4986],[19.0522,47.4982]]],[[[19.0515,47.4992],[19.0519,47.4992],[19.0519,47.4995],[19.0515,47.4995],[19.0515,47.4992]]]]},"properties":{"name":"Erzsébet tér","leisure":"park","wikidata":"Q934453","wikipedia":"hu:Erzsébet tér (Budapest)"}}
+{"type":"Feature","id":"a2400000800","geometry":{"type":"Polygon","coordinates":[[[19.05,47.495],[19.053,47.495],[19.053,47.496],[19.051,47.496],[19.051,47.498],[19.05,47.498],[19.05,47.495]]]},"properties":{"name":"Minta Udvar","tourism":"attraction"}}
+{"type":"Feature","id":"n2000002001","geometry":{"type":"Point","coordinates":[19.0551,47.4971]},"properties":{"amenity":"cafe"}}
+{"type":"Feature","id":"a2400001000","geometry":{"type":"MultiPolygon","coordinates":[[[[19.0556,47.4966],[19.0561,47.4966],[19.0561,47.497],[19.0556,47.497],[19.0556,47.4966]]]]},"properties":{"leisure":"park"}}
+{"type":"Feature","id":"n2000002002","geometry":{"type":"Point","coordinates":[19.0538,47.4969]},"properties":{"name":"Minta emléktábla","historic":"memorial","memorial":"plaque"}}
+{"type":"Feature","id":"n2000002003","geometry":{"type":"Point","coordinates":[19.0536,47.4966]},"properties":{"name":"Másik emléktábla","historic":"memorial","memorial:type":"plaque"}}
+{"type":"Feature","id":"n2000002004","geometry":{"type":"Point","coordinates":[19.0533,47.4963]},"properties":{"name":"Minta botlatókő","historic":"memorial","memorial":"stolperstein"}}
+{"type":"Feature","id":"n2000002005","geometry":{"type":"Point","coordinates":[19.0531,47.4961]},"properties":{"name":"Másik botlatókő","historic":"memorial","memorial:type":"stolperstein"}}
+{"type":"Feature","id":"n2000002006","geometry":{"type":"Point","coordinates":[19.0562,47.4983]},"properties":{"name":"Üres üzlet","shop":"vacant"}}
+{"type":"Feature","id":"w2000003001","geometry":{"type":"LineString","coordinates":[[19.0568,47.4955],[19.0574,47.4962],[19.0581,47.4968]]},"properties":{"name":"Minta Városfal","historic":"citywalls"}}
+{"type":"Feature","id":"n2000002007","geometry":{"type":"Point","coordinates":[18.7353,47.7983]},"properties":{"name":"Esztergomi Bazilika","amenity":"place_of_worship"}}
+{"type":"Feature","id":"n2000002008","geometry":{"type":"Point","coordinates":[19.0585,47.5026]},"properties":{"name":"Minta Kapu","barrier":"gate"}}
+{"type":"Feature","id":"n2000002009","geometry":{"type":"Point","coordinates":[19.0572,47.4991]},"properties":{"name":"Minta Irodaház","office":"company"}}
+{"type":"Feature","id":"n2000002010","geometry":{"type":"Point","coordinates":[19.0569,47.4994]},"properties":{"name":"Minta Parkoló","amenity":"parking"}}
