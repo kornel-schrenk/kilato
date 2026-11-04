@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kilátó</title>
     <style>
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+      }
       header {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        padding: 0 0.5rem;
       }
       h1 {
         margin: 0;
@@ -20,6 +25,51 @@
       }
       .lang-switch button[aria-pressed='true'] {
         font-weight: bold;
+      }
+      .map-area {
+        position: relative;
+        height: 45vh;
+      }
+      .map {
+        height: 100%;
+        /* Leaflet's panes use z-indexes up to 1000. This keeps them from covering the rest of the page. */
+        isolation: isolate;
+      }
+      .my-location {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1;
+        min-height: 44px;
+      }
+      main {
+        padding: 0 0.5rem;
+      }
+      .intro-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .intro-buttons button {
+        min-height: 44px;
+      }
+      @media (min-width: 900px) {
+        #app {
+          display: grid;
+          grid-template: auto 1fr / 60% 40%;
+          min-height: 100vh;
+        }
+        header,
+        main {
+          grid-column: 2;
+        }
+        .map-area {
+          grid-column: 1;
+          grid-row: 1 / span 2;
+          position: sticky;
+          top: 0;
+          height: 100vh;
+        }
       }
     </style>
   </head>

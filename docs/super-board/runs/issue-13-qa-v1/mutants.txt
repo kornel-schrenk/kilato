@@ -1,0 +1,67 @@
+Mutants on head a141379. Each one landed (the script checks the file changed), ran, and was restored. None is committed.
+42 in all: 17 unit, 25 page. 40 killed. 2 survive, and both are equivalent, see the end of this file.
+Line numbers in the first page block come from before the last QA test went in: add 13 to any line after :382.
+Page mutants ran with --max-failures=1, so each one names the first red test only.
+
+===== unit mutants, npx vitest run src/core/point.test.ts src/core/geo.test.ts
+AC3 step is 16 m: killed by 1: src/core/point.test.ts > following > moves the point, and the map with it, at 15 m
+AC3 step is 14 m: killed by 1: src/core/point.test.ts > following > stays put when the location moves less than 15 m
+AC3 map does not follow: killed by 5: src/core/point.test.ts > exploring > after My location > a first fix closer than 15 m to the pin still switches, and still moves the point · src/core/point.test.ts > exploring > after My location > the first fix switches back to following, and the map goes there · src/core/point.test.ts > following > keeps the zoom the user has: no fix asks for one
+AC3 distance measured with the wrong sign of the step: killed by 3: src/core/point.test.ts > following > measures from the point, not from the last fix · src/core/point.test.ts > following > moves the point, and the map with it, at 15 m · src/core/point.test.ts > following > stays put when the location moves less than 15 m
+AC3 accuracy not updated while the point stays: killed by 1: src/core/point.test.ts > following > takes the new accuracy from every fix, even when the point stays
+AC4 Deak lat wrong: killed by 1: src/core/point.test.ts > from the intro > Explore the map starts exploring at Deák Ferenc tér, zoom 15
+AC4 Deak lon wrong: killed by 1: src/core/point.test.ts > from the intro > Explore the map starts exploring at Deák Ferenc tér, zoom 15
+AC4 start zoom 16: killed by 6: src/core/point.test.ts > from the intro > Explore the map also stops a location request still waiting · src/core/point.test.ts > from the intro > Explore the map starts exploring at Deák Ferenc tér, zoom 15 · src/core/point.test.ts > from the intro > a location error (denied: false) starts exploring at Deák Ferenc tér, zoom 15
+AC4 no explore on error with no point: killed by 3: src/core/point.test.ts > from the intro > a location error (denied: false) starts exploring at Deák Ferenc tér, zoom 15 · src/core/point.test.ts > from the intro > a location error (denied: true) starts exploring at Deák Ferenc tér, zoom 15 · src/core/point.test.ts > with the permission granted but no fix yet > a location error starts exploring at Deák Ferenc tér
+AC4 permission answer swapped: killed by 16: src/core/point.test.ts > My location does nothing while following or before the page knows the permission · src/core/point.test.ts > a location error with no request running changes nothing · src/core/point.test.ts > following > a drag switches to exploring and stops watching at once
+AC5 drag does not stop the watch: killed by 4: src/core/point.test.ts > exploring > after My location > a drag cancels the request · src/core/point.test.ts > following > a drag switches to exploring and stops watching at once · src/core/point.test.ts > following > a fix that was already on its way when the drag began is dropped
+AC5 drag end always moves the point: killed by 3: src/core/point.test.ts > exploring > after My location > the end of a drag that began before the fix does not move the point · src/core/point.test.ts > from the intro > dragging and tapping the map do nothing until a choice is made · src/core/point.test.ts > from the intro > the end of a drag that began during the intro does not move the point
+AC5 tap counts while following: killed by 2: src/core/point.test.ts > following > ignores a tap · src/core/point.test.ts > from the intro > dragging and tapping the map do nothing until a choice is made
+AC5 tap keeps the request: killed by 1: src/core/point.test.ts > exploring > after My location > a tap cancels the request
+AC5 My location works while following: killed by 1: src/core/point.test.ts > My location does nothing while following or before the page knows the permission
+AC3 haversine without the cos of latitude: killed by 1: src/core/geo.test.ts > shrinks a degree of longitude with the latitude
+AC3 earth radius in km: killed by 4: src/core/geo.test.ts > gives 111.19 m for 0.001° of latitude · src/core/geo.test.ts > shrinks a degree of longitude with the latitude · src/core/point.test.ts > following > measures from the point, not from the last fix
+===== page mutants, vite build then playwright test e2e/map.spec.ts --max-failures=1
+AC3 low accuracy: killed by e2e/map.spec.ts:589:3 › with the permission granted › it asks watchPosition for high accuracy
+AC5 watch never cleared: killed by e2e/map.spec.ts:401:3 › without a granted permission › Explore the map stops a location request still waiting
+AC4 permission query not guarded: killed by e2e/map.spec.ts:383:3 › without a granted permission › a browser that rejects the permission question gets the intro
+AC4 prompt counts as granted: killed by e2e/map.spec.ts:341:3 › without a granted permission › the page shows the intro and both buttons, and no point yet
+AC2 max zoom 18: killed by e2e/map.spec.ts:274:3 › tiles › stop at zoom 19
+AC2 another tile host: killed by e2e/map.spec.ts:186:7 › layout › at 375 px wide › the map sits below the header, at 45% of the viewport height
+AC2 attribution link wrong: killed by e2e/map.spec.ts:288:3 › tiles › are attributed to OpenStreetMap, with a link to its copyright page
+AC2 attribution text wrong: killed by e2e/map.spec.ts:288:3 › tiles › are attributed to OpenStreetMap, with a link to its copyright page
+AC2 meta referrer added: killed by e2e/map.spec.ts:311:3 › tiles › carry the default Referer, because the page sets no Referrer-Policy
+AC2 service worker registered: killed by e2e/map.spec.ts:325:3 › tiles › the page registers no service worker
+AC3 circle 900 m: killed by e2e/map.spec.ts:606:3 › with the permission granted › the location dot sits inside its accuracy circle and the 1 km circle
+AC3 accuracy circle fixed: killed by e2e/map.spec.ts:647:3 › with the permission granted › walking 14 m moves nothing but the accuracy circle
+AC3 a walk resets the zoom: killed by e2e/map.spec.ts:657:3 › with the permission granted › walking 16 m moves the point
+AC4 zoom not waited out: killed by e2e/map.spec.ts:445:3 › without a granted permission › Explore the map still gets to zoom 15 when pressed while the map zooms
+AC4 note hidden: killed by e2e/map.spec.ts:426:3 › without a granted permission › Explore the map starts exploring at Deák Ferenc tér, zoom 15
+AC5 pin moved at the finger lift, not the stop: killed by e2e/map.spec.ts:710:3 › with the permission granted › dragging switches to exploring, with the pin at the map centre
+AC5 pin takes taps: SURVIVED
+AC5 circle takes taps: SURVIVED
+AC5 My location hidden: killed by e2e/map.spec.ts:535:3 › on a Hungarian phone, exploring › the note and the map controls are in Hungarian too
+AC1 map 40% high: killed by e2e/map.spec.ts:186:7 › layout › at 375 px wide › the map sits below the header, at 45% of the viewport height
+AC1 breakpoint 901 px: killed by e2e/map.spec.ts:208:7 › layout › at 900 px wide › the map fills the left 60%, and the rest sits on the right
+AC1 breakpoint 899 px: killed by e2e/map.spec.ts:186:7 › layout › at 899 px wide › the map sits below the header, at 45% of the viewport height
+AC1 map 50% wide: killed by e2e/map.spec.ts:208:7 › layout › at 900 px wide › the map fills the left 60%, and the rest sits on the right
+AC1 sideways scroll: killed by e2e/map.spec.ts:232:3 › layout › the page does not scroll sideways on a phone
+
+===== which breaks the builder's tests miss, and the new tests seen red on their own break
+watch never cleared, builder tests only: killed · 2 failed · 51 passed (1.5m)
+    e2e/map.spec.ts:777:3 › with the permission granted › My location switches back to following, at the location now
+    e2e/map.spec.ts:796:3 › with the permission granted › following resumes after My location: the next walk moves the map
+watch never cleared, new tests only: killed · 2 failed · 3 passed (21.8s)
+    e2e/map.spec.ts:414:3 › without a granted permission › Explore the map stops a location request still waiting
+    e2e/map.spec.ts:761:3 › with the permission granted › a drag stops the location watch, and My location starts just one again
+permission query not guarded, builder tests only: SURVIVED · 53 passed (1.3m)
+permission query not guarded, new tests only: killed · 2 failed · 3 passed (23.7s)
+    e2e/map.spec.ts:396:3 › without a granted permission › a browser that rejects the permission question gets the intro
+    e2e/map.spec.ts:405:3 › without a granted permission › a browser with no Permissions API gets the intro
+refused permission counts as granted, builder tests only: SURVIVED · 53 passed (1.3m)
+refused permission counts as granted, new tests only: killed · 1 failed · 4 passed (16.5s)
+    e2e/map.spec.ts:383:3 › without a granted permission › a permission refused on an earlier visit still gets the intro, and a press explores
+restored: M e2e/map.spec.ts
+
+===== the 2 survivors are equivalent
+AC5 pin takes taps and AC5 circle takes taps change nothing a user can do. node_modules/leaflet/src/map/Map.js:1367 takes a layer as a click target only when it listens for clicks, and :1375 hands the click to the map otherwise. Neither layer listens. The tests at e2e/map.spec.ts:880 and :890 still pass on them, as they should.

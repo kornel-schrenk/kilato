@@ -1,0 +1,57 @@
+Probes on head b3e96cf. They ran in a throwaway spec beside e2e/fixtures.ts, so the fixture stubbed every request. None is committed.
+Screenshots use labelled stub tiles, z/x/y, because tests never call OpenStreetMap.
+line is the share of the 1 km circle's line on the map, in percent, read at 360 points along it.
+33 probes. One failed on the first run, and it was my mistake: on a paused clock the page's effects wait for a timer, so the pin hadn't drawn yet when I read it. With the clock moved 40 ms, it passes. The numbers below are from that run.
+
+===== the standard viewports
+following desktop 1920x1080: {"zoom":15,"line":100,"dot":1,"accuracy":1,"km":1}
+following tablet 1024x768: {"zoom":15,"line":92,"dot":1,"accuracy":1,"km":1}
+following mobile 375x667: {"zoom":14,"line":84,"dot":1,"accuracy":1,"km":1}
+exploring desktop 1920x1080: {"zoom":15,"line":100,"fromDeak":1}
+exploring tablet 1024x768: {"zoom":15,"line":92,"fromDeak":1}
+exploring mobile 375x667: {"zoom":15,"line":0,"fromDeak":1}. AC4 says zoom 15 on this card, #34 moves it
+map desktop: {"x":0,"y":0,"width":1152,"height":1080}
+map tablet: {"x":0,"y":0,"width":614.390625,"height":768}
+map mobile: {"x":0,"y":44,"width":375,"height":300.140625}
+attribution: " Leaflet | © OpenStreetMap contributors"
+
+===== back to following, phone
+My location after a drag: {"zoom":14,"line":84,"pins":0}
+Use my location from the intro: {"zoom":14,"line":84}
+
+===== a first fix near the map centre, so the zoom animates instead of jumping
+phone: {"zoom":14,"fromFix":2,"dotFromFix":2,"kmFromFix":0,"line":84}
+1280x720: {"zoom":15,"line":100}
+
+===== a tap while the map coasts, 1280x720, paused clock, real Leaflet
+pin right after the tap: {"metresFromTap":0}
+after the coast: {"pinFromTap":0,"pinFromMapCentre":338,"mapMovedAfterTap":587}
+The AC wants the pin at the tap, and it stays there. In v1 it ended 363 m away, at the map centre.
+a touch tap during a coast, 375x667: {"pinFromTap":2}
+a tap during a coast and then a drag: {"pinFromCentre":2}
+a tap after the coast ended and then a drag: {"pinFromCentre":0}
+
+===== races around a new view, phone, hand-fed location
+My location and its first fix during a zoom animation: {"fixWhileAnimating":true,"zoom":14,"line":84}
+My location during a coast: {"pins":0,"zoom":14,"dotFromHome":6}. One pixel is 6.5 m at zoom 14 here
+a double click while exploring: {"zoom":16,"pinFromTap":0}
+a tap during a zoom animation: {"animating":true,"pinFromOldPlace":165,"pinFromNewPlace":0}. The pin lands under the finger once the zoom ends
+
+===== controls on the map while exploring, nothing overlaps and nothing covers the attribution link
+320 en-GB: {"myAndZoom":false,"myAndAttribution":false,"zoomAndAttribution":false,"myWidth":83,"myHeight":44,"sideways":320}
+320 hu-HU: {"myAndZoom":false,"myAndAttribution":false,"zoomAndAttribution":false,"myWidth":79,"myHeight":44,"sideways":320}
+375 hu-HU: {"myAndZoom":false,"myAndAttribution":false,"zoomAndAttribution":false,"myWidth":79,"myHeight":44,"sideways":375}
+
+===== a phone held sideways, following, zoom 14
+568x320: {"zoom":14,"map":"568x144","line":31,"sideways":568}
+667x375: {"zoom":14,"map":"667x169","line":37,"sideways":667}
+844x390: {"zoom":14,"map":"844x176","line":38,"sideways":844}
+These fit the spec's Start zoom, and PR #31 named only upright phones. Low, in test-gaps.txt.
+
+===== resize
+following from 375x667 to 1280x720: {"zoom":14,"map":{"x":0,"y":0,"width":768,"height":720},"dotFromHome":1,"line":100}
+
+===== requests
+privacy, location at 47.49791, 19.05439, with a drag and My location: {"requests":15,"carrying":[],"stored":{"local":{},"session":{},"cookie":""}}
+tiles on a phone, following at load: {"byZoom":{"14":9,"15":6},"hosts":["https://tile.openstreetmap.org"]}
+The 6 at zoom 15 are Deák Ferenc tér, the view on screen until the first fix. Low, in test-gaps.txt.

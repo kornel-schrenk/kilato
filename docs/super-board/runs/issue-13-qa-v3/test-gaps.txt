@@ -1,0 +1,44 @@
+Test-gap check. Tested head: 46b674f. Range: develop...46b674f, base 47c60ae. Written from this round's own runs.
+Component column: n/a for every AC. The repo has no component test harness, and the page tests drive src/ui/.
+No project verifier: .agents/skills/verify-* doesn't exist. target.url is null, so there is no health check.
+QA added no test this round: no High gap is open, and Medium and Low gaps don't block.
+This is a rebase pass. e2e/map.spec.ts and src/core/*.test.ts didn't change since v2, so every file:line below still points where v2's did, see merge.txt.
+
+===== ledger
+AC1 unit n/a: markup and CSS · e2e e2e/map.spec.ts:205 375 and 899 px, :227 900 and 1280 px, :243 header, :251 no sideways scroll
+AC2 unit n/a: Leaflet options · e2e :268 URLs and view, :293 zoom 19, :307 link, :317 not covered on a phone, :330 Referer, :344 no service worker
+AC3 unit src/core/point.test.ts:109 14.9 m, :116 15.1 m, :122 from the point, :128 accuracy, :135 a walk asks no zoom, :139 first fix asks the start zoom, :212 My location asks it, src/core/geo.test.ts · e2e :607 follows, :621 high accuracy, :638 dot and circles, :653 20 m, :679 14 m, :689 16 m, :699 two steps, :710 zoom kept, :832 zoom and share of the line at 10 viewports, :845 My location on a phone, :858 a later walk on a phone
+AC4 unit point.test.ts:60 Explore, :65 stops a request, :69 errors, :91 error with no fix · e2e :360 intro, :376 Hungarian, :386 asks nothing early, :402 refused earlier, :415 query rejected, :424 no API, :433 Explore stops a request, :458 Explore, :464 after a move, :477 during a zoom, :504 during a coast, :532 refusal, :542 errors, :734 error on load
+AC5 unit point.test.ts:181 tap, :186 drag end, :192 drag start, :196 tap during a coast, :212 My location · e2e :742 drag while following, :759 walking after it, :780 watch stopped, :796 and :873 My location, :890 slow drag, :900 quick drag, :916 tap, :929 tap during a coast, :994 asks, :1006 and :1022 refused or failed, :1048 touch tap, :1058 touch drag
+
+===== what this pass could have broken, and what covers it
+tsconfig.json merged by hand: tsc, in npm run verify. Each merged line goes red when taken out, mutants.txt.
+package-lock.json merged by hand: npm ci in npm run verify, and the entry-by-entry check in merge.txt.
+Tests gone soft after the merge: 6 app mutants, one or more per AC, all red, mutants.txt.
+A behaviour change from develop's code: none reaches this card's code, merge.txt. Unit tests went from 179 to 363 and page tests stayed at 100, because develop's new tests are unit tests.
+
+===== edge cases
+Unchanged from v2, as the code is. New this round, probes only, all pass, probe.txt:
+a press on the attribution link doesn't count as a tap
+a reload with the permission granted: following again, no intro
+tiles on a phone while exploring: the 6 requested are exactly the 6 the view needs, worked out from the slippy map formula, not read from the page
+
+===== test the tests
+Expected values are literals from the spec and the ticket, not recomputed with the code. QA's probe has its own helpers and its own distance formula, and it gets the same 84% and 91%, against the 0.84 and 0.91 that :832 pins.
+Every page test ends with an assertion after its last action, as AGENTS.md asks: checked over all 59 test blocks in e2e/map.spec.ts. My script flagged 2, :268 and :621, and both end in expect calls it failed to parse.
+The fixture still fails on an unknown request: the probes ran under it, and 0 tripped it.
+
+===== rank
+High: none open.
+Medium: none.
+Low, not written, all unchanged from v2:
+- on a phone held sideways, zoom 14 leaves 31% to 38% of the circle's line on the map. Measured in v2. The spec's Start zoom gives these screens zoom 14, and PR #31 named only upright phones
+- with a granted permission, the page draws Deák Ferenc tér at zoom 15 until the first fix. That's the view on screen at that moment, so AC2 holds
+- the Hungarian note takes 2 lines at 320 px wide · with no navigator.geolocation, Use my location throws a page error · the zoom buttons are 30 x 31 px at 375 wide. Measured in v1
+- AC4's zoom 15 on a phone is pinned in unit tests only. #34 changes that rule anyway
+- a tap during a coast with a touch, My location during a zoom or a coast, and a tap during a zoom have probes and no committed test
+- not run on a real phone: the tests use Chromium with a faked location, so a pinch that starts with one finger moving isn't covered
+
+===== not a gap on this card
+Exploring on a phone starts at zoom 15, with 0 of the circle's line on the map at 375x667. AC4 says zoom 15 and Kornel's answer keeps it on this card. #34 moves exploring to the Start zoom after this card merges.
+R1, a double tap to zoom also moves the pin, and R2, a refused My location shows nothing, are the Reviewer's open nits. The Reviewer left them out of this pass, and neither blocks. QA didn't re-run them. The lines they name, src/ui/MapView.tsx:54 and src/core/point.ts:87, didn't change.

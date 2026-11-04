@@ -1,0 +1,17 @@
+CI. GitHub check verify: success on builder head 46b674f, run 41917934208. The QA commit starts its own run on push. It adds only this evidence folder.
+
+pr-security-review, diff of develop...46b674f, base 47c60ae, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- src/ui/MapView.tsx:19: the pin's html is a constant, with one constant colour in it. No visitor text reaches it.
+- src/ui/MapView.tsx:46: the attribution html is a constant.
+- src/ui/MapView.tsx:12: the zoom rule reads one media query. No input reaches it.
+- src/core/point.ts only computes the next state from an event. It doesn't touch the network or the page's html.
+- Preact renders the strings in src/i18n as text. Leaflet gets the zoom labels as titles, and they are our own constants.
+- The location stays in memory. Probe with the location at 47.49791, 19.05439, with a drag and My location: 15 requests, 0 carrying 47.49 or 19.05 in the URL or body. localStorage, sessionStorage and cookies hold nothing, see probe.txt.
+- Tile URLs show which area is on screen. The spec's What is sent where says so, and the intent allows it.
+- The page asks for the location only after a press or a granted permission, e2e/map.spec.ts:386.
+- Added lines in src, index.html, package.json and tsconfig.json: 0 matches for innerHTML, dangerouslySetInnerHTML, eval, new Function, document.write, fetch, XMLHttpRequest, sendBeacon, localStorage, sessionStorage, cookie, postMessage, window.open, location.href. 2 URLs: the tile template and the copyright link.
+- New packages: leaflet 1.9.4, BSD-2-Clause. @types/leaflet and @types/geojson, MIT, types only. All three resolve to registry.npmjs.org in package-lock.json, with the hashes they had on 0b0933b, see merge.txt.
+- tsconfig.json, the one config line the merge settled, adds a type-check option. It doesn't reach the built page.
+- Secret scan of the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.
+- e2e and unit test files are out of scope for the skill, and so are the docs and the screenshots.

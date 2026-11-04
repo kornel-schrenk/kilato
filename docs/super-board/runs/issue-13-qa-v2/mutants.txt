@@ -1,0 +1,23 @@
+Mutants on head b3e96cf. Each one landed (the script checks the file changed), ran, and was restored. None is committed.
+14 in all, around this round's two fixes. The code behind AC1 and AC2 didn't change since v1, so v1's mutants for them still count: ../issue-13-qa-v1/mutants.txt.
+All 14 go red on at least one rung. One survives the page tests, the last row, and 6 unit tests go red on it.
+Page mutants ran with vite build, then playwright test e2e/map.spec.ts --max-failures=1, so each one names the first red test only.
+Unit mutants ran with npx vitest run src/core/point.test.ts src/core/geo.test.ts, and each names at most 3 tests.
+A first run was stopped after 7 mutants: my parser named the first test that started, not the one that failed. These results are all from the rerun.
+
+AC3 start zoom 15 on every screen: page killed by e2e/map.spec.ts:832:7 › with the permission granted › at 320x568 › following starts at zoom 14, with 62% of the 1 km circle on the map
+AC3 start zoom 14 on every screen: page killed by e2e/map.spec.ts:607:3 › with the permission granted › the page follows the location, with no intro
+AC3 start zoom 13 on phones: page killed by e2e/map.spec.ts:832:7 › with the permission granted › at 320x568 › following starts at zoom 14, with 62% of the 1 km circle on the map
+AC3 breakpoint 901 px: page killed by e2e/map.spec.ts:832:7 › with the permission granted › at 900x700 › following starts at zoom 15, with 67% of the 1 km circle on the map
+AC3 breakpoint 899 px: page killed by e2e/map.spec.ts:832:7 › with the permission granted › at 899x700 › following starts at zoom 14, with 100% of the 1 km circle on the map
+AC3 a walk resets the zoom: unit killed by 1: src/core/point.test.ts > following > keeps the zoom the user has: no later fix asks for one | page killed by e2e/map.spec.ts:689:3 › with the permission granted › walking 16 m moves the point
+AC3 no start zoom at all: unit killed by 3: src/core/point.test.ts > from the intro > the first fix starts following there, at the start zoom for the screen · src/core/point.test.ts > following > the first fix on load asks for the start zoom for the screen · src/core/point.test.ts > exploring > after My location > the first fix switches back to following, and the map goes there at the start zoom for the screen | page killed by e2e/map.spec.ts:832:7 › with the permission granted › at 320x568 › following starts at zoom 14, with 62% of the 1 km circle on the map
+AC3 My location keeps the zoom: unit killed by 1: src/core/point.test.ts > exploring > after My location > the first fix switches back to following, and the map goes there at the start zoom for the screen | page killed by e2e/map.spec.ts:845:5 › with the permission granted › on a phone › My location goes back to zoom 14, whatever the zoom was
+AC5 tap leaves the drag counting: unit killed by 1: src/core/point.test.ts > exploring > a tap while the map still coasts keeps the pin at the tap when the map stops | page killed by e2e/map.spec.ts:929:3 › exploring › a tap while the map coasts keeps the pin at the tap when the map stops
+AC5 drag end always moves the point: unit killed by 4: src/core/point.test.ts > from the intro > the end of a drag that began during the intro does not move the point · src/core/point.test.ts > from the intro > dragging and tapping the map do nothing until a choice is made · src/core/point.test.ts > exploring > a tap while the map still coasts keeps the pin at the tap when the map stops
+AC5 a fix leaves the drag counting: unit killed by 1: src/core/point.test.ts > exploring > after My location > the end of a drag that began before the fix does not move the point
+AC5 pin moved at the finger lift, not the stop: page killed by e2e/map.spec.ts:900:3 › exploring › a quick drag coasts on, and the pin ends up at the centre of where the map stopped
+AC4 zoom not waited out: page killed by e2e/map.spec.ts:477:3 › without a granted permission › Explore the map still gets to zoom 15 when pressed while the map zooms
+AC4 exploring takes the screen zoom, which is #34 and not this card: unit killed by 6: src/core/point.test.ts > from the intro > Explore the map starts exploring at Deák Ferenc tér, zoom 15 · src/core/point.test.ts > from the intro > Explore the map also stops a location request still waiting · src/core/point.test.ts > from the intro > a location error (denied: true) starts exploring at Deák Ferenc tér, zoom 15 | page SURVIVED · 71 passed (2.3m)
+
+src after the last one: clean
