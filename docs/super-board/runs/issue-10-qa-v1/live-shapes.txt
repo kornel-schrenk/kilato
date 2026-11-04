@@ -1,0 +1,6 @@
+Two read-only live GETs, with the project's User-Agent, maxlag=5 and formatversion=2, for reply shapes a fake can't prove.
+empty tile: en, list=geosearch, gsbbox=40.05|-150.075|40|-150 (open Pacific, a real tile's size), gslimit=500, gsprimary=primary, gsnamespace=0
+missing page: hu, prop=pageprops|langlinks, ppprop=wikibase_item, lllimit=max, pageids=999999999
+
+empty tile: {"status":200,"body":{"batchcomplete":true,"query":{"geosearch":[]}}}
+missing page: {"status":200,"body":{"batchcomplete":true,"query":{"pages":[{"pageid":999999999,"missing":true}]},"limits":{"langlinks":500}}}
