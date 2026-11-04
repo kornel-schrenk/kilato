@@ -2,6 +2,8 @@ import { useLayoutEffect, useState } from 'preact/hooks'
 import { phoneLanguage, uiLanguage, type Lang } from '../core/lang'
 import { en } from '../i18n/en'
 import { hu } from '../i18n/hu'
+import { MapView } from './MapView'
+import { usePoint } from './usePoint'
 
 const messages = { hu, en }
 
@@ -29,6 +31,7 @@ function saveLang(lang: Lang) {
 export function App() {
   const [lang, setLang] = useState(() => uiLanguage(savedLang(), phoneLanguage(navigator.languages)))
   const t = messages[lang]
+  const [point, dispatch] = usePoint()
 
   useLayoutEffect(() => {
     document.documentElement.lang = lang
@@ -53,8 +56,22 @@ export function App() {
           </button>
         </div>
       </header>
+      <MapView state={point} onEvent={dispatch} t={t} />
       <main>
-        <p>{t.intro}</p>
+        {point.mode === 'intro' && (
+          <>
+            <p>{t.intro}</p>
+            <div class="intro-buttons">
+              <button type="button" onClick={() => dispatch({ type: 'useMyLocation' })}>
+                {t.useMyLocation}
+              </button>
+              <button type="button" onClick={() => dispatch({ type: 'explore' })}>
+                {t.exploreTheMap}
+              </button>
+            </div>
+          </>
+        )}
+        {point.mode === 'exploring' && <p>{t.exploreNote}</p>}
       </main>
     </>
   )
