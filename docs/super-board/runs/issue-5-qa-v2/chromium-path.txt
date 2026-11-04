@@ -1,0 +1,26 @@
+AC4. Tested head: b6bc83a. Host: Raspberry Pi, aarch64, Node v24.22.2, npm 11.19.1.
+A one-test spec printed browser.version() for each setting. It is not committed.
+
+=== CHROMIUM_PATH=UNSET
+1 passed (5.4s)
+BROWSER-VERSION 156.0.8078.4
+exit=0
+=== CHROMIUM_PATH=/usr/bin/chromium
+1 passed (5.3s)
+BROWSER-VERSION 156.0.8078.79
+exit=0
+=== CHROMIUM_PATH=/no/such/browser
+1 failed
+Error: browserType.launch: Failed to launch chromium because executable doesn't exist at /no/such/browser
+exit=1
+=== CHROMIUM_PATH=EMPTY
+1 passed (5.0s)
+BROWSER-VERSION 156.0.8078.4
+exit=0
+=== /usr/bin/chromium --version: Chromium 156.0.8078.79 built on Debian GNU/Linux 13 (trixie)
+=== full page suite, system Chromium
+18 passed (34.3s)
+exit=0
+=== full page suite, own Chromium
+18 passed (16.9s)
+exit=0

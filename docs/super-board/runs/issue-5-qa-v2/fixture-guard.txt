@@ -1,0 +1,413 @@
+AC2 and AC3: the shared fixture in e2e/fixtures.ts. Tested head: b6bc83a. Host: Raspberry Pi, aarch64, Node v24.22.2, npm 11.19.1.
+
+===== committed suite
+Own Chromium and system Chromium: 18 passed on each, see chromium-path.txt. Clean clone: 18 passed, see verify.txt.
+
+===== probes. One-off spec, not committed: the part between the markers.
+--- begin spec
+import { readFileSync, writeFileSync } from 'node:fs'
+import { expect, test } from './fixtures'
+
+// Plain tests: no test.fail. AC3 says the fixture fails the test, so these MUST go red with the fixture's message.
+test.describe('red on purpose', () => {
+  for (const target of ['https://example.invalid/', '/outside.json', '/data/manifest.json', '/kilato/missing.js']) {
+    test(`plain ${target}`, async ({ page }) => {
+      await page.goto('/kilato/')
+      await page.evaluate((t) => fetch(t).catch(() => null), target)
+    })
+  }
+})
+
+// Own files must pass with no failure.
+test.describe('own files pass', () => {
+  test('entry, query string, index.html, the hashed script', async ({ page }) => {
+    await page.goto('/kilato/')
+    const script = await page.locator('script[type=module]').getAttribute('src')
+    const statuses = await page.evaluate(
+      (paths) => Promise.all(paths.map((p) => fetch(p).then((r) => [p, r.status] as const))),
+      ['/kilato/', '/kilato/?x=1', '/kilato/index.html', script!, `${script}?v=1`],
+    )
+    for (const [, status] of statuses) expect(status).toBe(200)
+    await page.goto('/kilato/index.html')
+  })
+  test('data file with a query string', async ({ page }) => {
+    await page.goto('/kilato/')
+    const status = await page.evaluate(() => fetch('/kilato/data/manifest.json?v=1').then((r) => r.status))
+    expect(status).toBe(200)
+  })
+  test('content types of the stubs', async ({ page }) => {
+    await page.goto('/kilato/')
+    const types = await page.evaluate(async () => [
+      (await fetch('/kilato/data/manifest.json')).headers.get('content-type'),
+      (await fetch('https://tile.openstreetmap.org/1/0/0.png')).headers.get('content-type'),
+    ])
+    expect(types[0]).toContain('application/json')
+    expect(types[1]).toContain('image/png')
+  })
+})
+
+// Each must end "expected to fail": the fixture catches it.
+test.describe('caught', () => {
+  const inPage: Record<string, string> = {
+    img: `new Promise(r=>{const i=new Image();i.onerror=r;i.onload=r;i.src='https://example.invalid/a.png'})`,
+    script: `new Promise(r=>{const s=document.createElement('script');s.onerror=r;s.onload=r;s.src='https://example.invalid/a.js';document.head.append(s)})`,
+    stylesheet: `new Promise(r=>{const s=document.createElement('link');s.rel='stylesheet';s.onerror=r;s.onload=r;s.href='https://example.invalid/a.css';document.head.append(s)})`,
+    iframe: `new Promise(r=>{const s=document.createElement('iframe');s.onerror=r;s.onload=r;s.src='https://example.invalid/';document.body.append(s);setTimeout(r,1500)})`,
+    sendBeacon: `(navigator.sendBeacon('https://example.invalid/b','x'),new Promise(r=>setTimeout(r,800)))`,
+    EventSource: `new Promise(r=>{const e=new EventSource('https://example.invalid/e');e.onerror=()=>{e.close();r()}})`,
+    xhr: `new Promise(r=>{const x=new XMLHttpRequest();x.onloadend=r;x.open('GET','https://example.invalid/x');x.send()})`,
+    keepalive: `fetch('https://example.invalid/k',{keepalive:true,method:'POST',body:'x'}).catch(()=>null)`,
+    popup: `(window.open('https://example.invalid/p'),new Promise(r=>setTimeout(r,1000)))`,
+    dedicatedWorker: `new Promise(r=>{const w=new Worker(URL.createObjectURL(new Blob(["fetch('https://example.invalid/w').catch(()=>null).finally(()=>postMessage(1))"])));w.onmessage=r;setTimeout(r,2000)})`,
+    prefetch: `(document.head.append(Object.assign(document.createElement('link'),{rel:'prefetch',href:'https://example.invalid/pf'})),new Promise(r=>setTimeout(r,1000)))`,
+    cssBackground: `(document.body.style.background="url('https://example.invalid/bg.png')",new Promise(r=>setTimeout(r,1000)))`,
+    localhostAlias: `fetch(location.origin.replace('127.0.0.1','localhost')+'/kilato/').catch(()=>null)`,
+    noSlash: `fetch('/kilato').catch(()=>null)`,
+    root: `fetch('/').catch(()=>null)`,
+    doubleDot: `fetch('/kilato/../package.json').catch(()=>null)`,
+    encodedDots: `fetch('/kilato/%2e%2e/package.json').catch(()=>null)`,
+    dataEncodedDots: `fetch('/kilato/data/%2e%2e/%2e%2e/package.json').catch(()=>null)`,
+    backslash: `fetch('/kilato/..\\\\package.json').catch(()=>null)`,
+    doubleSlash: `fetch('/kilato//etc/passwd').catch(()=>null)`,
+    encodedSlashAsset: `fetch('/kilato/assets/..%2f..%2f..%2fpackage.json').catch(()=>null)`,
+    dataNoSlash: `fetch('/kilato/data').catch(()=>null)`,
+    wsSameOrigin: `new Promise(r=>{new WebSocket(location.origin.replace('http','ws')+'/').onclose=r})`,
+    tileSubdomain: `fetch('https://a.tile.openstreetmap.org/1/0/0.png').catch(()=>null)`,
+    osmOther: `fetch('https://www.openstreetmap.org/').catch(()=>null)`,
+    wikipedia: `fetch('https://en.wikipedia.org/').catch(()=>null)`,
+  }
+  for (const [name, code] of Object.entries(inPage)) {
+    test(`${name}`, async ({ page }) => {
+      await page.goto('/kilato/')
+      test.fail()
+      await page.evaluate(code)
+    })
+  }
+  test('location navigation', async ({ page }) => {
+    await page.goto('/kilato/')
+    test.fail()
+    await page.evaluate(`location.href='https://example.invalid/nav'`)
+    await page.waitForTimeout(800)
+  })
+  test('page.goto to a bad path', async ({ page }) => {
+    test.fail()
+    await page.goto('/kilato/nope').catch(() => null)
+  })
+})
+
+// Data route must never climb out of site-data: these get a 404, with no failure.
+test.describe('data stays inside site-data', () => {
+  for (const path of ['/kilato/data/..%2f..%2f..%2fpackage.json', '/kilato/data//etc/passwd', '/kilato/data/..%5c..%5cpackage.json']) {
+    test(path, async ({ page }) => {
+      await page.goto('/kilato/')
+      const status = await page.evaluate((p) => fetch(p).then((r) => r.status), path)
+      expect(status).toBe(404)
+    })
+  }
+})
+
+// Known or suspected gaps: report what happens. These do not assert the fixture's verdict.
+test.describe('gap probes', () => {
+  test('fire and forget as the last line', async ({ page }) => {
+    await page.goto('/kilato/')
+    test.fail()
+    await page.evaluate(() => { void fetch('https://example.invalid/late').catch(() => null) })
+  })
+  test('SharedWorker', async ({ page }) => {
+    await page.goto('/kilato/')
+    test.fail()
+    await page.evaluate(`new Promise(r=>{const w=new SharedWorker(URL.createObjectURL(new Blob(["fetch('https://example.invalid/sw').catch(()=>null).finally(()=>{onconnect=e=>e.ports[0].postMessage(1)})"])));w.port.onmessage=r;w.port.start();setTimeout(r,1500)})`)
+  })
+  test('service worker register', async ({ page }) => {
+    await page.goto('/kilato/')
+    const result = await page.evaluate(`navigator.serviceWorker.register('/kilato/sw.js').then(()=>'resolved').catch((e)=>'rejected '+e.name)`)
+    writeFileSync(`${process.env.QA_OUT}/sw.txt`, String(result))
+  })
+  test('blank tile decode', async () => {
+    const png = readFileSync(new URL('../test/fixtures/tile.png', import.meta.url))
+    expect(png.readUInt32BE(16)).toBe(256)
+    expect(png.readUInt32BE(20)).toBe(256)
+  })
+})
+--- end spec
+
+===== probe results: 37 passed, 5 failed, and all 5 are as expected
+Plain tests with no test.fail(), which must go red. Each did, with "Requests no test should make":
+  https://example.invalid/, /outside.json, /data/manifest.json, /kilato/missing.js
+Own files pass with no failure: /kilato/, /kilato/?x=1, /kilato/index.html, the hashed script, the hashed script with ?v=1, /kilato/data/manifest.json?v=1
+Stub content types: application/json for data, image/png for tiles
+Caught, 28 types, each failed the test as it should: img, script, stylesheet, iframe, sendBeacon, EventSource, XMLHttpRequest, keepalive fetch, popup, dedicated worker, prefetch link, CSS background, a localhost alias of the same port, /kilato with no slash, /, /kilato/../package.json, /kilato/%2e%2e/package.json, /kilato/data/%2e%2e/%2e%2e/package.json, a backslash path, /kilato//etc/passwd, /kilato/assets/..%2f..%2f..%2fpackage.json, /kilato/data with no slash, a same-origin WebSocket, a.tile.openstreetmap.org, www.openstreetmap.org, en.wikipedia.org, location navigation, page.goto to a bad path
+Data stays inside site-data, each got a 404: /kilato/data/..%2f..%2f..%2fpackage.json, /kilato/data//etc/passwd, /kilato/data/..%5c..%5cpackage.json
+Missed: SharedWorker ("Expected to fail, but passed"). Playwright's routes do not see it, as in v1.
+navigator.serviceWorker.register resolves, and registers nothing because the config blocks service workers.
+
+===== blank tile
+tile.png 369 bytes, 256x256, depth 8, colour type 0 (greyscale), row filters {0}, one pixel value (242) in every position
+
+===== mutations, each applied to a clean clone and checked to have landed. 21 of 24 go red. The 3 that survive are in test-gaps.txt.
+### own-files guard dropped (the v1 bug): exit=1
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test
+   Expected to fail, but passed.
+   6 failed
+   12 passed (27.6s)
+   "Expected to fail, but passed" count: 6
+### /kilato/ prefix check dropped: exit=1
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test
+   Expected to fail, but passed.
+   1 failed
+   17 passed (17.5s)
+   "Expected to fail, but passed" count: 1
+### isFile becomes exists: folders pass: exit=1
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404
+   Expected to fail, but passed.
+   2 failed
+   16 passed (28.1s)
+   "Expected to fail, but passed" count: 1
+### pathname decoded before the file check: exit=1
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test
+   Expected to fail, but passed.
+   1 failed
+   17 passed (21.0s)
+   "Expected to fail, but passed" count: 1
+### index.html default dropped: exit=1
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test
+   e2e/fixtures.spec.ts:47:1 › a tile request gets the blank tile
+   e2e/fixtures.spec.ts:61:1 › a data request gets the file from site-data
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404
+   e2e/page.spec.ts:13:1 › Preact renders into the page
+   e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó
+   e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/
+   13 failed
+   5 passed (40.2s)
+### same-origin dropped on own files: exit=1
+   e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test
+   Expected to fail, but passed.
+   1 failed
+   17 passed (14.0s)
+   "Expected to fail, but passed" count: 1
+### same-origin dropped on data: exit=1
+   e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test
+   Expected to fail, but passed.
+   1 failed
+   17 passed (16.2s)
+   "Expected to fail, but passed" count: 1
+### tile host matched by prefix: exit=1
+   e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test
+   Expected to fail, but passed.
+   1 failed
+   17 passed (18.1s)
+   "Expected to fail, but passed" count: 1
+### tile answered with the wrong file: exit=1
+   e2e/fixtures.spec.ts:47:1 › a tile request gets the blank tile
+   1 failed
+   17 passed (21.9s)
+### data served from the wrong folder: exit=1
+   e2e/fixtures.spec.ts:61:1 › a data request gets the file from site-data
+   1 failed
+   17 passed (18.8s)
+### missing data answered 200: exit=1
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404
+   2 failed
+   16 passed (14.5s)
+### data path not checked: folder gets EISDIR: exit=1
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404
+   2 failed
+   16 passed (15.3s)
+### own files aborted: exit=1
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test
+   e2e/fixtures.spec.ts:47:1 › a tile request gets the blank tile
+   e2e/fixtures.spec.ts:61:1 › a data request gets the file from site-data
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404
+   e2e/page.spec.ts:13:1 › Preact renders into the page
+   e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó
+   e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/
+   13 failed
+   5 passed (57.1s)
+### teardown check removed: exit=1
+   e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/ fails the test
+   e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test
+   e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test
+   e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test
+   e2e/fixtures.spec.ts:37:1 › an unexpected WebSocket fails the test
+   Expected to fail, but passed.
+   11 failed
+   7 passed (59.8s)
+   "Expected to fail, but passed" count: 11
+### request not recorded: exit=1
+   e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/ fails the test
+   e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test
+   e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test
+   e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test
+   e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test
+   Expected to fail, but passed.
+   10 failed
+   8 passed (32.8s)
+   "Expected to fail, but passed" count: 10
+### WebSocket not recorded: exit=1
+   e2e/fixtures.spec.ts:37:1 › an unexpected WebSocket fails the test
+   Expected to fail, but passed.
+   1 failed
+   17 passed (14.9s)
+   "Expected to fail, but passed" count: 1
+### serviceWorkers block removed: exit=0
+   18 passed (12.5s)
+### CHROMIUM_PATH launchOptions removed: exit=1
+   Tests  1 failed | 1 passed (2)
+### title changed, rebuilt: exit=1
+   e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó
+   1 failed
+   17 passed (14.0s)
+### base dropped, rebuilt: exit=1
+   e2e/fixtures.spec.ts:47:1 › a tile request gets the blank tile
+   e2e/fixtures.spec.ts:61:1 › a data request gets the file from site-data
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404
+   e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404
+   e2e/page.spec.ts:13:1 › Preact renders into the page
+   e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó
+   e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/
+   7 failed
+   11 passed (22.9s)
+### Preact render removed, rebuilt: exit=1
+   e2e/page.spec.ts:13:1 › Preact renders into the page
+   1 failed
+   17 passed (11.9s)
+### implicit any in src, strict on: exit=1
+   src/main.tsx(2,19): error TS7006: Parameter 'x' implicitly has an 'any' type.
+
+### own-file check reads the query string too: exit=0, 18 passed: survives
+### data file lookup reads the query string too: exit=0, 18 passed: survives
+### rerun of "index.html default dropped", because a broad pkill of mine may have hit that run's preview wrapper: exit=1, 13 failed, 5 passed, same as the first run, no webServer error
+
+===== a request a test does not wait for, as the test ends
+One-off specs, not committed. The target is a local sink, so a request that really leaves the browser is counted there.
+--- begin spec
+import { expect, test } from './fixtures'
+
+// Plain tests with no test.fail: a red result is the fixture catching the request, a green one is a miss.
+// The target is a local sink, so a request that really leaves the browser is counted there.
+const sink = `http://127.0.0.1:${process.env.QA_SINK}`
+const delay = Number(process.env.QA_DELAY ?? 0)
+
+test(`last line fires a request, then waits ${delay} ms`, async ({ page }, info) => {
+  await page.goto('/kilato/')
+  await page.evaluate((u) => { void fetch(u).catch(() => null) }, `${sink}/late-${delay}-${info.repeatEachIndex}`)
+  if (delay) await page.waitForTimeout(delay)
+})
+
+test('page fires a request just after load, test checks only the title', async ({ page }, info) => {
+  await page.addInitScript((u) => {
+    addEventListener('load', () => setTimeout(() => void fetch(u).catch(() => null), 0))
+  }, `${sink}/load-${info.repeatEachIndex}`)
+  await page.goto('/kilato/')
+  await expect(page).toHaveTitle('Kilátó')
+})
+--- end spec
+
+Idle Pi, one worker, 30 runs each:
+### delay 0 ms after firing, 30 runs each, one worker, idle Pi
+  last line fires a request, then waits 0 ms: failed (caught) 27, passed (missed) 3, other 0
+  page fires a request just after load, test checks only the title: failed (caught) 30, passed (missed) 0, other 0
+  first error lines: {'Error: Requests no test should make': 57}
+  requests that reached the local sink: 0
+### delay 50 ms after firing, 30 runs each, one worker, idle Pi
+  last line fires a request, then waits 50 ms: failed (caught) 30, passed (missed) 0, other 0
+  first error lines: {'Error: Requests no test should make': 30}
+  requests that reached the local sink: 0
+### delay 200 ms after firing, 30 runs each, one worker, idle Pi
+  last line fires a request, then waits 200 ms: failed (caught) 30, passed (missed) 0, other 0
+  first error lines: {'Error: Requests no test should make': 30}
+  requests that reached the local sink: 0
+### delay 1000 ms after firing, 30 runs each, one worker, idle Pi
+  last line fires a request, then waits 1000 ms: failed (caught) 30, passed (missed) 0, other 0
+  first error lines: {'Error: Requests no test should make': 30}
+  requests that reached the local sink: 0
+
+Load: 4 CPU burners, 3 workers:
+### delay 0 ms, 40 runs, 3 workers, 4 CPU burners running
+  last line fires a request, then waits 0 ms: failed (caught) 21, passed (missed) 19, other 0
+  first error lines: {'Error: Requests no test should make': 21}
+  requests that reached the local sink: 0
+
+The same test plus two more shapes, in one spec:
+  A: the last line fires a request, the test does not close the page
+  B: fires a request, then the test calls page.close()
+  C: awaits the request, then the test calls page.close()
+### committed fixture, idle Pi, 20 runs each, one worker
+  A last line fires a request, the test does not close the page: failed (caught) 19, passed (missed) 1, other 0
+  B fires a request, then the test closes its page: failed (caught) 17, passed (missed) 3, other 0
+  C awaits the request, then the test closes its page: failed (caught) 20, passed (missed) 0, other 0
+  first error lines: {'Error: Requests no test should make': 56}
+  reached the sink, plain: 0
+  reached the sink, close: 3
+  reached the sink, awaited: 0
+### committed fixture, 4 CPU burners, 40 runs each, 3 workers
+  A last line fires a request, the test does not close the page: failed (caught) 22, passed (missed) 18, other 0
+  B fires a request, then the test closes its page: failed (caught) 28, passed (missed) 12, other 0
+  C awaits the request, then the test closes its page: failed (caught) 40, passed (missed) 0, other 0
+  first error lines: {'Error: Requests no test should make': 90}
+  reached the sink, plain: 0
+  reached the sink, close: 12
+  reached the sink, awaited: 0
+
+The realistic shape, with the page starting the request itself:
+### committed fixture, 4 CPU burners, 40 runs, 3 workers: the page fires a request just after load, the test checks only the title
+  page fires a request just after load, test checks only the title: failed (caught) 40, passed (missed) 0, other 0
+  first error lines: {'Error: Requests no test should make': 40}
+  requests that reached the local sink: 0
+
+Summary of the committed fixture:
+  a request the test awaits: 60/60 caught, 0 reached the sink
+  a request the page starts just after load: 70/70 caught, 0 reached the sink
+  a request on the last line, not awaited: 41 missed in 130 runs (3/30, 19/40, 1/20, 18/40), 0 reached the sink
+  the same, then page.close(): 15 missed in 60 runs (3/20, 12/40), and all 15 reached the sink
+
+===== is the page open when the teardown check runs? One-off log line before the check:
+QA-PAGES-AT-CHECK 1 [ false ]
+So 1 page is open, not closed. The author note key=teardown-check says "once the page has closed".
+
+===== trials of a fix, not committed
+Close the pages before the check. Do not use this one: the misses stay and they all reach the sink.
+1 file changed, 1 insertion(+)
+### trial guard: close the pages before the check. delay 0 ms, 40 runs, 3 workers, 4 CPU burners
+  last line fires a request, then waits 0 ms: failed (caught) 24, passed (missed) 16, other 0
+  first error lines: {'Error: Requests no test should make': 24}
+  requests that reached the local sink: 16
+### trial guard, committed suite: exit=0   18 passed (10.7s)
+
+Wait 250 ms before the check:
+### trial guard: wait 250 ms before the check. 4 CPU burners, 40 runs, 3 workers: last line fires a request
+  last line fires a request, then waits 0 ms: failed (caught) 40, passed (missed) 0, other 0
+  first error lines: {'Error: Requests no test should make': 40}
+  requests that reached the local sink: 0
+### trial guard, committed suite, idle: exit=0   18 passed (14.6s)

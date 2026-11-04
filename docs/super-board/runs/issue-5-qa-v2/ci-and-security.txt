@@ -1,0 +1,17 @@
+AC5. Tested head: b6bc83a.
+GitHub Actions run 41778547903, job 126404494754: event=pull_request, head=b6bc83a, conclusion=success, path=.github/workflows/ci.yml
+Steps, all success: checkout, setup-node, npm ci, npx playwright install --with-deps chromium, npm run verify
+ci.yml, parsed as YAML: on = pull_request, push to branches [main]. permissions = contents: read. Steps = actions/checkout@v7, actions/setup-node@v7, npm ci, npx playwright install --with-deps chromium, npm run verify
+The push trigger is checked by reading only: it has not fired, as nothing has reached main.
+AGENTS.md: "## Commands" is present and outside the managed block. The "There is no stack, build command or test command yet" line is gone. Every npm script it names exists in package.json.
+PR state at the time of testing: mergeable, base develop at a1dbb90.
+
+pr-security-review, diff of develop...b6bc83a, run inline: this lane has no sub-task tool, so the find and false-positive passes ran here in one context.
+Result: 0 findings.
+- ci.yml: pull_request (not pull_request_target), contents: read, no ${{ }} interpolation, no secrets.
+- src/main.tsx and index.html: no unsafe DOM sinks, no external URLs.
+- playwright.config.ts: executablePath and the port come from environment variables, which are trusted. The preview binds to 127.0.0.1.
+- e2e/fixtures.ts: joins a URL path to a file path, but runs only in tests. Encoded climbs stay encoded and get a 404 or fail the test, see fixture-guard.txt.
+- The late-request gap in test-gaps.txt is about test harness reliability. It is not a vulnerability in anything that ships, as the fixture never reaches the phone.
+- package-lock.json: 87 packages, all from registry.npmjs.org with integrity hashes. The only install script is fsevents (optional, macOS only). npm audit signatures: 43 verified registry signatures, 23 attestations. npm audit: 0 vulnerabilities.
+- Secret scan of the diff, excluding the lockfile: only matches are the words in the v1 evidence log describing this same scan.
