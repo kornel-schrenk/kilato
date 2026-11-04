@@ -82,6 +82,25 @@ async function circleRadius(page: Page, selector: string) {
   return distanceMetres(place.at(x, y), place.at(found.x + found.width, y))
 }
 
+/**
+ * How much of a circle's line lies on the map, from 0 to 1, read at 360 points along it.
+ * toBeVisible can't tell: it asks only for a non-empty box, which a circle off screen still has.
+ */
+async function lineOnMap(page: Page, selector: string) {
+  const circle = await box(page, selector)
+  const area = await box(page, '.leaflet-container')
+  const { x, y } = centre(circle)
+  const points = Array.from({ length: 360 }, (_, degrees) => {
+    const angle = (degrees * Math.PI) / 180
+    return { x: x + (circle.width / 2) * Math.cos(angle), y: y + (circle.height / 2) * Math.sin(angle) }
+  })
+  const inside = points.filter(
+    (point) =>
+      point.x >= area.x && point.x <= area.x + area.width && point.y >= area.y && point.y <= area.y + area.height,
+  )
+  return inside.length / points.length
+}
+
 /** Waits until a place, read from the page, is within `metres` of the target. */
 async function expectNear(read: () => Promise<LatLon>, target: LatLon, metres = 5) {
   await expect.poll(async () => distanceMetres(await read(), target)).toBeLessThan(metres)
@@ -793,6 +812,67 @@ test.describe('with the permission granted', () => {
     await expectNear(() => circlePlace(page, '.location-dot'), walked)
   })
 
+  // At Budapest's latitude, 1 km is 310 px at zoom 15, 155 px at 14 and 78 px at 13. So the circle
+  // is 620, 310 or 155 px across, and the map takes the closest of those that fits.
+  for (const { width, height, zoom } of [
+    { width: 320, height: 568, zoom: 13 },
+    { width: 375, height: 667, zoom: 13 },
+    { width: 390, height: 844, zoom: 14 },
+    { width: 412, height: 915, zoom: 14 },
+    { width: 899, height: 700, zoom: 14 },
+    { width: 1024, height: 768, zoom: 14 },
+    // A map 618 px wide is a little too narrow for the 620 px circle, and one 624 px wide is not.
+    { width: 1030, height: 1000, zoom: 14 },
+    { width: 1040, height: 1000, zoom: 15 },
+    { width: 1280, height: 720, zoom: 15 },
+    { width: 1920, height: 1080, zoom: 15 },
+  ]) {
+    test.describe(`at ${width}x${height}`, () => {
+      test.use({ viewport: { width, height } })
+
+      test(`the whole 1 km circle is on the map on load, at zoom ${zoom}`, async ({ page }) => {
+        await page.goto('/kilato/')
+        await expect(dot(page)).toBeVisible()
+
+        await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
+        await expect.poll(() => lineOnMap(page, '.km-circle')).toBe(1)
+      })
+    })
+  }
+
+  test.describe('on a phone', () => {
+    test.use({ viewport: { width: 375, height: 667 } })
+
+    test('My location shows the whole 1 km circle again, whatever the zoom was', async ({ page }) => {
+      await page.goto('/kilato/')
+      await expect(dot(page)).toBeVisible()
+      await expect.poll(async () => (await geography(page)).zoom).toBe(13)
+      await zoomTo(page, 14)
+      await zoomTo(page, 15)
+      await drag(page, -60, 30)
+      await button(page, 'My location').click()
+
+      await expect(dot(page)).toBeVisible()
+      await expect.poll(async () => (await geography(page)).zoom).toBe(13)
+      await expect.poll(() => lineOnMap(page, '.km-circle')).toBe(1)
+    })
+
+    test('a later walk keeps the zoom the user chose, even with the circle off the map', async ({ page }) => {
+      await page.goto('/kilato/')
+      await expect(dot(page)).toBeVisible()
+      await expect.poll(async () => (await geography(page)).zoom).toBe(13)
+      await zoomTo(page, 14)
+      await zoomTo(page, 15)
+      const next = metresNorth(home, 100)
+
+      await page.context().setGeolocation(toFake(next))
+
+      await expectNear(() => mapCentre(page), next)
+      expect((await geography(page)).zoom).toBe(15)
+      expect(await lineOnMap(page, '.km-circle')).toBeLessThan(1)
+    })
+  })
+
   test('following resumes after My location: the next walk moves the map', async ({ page }) => {
     await page.goto('/kilato/')
     await expect(dot(page)).toBeVisible()
@@ -847,6 +927,22 @@ test.describe('exploring', () => {
     await expectNear(() => pinPlace(page), tapped, 2)
     await expectNear(() => circlePlace(page, '.km-circle'), tapped, 2)
     await expectNear(() => mapCentre(page), before, 2)
+  })
+
+  test('a tap while the map coasts keeps the pin at the tap when the map stops', async ({ page }) => {
+    await page.clock.install()
+    await explore(page)
+    await flick(page, -200)
+    await page.clock.runFor(100)
+    const { x, y } = centre(await box(page, '.leaflet-container'))
+    const tapped = (await geography(page)).at(x + 90, y - 50)
+
+    await page.mouse.click(x + 90, y - 50)
+    await page.clock.runFor(2000)
+    await page.clock.resume()
+
+    await expectNear(() => pinPlace(page), tapped, 5)
+    await expectNear(() => circlePlace(page, '.km-circle'), tapped, 5)
   })
 
   test('the 1 km circle is 1 km at any zoom', async ({ page }) => {

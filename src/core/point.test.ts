@@ -38,13 +38,13 @@ describe('from the intro', () => {
     expect(asked).toMatchObject({ mode: 'intro', point: null, watching: true })
   })
 
-  it('the first fix starts following there', () => {
+  it('the first fix starts following there, and shows the whole 1 km circle', () => {
     expect(run([fix(start, 19.05, 30)], asked)).toMatchObject({
       mode: 'following',
       point: { lat: start, lon: 19.05 },
       accuracy: 30,
       watching: true,
-      view: { center: { lat: start, lon: 19.05 } },
+      view: { center: { lat: start, lon: 19.05 }, zoom: 'showCircle' },
     })
   })
 
@@ -132,8 +132,12 @@ describe('following', () => {
     })
   })
 
-  it('keeps the zoom the user has: no fix asks for one', () => {
+  it('keeps the zoom the user has: no later fix asks for one', () => {
     expect(run([fix(start + 1)], following).view).not.toHaveProperty('zoom')
+  })
+
+  it('the first fix on load asks the map to show the whole 1 km circle', () => {
+    expect(following.view).toEqual({ center: { lat: start, lon: 19.05 }, zoom: 'showCircle' })
   })
 
   it('ignores a tap', () => {
@@ -189,6 +193,11 @@ describe('exploring', () => {
     expect(run([{ type: 'dragStart' }], moved).point).toEqual(pin)
   })
 
+  it('a tap while the map still coasts keeps the pin at the tap when the map stops', () => {
+    const coasting = run([{ type: 'dragStart' }, { type: 'tap', at: pin }], exploring)
+    expect(run([{ type: 'dragEnd', center: deakTer }], coasting).point).toEqual(pin)
+  })
+
   it('a fix with no request running is dropped', () => {
     expect(run([fix(start)], moved)).toEqual(moved)
   })
@@ -200,14 +209,14 @@ describe('exploring', () => {
       expect(asked).toMatchObject({ mode: 'exploring', point: pin, watching: true })
     })
 
-    it('the first fix switches back to following, and the map goes there', () => {
+    it('the first fix switches back to following, and the map goes there and shows the whole 1 km circle', () => {
       const point = { lat: start, lon: 19.05 }
       expect(run([fix(start)], asked)).toMatchObject({
         mode: 'following',
         point,
         accuracy: 20,
         watching: true,
-        view: { center: point },
+        view: { center: point, zoom: 'showCircle' },
       })
     })
 

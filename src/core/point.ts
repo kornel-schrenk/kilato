@@ -16,8 +16,11 @@ export interface PointState {
   watching: boolean
   /** A drag that counts is running or coasting, and its end moves the point. */
   dragging: boolean
-  /** The last view the map was asked to go to. A new object is a new request. */
-  view: { center: LatLon; zoom?: number } | null
+  /**
+   * The last view the map was asked to go to. A new object is a new request. With no zoom, the map
+   * keeps the one it has. `showCircle` is the closest zoom that fits the whole 1 km circle on the map.
+   */
+  view: { center: LatLon; zoom?: number | 'showCircle' } | null
 }
 
 export type PointEvent =
@@ -64,7 +67,8 @@ export function nextPoint(state: PointState, event: PointEvent): PointState {
       // The watch stops only after the next paint, so a fix can still arrive after a drag began.
       if (!state.watching) return state
       const point = { lat: event.lat, lon: event.lon }
-      if (state.mode === 'following' && state.point && distanceMetres(state.point, point) < followStep) {
+      const walkedFrom = state.mode === 'following' ? state.point : null
+      if (walkedFrom && distanceMetres(walkedFrom, point) < followStep) {
         return { ...state, accuracy: event.accuracy }
       }
       return {
@@ -73,7 +77,8 @@ export function nextPoint(state: PointState, event: PointEvent): PointState {
         point,
         accuracy: event.accuracy,
         dragging: false,
-        view: { center: point },
+        // Only the start of following picks a zoom. A walk keeps the one the user chose.
+        view: walkedFrom ? { center: point } : { center: point, zoom: 'showCircle' },
       }
     }
 
@@ -98,6 +103,7 @@ export function nextPoint(state: PointState, event: PointEvent): PointState {
       return state.dragging ? { ...state, point: event.center, dragging: false } : state
 
     case 'tap':
-      return state.mode === 'exploring' ? { ...state, point: event.at, watching: false } : state
+      // Leaflet lets a coast run on through a tap. The tap is the later choice, so the coast's end must not undo it.
+      return state.mode === 'exploring' ? { ...state, point: event.at, watching: false, dragging: false } : state
   }
 }
