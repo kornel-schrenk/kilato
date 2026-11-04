@@ -40,6 +40,7 @@ Read the stage from the artifacts. The newest accepted artifact in the table abo
 | `npm run preview` | serves that build at `http://localhost:4173/kilato/` |
 | `npm run test:e2e` | runs the Playwright page tests against `vite preview`, on the last build |
 | `npm run dev` | starts the Vite dev server |
+| `npm run record:wikipedia` | calls the live Wikipedia API and rewrites `test/fixtures/wikipedia/`. Run it by hand, only to refresh the recording |
 
 - Page tests import `test` from `e2e/fixtures.ts`. Its fixture passes files in `dist/`, stubs tile and data requests, and fails the test on any other request.
 - End every page test with an assertion that follows its last action. The fixture checks for unknown requests the moment the test ends, so a request that action starts can arrive too late, and the test still passes. With `goto` as a test's last line, a stray request at page load went unnoticed in 18 of 30 runs.

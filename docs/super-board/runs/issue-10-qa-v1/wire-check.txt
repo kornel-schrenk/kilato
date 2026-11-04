@@ -1,0 +1,11 @@
+Real fetchArticles and Node's real fetch against a local HTTP server standing in for Wikipedia, on 3832b14. Real timers. No call leaves the machine.
+Reproduce: node docs/super-board/runs/issue-10-qa-v1/wire-check.mjs $PWD/scripts/data/wikipedia.ts
+
+A pass: 12 requests, every one with the exact User-Agent, maxlag=5, formatversion=2
+A pass: most requests in flight at once = 1
+A pass: hu tiles asked = 47.4|18.925|47.35|19  47.375|18.925|47.35|18.9625  47.375|18.9625|47.35|19  47.4|18.925|47.375|18.9625  47.4|18.9625|47.375|19
+A pass: hu detail calls, ids per call = 50,50,20, each followed by its continuation
+A pass: 120 articles
+B pass: maxlag, then 503, then a dropped connection, then success. Seconds between attempts = 5.0, 10.1, 20.0
+C pass: 4 attempts (1 + 3 retries), then the fetch rejected after 35.1 s. No English call followed
+wire-check exit=0

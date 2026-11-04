@@ -1,0 +1,75 @@
+AC4 checked against an independent answer. A Python script rebuilt the merged articles from the raw recording, sharing no code with the module, and compared them with what fetchArticles returns when it replays the same file.
+
+hu pages 218  en pages 68
+hu pages with no Wikidata id 0  en 0
+ids in both editions 53
+expected articles 233  fetchArticles 233  distinct keys 233
+articles that differ: 0  missing: 0  extra: 0
+merged articles whose two editions disagree on the position: 47
+of those, positioned where the Hungarian page is: 47
+witness Q854317 hu (47.499722222222, 19.048055555556) en (47.499747222222226, 19.047980555555558) article (47.499722222222, 19.048055555556)
+
+Reproduce: put copies of wikipedia.ts, wikipedia-fixture.ts and responses.json beside these two scripts, then run
+node replay-dump.mjs > replayed.json && python3 oracle.py responses.json replayed.json
+
+===== replay-dump.mjs
+import { readFileSync } from 'node:fs'
+const { fetchArticles } = await import('./wikipedia.ts')
+const { replayingFetch, FIXTURE_BOX } = await import('./wikipedia-fixture.ts')
+const responses = JSON.parse(readFileSync('./responses.json', 'utf8'))
+console.log(JSON.stringify(await fetchArticles(FIXTURE_BOX, replayingFetch(responses))))
+
+===== oracle.py
+# Rebuilds the merged articles from the raw recording, sharing no code with the module, and compares.
+import json, sys
+from urllib.parse import urlsplit, parse_qs
+raw, got = json.load(open(sys.argv[1])), json.load(open(sys.argv[2]))
+ed = {'hu': {}, 'en': {}}
+for url, reply in raw.items():
+    e = urlsplit(url).hostname.split('.')[0]
+    for p in reply['query'].get('geosearch', []):
+        ed[e].setdefault(p['pageid'], {'links': {}, 'q': None}).update(title=p['title'], lat=p['lat'], lon=p['lon'])
+for url, reply in raw.items():
+    e = urlsplit(url).hostname.split('.')[0]
+    for p in reply['query'].get('pages', []):
+        page = ed[e][p['pageid']]
+        if p.get('pageprops', {}).get('wikibase_item'):
+            page['q'] = p['pageprops']['wikibase_item']
+        for l in p.get('langlinks', []):
+            page['links'][l['lang']] = l['title']
+hu_q = {p['q']: (i, p) for i, p in ed['hu'].items() if p['q']}
+en_q = {p['q']: (i, p) for i, p in ed['en'].items() if p['q']}
+both = set(hu_q) & set(en_q)
+expected = {}
+for e in ('hu', 'en'):
+    for i, p in ed[e].items():
+        key = p['q'] or f'{e}:{i}'
+        if key in expected:
+            continue
+        hu = hu_q.get(p['q']) if p['q'] else None
+        en = en_q.get(p['q']) if p['q'] else None
+        pos = (hu or (i, p))[1]
+        ids = {}
+        titles = {}
+        for edn, pair in (('en', en), ('hu', hu)):
+            if pair: titles.update(pair[1]['links'])
+        if not p['q']:
+            titles.update(p['links'])
+            ids[e] = i; titles[e] = p['title']
+        for edn, pair in (('hu', hu), ('en', en)):
+            if pair:
+                ids[edn] = pair[0]; titles[edn] = pair[1]['title']
+        expected[key] = {'q': p['q'], 'lat': pos['lat'], 'lon': pos['lon'], 'pageids': ids, 'titles': titles}
+norm = lambda a: json.dumps({'q': a.get('q'), 'lat': a['lat'], 'lon': a['lon'], 'pageids': a['pageids'], 'titles': a['titles']}, sort_keys=True, ensure_ascii=False)
+key = lambda a: a.get('q') or (('hu:%d' % a['pageids']['hu']) if 'hu' in a['pageids'] else 'en:%d' % a['pageids']['en'])
+gotmap = {key(a): a for a in got}
+print('hu pages', len(ed['hu']), ' en pages', len(ed['en']))
+print('hu pages with no Wikidata id', sum(not p['q'] for p in ed['hu'].values()), ' en', sum(not p['q'] for p in ed['en'].values()))
+print('ids in both editions', len(both))
+print('expected articles', len(expected), ' fetchArticles', len(got), ' distinct keys', len(gotmap))
+print('articles that differ:', sum(norm(expected[k]) != norm(gotmap[k]) for k in expected if k in gotmap), ' missing:', len(set(expected) - set(gotmap)), ' extra:', len(set(gotmap) - set(expected)))
+moved = [q for q in both if (hu_q[q][1]['lat'], hu_q[q][1]['lon']) != (en_q[q][1]['lat'], en_q[q][1]['lon'])]
+print('merged articles whose two editions disagree on the position:', len(moved))
+print('of those, positioned where the Hungarian page is:', sum((gotmap[q]['lat'], gotmap[q]['lon']) == (hu_q[q][1]['lat'], hu_q[q][1]['lon']) for q in moved))
+q = 'Q854317'
+print('witness', q, 'hu', (hu_q[q][1]['lat'], hu_q[q][1]['lon']), 'en', (en_q[q][1]['lat'], en_q[q][1]['lon']), 'article', (gotmap[q]['lat'], gotmap[q]['lon']))

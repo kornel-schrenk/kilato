@@ -1,0 +1,21 @@
+Edge probes on 3832b14: inputs the unit tests don't pin. All fetches are fakes, and the two timer probes use real timers.
+Reproduce: node docs/super-board/runs/issue-10-qa-v1/edge-probes.mjs $PWD/scripts/data/wikipedia.ts
+
+details calls for 1 pages: {"articles":1,"idsPerCall":[1]}
+details calls for 49 pages: {"articles":49,"idsPerCall":[49]}
+details calls for 50 pages: {"articles":50,"idsPerCall":[50]}
+details calls for 51 pages: {"articles":51,"idsPerCall":[50,1]}
+details calls for 100 pages: {"articles":100,"idsPerCall":[50,50]}
+page deleted before its details: [{"lat":47.005,"lon":19.005,"pageids":{"hu":5},"titles":{"hu":"Cikk 5"}}]
+details reply names an unknown page: "rejects with TypeError after 2 calls"
+200 reply with no query: "rejects with TypeError after 1 call(s), so no retry"
+language link named __proto__ and constructor: {"titles":{"constructor":"y","hu":"Cikk 5"},"protoIntact":true,"polluted":false}
+title with markup and quotes: true
+Hungarian page with no id, English page with one: [{"pageids":{"hu":1}},{"q":"Q2","pageids":{"en":2}}]
+continue that never ends: {"outcome":"still calling when the probe stopped watching","calls":2001}
+(node:841953) TimeoutOverflowWarning: 99999999000 does not fit into a 32-bit signed integer.
+Timeout duration was set to 1.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Retry-After too large for a timer: {"secondsWaited":0.027,"calls":3,"warnings":["TimeoutOverflowWarning"]}
+scale over the real coverage box: {"pagesInWorld":4154,"articles":4154,"lost":0,"calls":168,"huCalls":101,"searches":84,"searchesBeyondThe72Tiles":12,"note":"no continuations in this fake, so a real run adds those to the calls"}
+replaying a URL that was never recorded: {"secondsBeforeItFails":35,"message":"Wikipedia call failed after 3 retries: HTTP 404: https://hu."}

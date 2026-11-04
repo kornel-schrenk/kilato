@@ -1,0 +1,38 @@
+Tested head: 3832b14. This folder is the only thing QA adds.
+
+===== CI and merge
+Check `verify` on 3832b14: conclusion success.
+This file can't record CI on its own commit. The PR comment gives the state at handoff.
+PR #35 against develop: mergeable, state clean, and its merge base is the tip of develop, 8c2bb16, when this was written.
+
+===== project verifier
+None: .agents/skills has no verify-* map, so only the issue's ACs apply.
+
+===== pr-security-review
+Diff of develop...3832b14, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- scripts/data/wikipedia.ts sends requests only to https://hu.wikipedia.org and https://en.wikipedia.org. The edition comes from a fixed list, not from input. Parameters come from constants and the box, and URLSearchParams encodes them.
+- The one value taken from a reply and sent back is the `continue` object, which goes to the same fixed host over HTTPS, with no credentials on the request.
+- Titles and language codes come from community-edited pages, so they are untrusted. This diff has no HTML sink, and nothing under src/ or e2e/ imports these modules. #11 is the first code that passes them on.
+- A language code becomes an object key. `__proto__` and `constructor` were probed: the prototype is intact and nothing is polluted. See edge-probes.txt.
+- record-wikipedia.ts writes one fixed path, built from import.meta.dirname. It takes no arguments and runs only by hand: `record:wikipedia` isn't in `verify`, and nothing under .github names it.
+- replayingFetch and recordingFetch only run in tests and in that script.
+- No dependency changes: package-lock.json is untouched, and the package.json diff adds one script line. No workflow changes: the diff doesn't touch .github/.
+- The tsconfig.json change, allowImportingTsExtensions, affects only type checking, since noEmit is on.
+- The fixture was checked by structure, field by field. Its URLs are the two api.php endpoints, with only API parameters. Its replies hold only continue and query. Its pages hold only pageid, title, lat, lon, pageprops.wikibase_item and langlinks of lang and title. It has no request headers and nothing else.
+- Every non-fixture file in the diff was read in full.
+- Not run: a word search of the diff for secret shapes. The repo's guard-secrets hook blocked the command that held it, most likely on a word in the pattern, since the command opened no secret file. QA left the hook alone and didn't reword the search to get past it. The reading and the field check above cover the same ground for this diff.
+
+===== live calls QA made
+Planned:
+- `npm run record:wikipedia` once, as the issue's step a says: 10 calls. live-record.txt has the result.
+- Two more read-only GETs, with the project's User-Agent and maxlag=5, for reply shapes a fake can't prove. live-shapes.txt has both replies. An empty tile in the open Pacific gives HTTP 200 with query.geosearch of [], the shape the code reads. A page id that doesn't exist gives HTTP 200 and the page with missing: true, which adds nothing to the page and doesn't break the details loop.
+
+Not planned, and QA's own mistake. Two breaks in QA's mutation list reached the live API:
+- "replay reaches the network" swapped the 404 in replayingFetch for a real fetch. One test asks for an unrecorded URL, so that run will have sent one GET to https://hu.wikipedia.org/w/api.php?a, with Node's default User-Agent.
+- "ignores the fetch parameter" swapped the parameter for the global fetch, so the card's tests ran against the live API, and the first of them asks over the whole coverage box. QA noticed the mistake while that run was going and stopped every process of it by PID at 17:18:34 CET on 2026-11-04.
+- That window was under about 25 s. Nothing logged these calls, so QA treats them as made, and their number is unknown. They carried the project's User-Agent and maxlag=5. Calls from a test that had timed out would carry on under the next test, so they may have overlapped.
+- The issue keeps live calls to the recording and #12's deploy, so this broke that for those seconds. The cause was QA's process, not this PR: its code takes fetch as a parameter, and wikipedia-fixture.test.ts:122 proves the replay leaves the global fetch alone.
+- No result of that run is used as evidence. Both breaks were replaced with offline ones, and mutate.py as committed reaches no network.
+
+QA otherwise did not run the fetch over the whole coverage box. The run above was stopped before it finished, and the issue keeps that fetch to #12's deploy.

@@ -1,0 +1,4925 @@
+{
+  "https://hu.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&list=geosearch&gsbbox=47.505%7C19.045%7C47.491%7C19.065&gslimit=500&gsprimary=primary&gsnamespace=0": {
+    "query": {
+      "geosearch": [
+        {
+          "pageid": 1019088,
+          "title": "Anker-palota",
+          "lat": 47.4979,
+          "lon": 19.0553
+        },
+        {
+          "pageid": 58985,
+          "title": "Földalatti Vasúti Múzeum",
+          "lat": 47.497777777778,
+          "lon": 19.054722222222
+        },
+        {
+          "pageid": 741161,
+          "title": "Anker köz",
+          "lat": 47.498168,
+          "lon": 19.05567
+        },
+        {
+          "pageid": 125851,
+          "title": "Deák Ferenc tér (Budapest)",
+          "lat": 47.4975,
+          "lon": 19.055
+        },
+        {
+          "pageid": 1029026,
+          "title": "Deák Ferenc tér metróállomás",
+          "lat": 47.4975,
+          "lon": 19.054722222222
+        },
+        {
+          "pageid": 176452,
+          "title": "Deák téri evangélikus templom (Budapest)",
+          "lat": 47.497222,
+          "lon": 19.054722
+        },
+        {
+          "pageid": 1554643,
+          "title": "Erzsébet tér autóbusz-pályaudvar",
+          "lat": 47.497869444444,
+          "lon": 19.053719444444
+        },
+        {
+          "pageid": 176442,
+          "title": "Erzsébet tér (Budapest)",
+          "lat": 47.4984,
+          "lon": 19.0532
+        },
+        {
+          "pageid": 1961347,
+          "title": "Az Adriai Biztosító Társulat székháza",
+          "lat": 47.49742,
+          "lon": 19.05327
+        },
+        {
+          "pageid": 2034387,
+          "title": "Madách Színház (1940-1944)",
+          "lat": 47.4973,
+          "lon": 19.0567
+        },
+        {
+          "pageid": 7488,
+          "title": "Örkény István Színház",
+          "lat": 47.4973,
+          "lon": 19.0567
+        },
+        {
+          "pageid": 1095467,
+          "title": "Bajcsy-Zsilinszky út metróállomás",
+          "lat": 47.499444444444,
+          "lon": 19.055
+        },
+        {
+          "pageid": 164137,
+          "title": "Deák Téri Evangélikus Gimnázium",
+          "lat": 47.49664,
+          "lon": 19.054204
+        },
+        {
+          "pageid": 1607131,
+          "title": "Madách Imre tér",
+          "lat": 47.497222222222,
+          "lon": 19.056944444444
+        },
+        {
+          "pageid": 1368639,
+          "title": "MOKÉP",
+          "lat": 47.4987505,
+          "lon": 19.0528763
+        },
+        {
+          "pageid": 1608672,
+          "title": "Saxlehner-palota",
+          "lat": 47.499719,
+          "lon": 19.055576
+        },
+        {
+          "pageid": 727858,
+          "title": "Budapesti Közlekedési Központ",
+          "lat": 47.498611111111,
+          "lon": 19.0575
+        },
+        {
+          "pageid": 1027178,
+          "title": "Budapest Óriáskereke",
+          "lat": 47.49813,
+          "lon": 19.05201
+        },
+        {
+          "pageid": 743469,
+          "title": "Merlin Színház",
+          "lat": 47.4961527,
+          "lon": 19.0562667
+        },
+        {
+          "pageid": 430589,
+          "title": "Kempinski Hotel Corvinus",
+          "lat": 47.49713056,
+          "lon": 19.05227222
+        },
+        {
+          "pageid": 947438,
+          "title": "Magyar Természetjáró Szövetség",
+          "lat": 47.4970776,
+          "lon": 19.0578474
+        },
+        {
+          "pageid": 1608675,
+          "title": "Foncière-palota",
+          "lat": 47.500338888889,
+          "lon": 19.055338888889
+        },
+        {
+          "pageid": 764011,
+          "title": "Bécsi utca",
+          "lat": 47.496527777778,
+          "lon": 19.051916666667
+        },
+        {
+          "pageid": 1643769,
+          "title": "Harmincad utca",
+          "lat": 47.497388888889,
+          "lon": 19.051305555556
+        },
+        {
+          "pageid": 163702,
+          "title": "Rumbach utcai zsinagóga",
+          "lat": 47.49792,
+          "lon": 19.05889
+        },
+        {
+          "pageid": 352698,
+          "title": "Gozsdu-udvar",
+          "lat": 47.499344444444,
+          "lon": 19.058694444444
+        },
+        {
+          "pageid": 897969,
+          "title": "Belvárosi Szent Anna-plébániatemplom",
+          "lat": 47.495327,
+          "lon": 19.053469
+        },
+        {
+          "pageid": 1500098,
+          "title": "Invalidus-ház",
+          "lat": 47.495081,
+          "lon": 19.054735
+        },
+        {
+          "pageid": 2072313,
+          "title": "Szervita tér",
+          "lat": 47.4953,
+          "lon": 19.0532
+        },
+        {
+          "pageid": 779916,
+          "title": "Onyx Étterem",
+          "lat": 47.4971444,
+          "lon": 19.0506451
+        },
+        {
+          "pageid": 1673428,
+          "title": "Török Bankház",
+          "lat": 47.4954,
+          "lon": 19.0525
+        },
+        {
+          "pageid": 1098303,
+          "title": "Rózsavölgyi és Társa Kiadó",
+          "lat": 47.49506,
+          "lon": 19.05294
+        },
+        {
+          "pageid": 458363,
+          "title": "Vörösmarty tér (Budapest)",
+          "lat": 47.496636,
+          "lon": 19.050617
+        },
+        {
+          "pageid": 1643249,
+          "title": "József nádor emlékmű",
+          "lat": 47.49825,
+          "lon": 19.050111111111
+        },
+        {
+          "pageid": 1341902,
+          "title": "József nádor tér",
+          "lat": 47.498055555556,
+          "lon": 19.05
+        },
+        {
+          "pageid": 1085655,
+          "title": "Gerbeaud-ház",
+          "lat": 47.4969481,
+          "lon": 19.0502242
+        },
+        {
+          "pageid": 1094903,
+          "title": "Vörösmarty tér metróállomás",
+          "lat": 47.496666666667,
+          "lon": 19.050277777778
+        },
+        {
+          "pageid": 307932,
+          "title": "Pénzügyminisztérium",
+          "lat": 47.49803,
+          "lon": 19.04985
+        },
+        {
+          "pageid": 233551,
+          "title": "Megyeháza (Budapest)",
+          "lat": 47.494429,
+          "lon": 19.056246
+        },
+        {
+          "pageid": 582706,
+          "title": "Grill Károly Könyvkiadóvállalata",
+          "lat": 47.49674,
+          "lon": 19.04978
+        },
+        {
+          "pageid": 1085735,
+          "title": "Hét választófejedelem szálloda",
+          "lat": 47.495043,
+          "lon": 19.051555
+        },
+        {
+          "pageid": 1753284,
+          "title": "Petőfi Sándor utca (Budapest, V. kerület)",
+          "lat": 47.494278,
+          "lon": 19.054083
+        },
+        {
+          "pageid": 741848,
+          "title": "Pesti Színház",
+          "lat": 47.494722222222,
+          "lon": 19.052222222222
+        },
+        {
+          "pageid": 1085724,
+          "title": "Thonet-ház",
+          "lat": 47.4949,
+          "lon": 19.0518
+        },
+        {
+          "pageid": 1107520,
+          "title": "Miniversum",
+          "lat": 47.501527777778,
+          "lon": 19.057361111111
+        },
+        {
+          "pageid": 109356,
+          "title": "Budapest villamosvonal-hálózata",
+          "lat": 47.5,
+          "lon": 19.05
+        },
+        {
+          "pageid": 16456,
+          "title": "Budapest V. kerülete",
+          "lat": 47.5,
+          "lon": 19.05
+        },
+        {
+          "pageid": 459594,
+          "title": "Mérleg utca",
+          "lat": 47.499523,
+          "lon": 19.04957
+        },
+        {
+          "pageid": 471026,
+          "title": "Belvárosi Színház (2004-től)",
+          "lat": 47.4955,
+          "lon": 19.05962
+        },
+        {
+          "pageid": 350865,
+          "title": "Zrínyi utca",
+          "lat": 47.500415,
+          "lon": 19.050139
+        },
+        {
+          "pageid": 1458115,
+          "title": "Centrál Színház",
+          "lat": 47.501829,
+          "lon": 19.0570864
+        },
+        {
+          "pageid": 1666363,
+          "title": "Vidám Színpad (Budapest, 1951–1996)",
+          "lat": 47.501861111111,
+          "lon": 19.057027777778
+        },
+        {
+          "pageid": 1666386,
+          "title": "Révay utca 18.",
+          "lat": 47.501861111111,
+          "lon": 19.057027777778
+        },
+        {
+          "pageid": 796506,
+          "title": "Főposta (Pest)",
+          "lat": 47.494466,
+          "lon": 19.0519263
+        },
+        {
+          "pageid": 1005926,
+          "title": "Aranykéz utcai robbantás",
+          "lat": 47.49474,
+          "lon": 19.05129
+        },
+        {
+          "pageid": 581933,
+          "title": "Singer és Wolfner Irodalmi Intézet Rt.",
+          "lat": 47.501666666667,
+          "lon": 19.057777777778
+        },
+        {
+          "pageid": 1005915,
+          "title": "Aranykéz utca",
+          "lat": 47.494722222222,
+          "lon": 19.05125
+        },
+        {
+          "pageid": 795631,
+          "title": "Dorottya utca",
+          "lat": 47.49798,
+          "lon": 19.048863
+        },
+        {
+          "pageid": 29468,
+          "title": "Dohány utcai zsinagóga",
+          "lat": 47.495833333333,
+          "lon": 19.060277777778
+        },
+        {
+          "pageid": 1817585,
+          "title": "Hősök temploma (Budapest)",
+          "lat": 47.49645,
+          "lon": 19.06076
+        },
+        {
+          "pageid": 458568,
+          "title": "Vigadó tér",
+          "lat": 47.4959,
+          "lon": 19.0495
+        },
+        {
+          "pageid": 461239,
+          "title": "Október 6. utca",
+          "lat": 47.501249,
+          "lon": 19.05088
+        },
+        {
+          "pageid": 619849,
+          "title": "Belügyminisztérium",
+          "lat": 47.49905,
+          "lon": 19.04886
+        },
+        {
+          "pageid": 410041,
+          "title": "Pesti Vigadó",
+          "lat": 47.495894444444,
+          "lon": 19.049455555556
+        },
+        {
+          "pageid": 112396,
+          "title": "Angol Királynő Szálló",
+          "lat": 47.495452777778,
+          "lon": 19.049786111111
+        },
+        {
+          "pageid": 17561,
+          "title": "Magyar Vöröskereszt",
+          "lat": 47.5023,
+          "lon": 19.0538
+        },
+        {
+          "pageid": 1612230,
+          "title": "Deák Ferenc utca (Budapest)",
+          "lat": 47.495555555556,
+          "lon": 19.049611111111
+        },
+        {
+          "pageid": 1562245,
+          "title": "Magyar Zsidó Múzeum és Levéltár",
+          "lat": 47.495888888889,
+          "lon": 19.060694444444
+        },
+        {
+          "pageid": 459166,
+          "title": "Katona József Színház (Budapest)",
+          "lat": 47.493611,
+          "lon": 19.055
+        },
+        {
+          "pageid": 741244,
+          "title": "Arany Kéz Fogadó",
+          "lat": 47.494166666667,
+          "lon": 19.051666666667
+        },
+        {
+          "pageid": 1475258,
+          "title": "Topits József fia gőztésztagyár",
+          "lat": 47.49382,
+          "lon": 19.05746
+        },
+        {
+          "pageid": 2062415,
+          "title": "Erzsébetvárosi Dohánygyár",
+          "lat": 47.497428,
+          "lon": 19.061633
+        },
+        {
+          "pageid": 909369,
+          "title": "Újszínház",
+          "lat": 47.501369444444,
+          "lon": 19.059508333333
+        },
+        {
+          "pageid": 1133913,
+          "title": "BM Duna Palota",
+          "lat": 47.500277777778,
+          "lon": 19.049166666667
+        },
+        {
+          "pageid": 1667682,
+          "title": "Paulay Ede utca 35.",
+          "lat": 47.501527777778,
+          "lon": 19.059388888889
+        },
+        {
+          "pageid": 112134,
+          "title": "Háttér Társaság",
+          "lat": 47.5007289,
+          "lon": 19.0495
+        },
+        {
+          "pageid": 793538,
+          "title": "Apáczai Csere János utca",
+          "lat": 47.494916,
+          "lon": 19.049922
+        },
+        {
+          "pageid": 897472,
+          "title": "Nemzeti Casino",
+          "lat": 47.49424,
+          "lon": 19.05897
+        },
+        {
+          "pageid": 1774273,
+          "title": "Blinken OSA Archívum",
+          "lat": 47.5025,
+          "lon": 19.0534
+        },
+        {
+          "pageid": 1644528,
+          "title": "Podmaniczky Frigyes-emlék",
+          "lat": 47.502611111111,
+          "lon": 19.054305555556
+        },
+        {
+          "pageid": 965116,
+          "title": "Kossuth Lajos utca (Budapest, V. kerület)",
+          "lat": 47.4938066,
+          "lon": 19.0579564
+        },
+        {
+          "pageid": 965266,
+          "title": "Georgia-bérház",
+          "lat": 47.494722222222,
+          "lon": 19.06
+        },
+        {
+          "pageid": 903200,
+          "title": "Párizsi udvar",
+          "lat": 47.493283333333,
+          "lon": 19.054972222222
+        },
+        {
+          "pageid": 1792877,
+          "title": "Budapest Marriott Hotel",
+          "lat": 47.494823,
+          "lon": 19.0497012
+        },
+        {
+          "pageid": 2002370,
+          "title": "Wesselényi Miklós emléktáblája",
+          "lat": 47.49325,
+          "lon": 19.056194444444
+        },
+        {
+          "pageid": 1092238,
+          "title": "Ferenciek tere metróállomás",
+          "lat": 47.4932,
+          "lon": 19.0558
+        },
+        {
+          "pageid": 1383159,
+          "title": "Drechsler-palota",
+          "lat": 47.501944444444,
+          "lon": 19.059166666667
+        },
+        {
+          "pageid": 1095452,
+          "title": "Opera metróállomás",
+          "lat": 47.502222222222,
+          "lon": 19.058611111111
+        },
+        {
+          "pageid": 1047945,
+          "title": "Astoria metróállomás",
+          "lat": 47.494444444444,
+          "lon": 19.06
+        },
+        {
+          "pageid": 87419,
+          "title": "Astoria (csomópont)",
+          "lat": 47.49444444,
+          "lon": 19.06
+        },
+        {
+          "pageid": 1256536,
+          "title": "Alcantarai Szent Péter-templom (Budapest)",
+          "lat": 47.4932,
+          "lon": 19.0565
+        },
+        {
+          "pageid": 1793805,
+          "title": "InterContinental Budapest Hotel",
+          "lat": 47.497222222222,
+          "lon": 19.047777777778
+        },
+        {
+          "pageid": 1499780,
+          "title": "Dunakorzó",
+          "lat": 47.49555556,
+          "lon": 19.04861111
+        },
+        {
+          "pageid": 296971,
+          "title": "Ferenciek tere",
+          "lat": 47.49306944,
+          "lon": 19.05598611
+        },
+        {
+          "pageid": 1644376,
+          "title": "Podmaniczky Frigyes tér",
+          "lat": 47.502972222222,
+          "lon": 19.054611111111
+        },
+        {
+          "pageid": 22368,
+          "title": "Gresham-palota",
+          "lat": 47.499722222222,
+          "lon": 19.048055555556
+        },
+        {
+          "pageid": 895310,
+          "title": "Nereidák kútja",
+          "lat": 47.493055555556,
+          "lon": 19.056111111111
+        },
+        {
+          "pageid": 87480,
+          "title": "Astoria Szálló (Budapest)",
+          "lat": 47.49411,
+          "lon": 19.05966
+        },
+        {
+          "pageid": 810323,
+          "title": "Széchenyi István tér (Budapest)",
+          "lat": 47.4997,
+          "lon": 19.048
+        },
+        {
+          "pageid": 909599,
+          "title": "Kiskirálylány",
+          "lat": 47.495927,
+          "lon": 19.048199
+        },
+        {
+          "pageid": 768253,
+          "title": "Belgrád rakpart",
+          "lat": 47.496666666667,
+          "lon": 19.047777777778
+        },
+        {
+          "pageid": 1092620,
+          "title": "Arany János utca metróállomás",
+          "lat": 47.503055555556,
+          "lon": 19.054444444444
+        },
+        {
+          "pageid": 2022195,
+          "title": "Vasvári Pál utcai zsinagóga",
+          "lat": 47.5013,
+          "lon": 19.0607
+        },
+        {
+          "pageid": 331125,
+          "title": "Kazinczy utcai zsinagóga (Budapest)",
+          "lat": 47.4983,
+          "lon": 19.0625
+        },
+        {
+          "pageid": 1526823,
+          "title": "Kazinczy utca (Budapest, VII. kerület)",
+          "lat": 47.498452,
+          "lon": 19.062494
+        },
+        {
+          "pageid": 425799,
+          "title": "Bajcsy-Zsilinszky út (Budapest)",
+          "lat": 47.503122,
+          "lon": 19.054961
+        },
+        {
+          "pageid": 286845,
+          "title": "Budapest világörökségi helyszínei",
+          "lat": 47.502498,
+          "lon": 19.05863
+        },
+        {
+          "pageid": 53101,
+          "title": "Magyar Állami Operaház",
+          "lat": 47.502498,
+          "lon": 19.05863
+        },
+        {
+          "pageid": 1839071,
+          "title": "Nemzeti Színház (épület, 1837–1913)",
+          "lat": 47.494166666667,
+          "lon": 19.060277777778
+        },
+        {
+          "pageid": 1479060,
+          "title": "Kárpátia (étterem)",
+          "lat": 47.492833,
+          "lon": 19.056361
+        },
+        {
+          "pageid": 852535,
+          "title": "Péterffy-palota",
+          "lat": 47.493194444444,
+          "lon": 19.051805555556
+        },
+        {
+          "pageid": 476577,
+          "title": "Piarista Gimnázium (Budapest)",
+          "lat": 47.49305556,
+          "lon": 19.05222222
+        },
+        {
+          "pageid": 1575701,
+          "title": "Piarista központ (Budapest)",
+          "lat": 47.493055555556,
+          "lon": 19.052222222222
+        },
+        {
+          "pageid": 2167,
+          "title": "Lipótváros",
+          "lat": 47.5025,
+          "lon": 19.050833333333
+        },
+        {
+          "pageid": 1605377,
+          "title": "Magyar Kereskedelmi Közlöny Hírlap és Könyvkiadó Vállalat",
+          "lat": 47.49556,
+          "lon": 19.06203
+        },
+        {
+          "pageid": 998034,
+          "title": "Piarista utca (Budapest)",
+          "lat": 47.493055555556,
+          "lon": 19.051944444444
+        },
+        {
+          "pageid": 177134,
+          "title": "Kalazantinum",
+          "lat": 47.492777777778,
+          "lon": 19.053055555556
+        },
+        {
+          "pageid": 1841211,
+          "title": "Kelet–Nyugat Kereskedelmi Központ",
+          "lat": 47.49409069298,
+          "lon": 19.060566899989
+        },
+        {
+          "pageid": 957557,
+          "title": "Klotild paloták",
+          "lat": 47.4926,
+          "lon": 19.054
+        },
+        {
+          "pageid": 1439853,
+          "title": "Istenszülő elhunyta Nagyboldogasszony-székesegyház (Budapest)",
+          "lat": 47.493333333333,
+          "lon": 19.050833333333
+        },
+        {
+          "pageid": 177131,
+          "title": "Sapientia Szerzetesi Hittudományi Főiskola",
+          "lat": 47.492611111111,
+          "lon": 19.052944444444
+        },
+        {
+          "pageid": 898965,
+          "title": "Szimpla romkocsma",
+          "lat": 47.497,
+          "lon": 19.0632
+        },
+        {
+          "pageid": 1602898,
+          "title": "Staffenberg-ház",
+          "lat": 47.4933389,
+          "lon": 19.0502815
+        },
+        {
+          "pageid": 282534,
+          "title": "Egyetemi Könyvtár (Eötvös Loránd Tudományegyetem)",
+          "lat": 47.4925,
+          "lon": 19.056944444444
+        },
+        {
+          "pageid": 269599,
+          "title": "Váci utca",
+          "lat": 47.4925,
+          "lon": 19.053055555556
+        },
+        {
+          "pageid": 1699672,
+          "title": "Március 15. tér",
+          "lat": 47.4925,
+          "lon": 19.053055555556
+        },
+        {
+          "pageid": 459857,
+          "title": "Nádor utca",
+          "lat": 47.502,
+          "lon": 19.049
+        },
+        {
+          "pageid": 239547,
+          "title": "Spenótház",
+          "lat": 47.5006,
+          "lon": 19.0475
+        },
+        {
+          "pageid": 34744,
+          "title": "Belváros (Budapest)",
+          "lat": 47.492397222222,
+          "lon": 19.053313888889
+        },
+        {
+          "pageid": 1555035,
+          "title": "Unger-ház",
+          "lat": 47.493333333333,
+          "lon": 19.06
+        },
+        {
+          "pageid": 10251,
+          "title": "Contra-Aquincum",
+          "lat": 47.4927,
+          "lon": 19.0514
+        },
+        {
+          "pageid": 183704,
+          "title": "Eötvös József Gimnázium (Budapest)",
+          "lat": 47.492573,
+          "lon": 19.058208
+        },
+        {
+          "pageid": 1029799,
+          "title": "Rényi Alfréd Matematikai Kutatóintézet",
+          "lat": 47.492778,
+          "lon": 19.058889
+        },
+        {
+          "pageid": 658228,
+          "title": "Ady Endre Emlékmúzeum (Budapest)",
+          "lat": 47.492158,
+          "lon": 19.055322
+        },
+        {
+          "pageid": 1574947,
+          "title": "Metro Klub",
+          "lat": 47.495527777778,
+          "lon": 19.062861111111
+        },
+        {
+          "pageid": 69474,
+          "title": "Magyar Nemzeti Bank",
+          "lat": 47.5036,
+          "lon": 19.0523
+        },
+        {
+          "pageid": 1700359,
+          "title": "Petőfi Sándor-szobor (Budapest)",
+          "lat": 47.492933,
+          "lon": 19.050528
+        },
+        {
+          "pageid": 402199,
+          "title": "F4 objektum",
+          "lat": 47.502921,
+          "lon": 19.049724
+        },
+        {
+          "pageid": 1773368,
+          "title": "ELTE BTK Romanisztikai Intézet",
+          "lat": 47.493410369163,
+          "lon": 19.060922363636
+        },
+        {
+          "pageid": 1734710,
+          "title": "ELTE Bölcsészettudományi Kar",
+          "lat": 47.493410369163,
+          "lon": 19.060922363636
+        },
+        {
+          "pageid": 1820931,
+          "title": "Erzsébet királyné budapesti emlékműve",
+          "lat": 47.49242,
+          "lon": 19.05118
+        },
+        {
+          "pageid": 151654,
+          "title": "Belvárosi plébániatemplom (Budapest)",
+          "lat": 47.492139,
+          "lon": 19.052219
+        },
+        {
+          "pageid": 582188,
+          "title": "Klauzál tér (Budapest)",
+          "lat": 47.499779,
+          "lon": 19.063722
+        },
+        {
+          "pageid": 1318911,
+          "title": "Budapesti Kamaraszínház",
+          "lat": 47.502291288759,
+          "lon": 19.061603929148
+        },
+        {
+          "pageid": 899463,
+          "title": "Centrál kávéház",
+          "lat": 47.491944444444,
+          "lon": 19.056944444444
+        },
+        {
+          "pageid": 2009294,
+          "title": "Bem József-emléktábla (Budapest)",
+          "lat": 47.5011676,
+          "lon": 19.0471119
+        },
+        {
+          "pageid": 1611393,
+          "title": "Közkincs Könyvtár",
+          "lat": 47.494916666667,
+          "lon": 19.063
+        },
+        {
+          "pageid": 1264016,
+          "title": "Robert Capa Kortárs Fotográfiai Központ",
+          "lat": 47.502361,
+          "lon": 19.061589
+        },
+        {
+          "pageid": 339198,
+          "title": "Ernst Múzeum",
+          "lat": 47.502361111111,
+          "lon": 19.061588888889
+        },
+        {
+          "pageid": 1762835,
+          "title": "Károlyi utca",
+          "lat": 47.491888995968,
+          "lon": 19.057412012894
+        },
+        {
+          "pageid": 1699511,
+          "title": "Muzsikáló ház",
+          "lat": 47.495033333333,
+          "lon": 19.063269444444
+        },
+        {
+          "pageid": 407022,
+          "title": "Károlyi-kert",
+          "lat": 47.4925,
+          "lon": 19.059722222222
+        },
+        {
+          "pageid": 1077680,
+          "title": "Budapesti gettó",
+          "lat": 47.498888888889,
+          "lon": 19.064444444444
+        },
+        {
+          "pageid": 212768,
+          "title": "Postatakarékpénztár",
+          "lat": 47.504166666667,
+          "lon": 19.052222222222
+        },
+        {
+          "pageid": 1144570,
+          "title": "Mikroszkóp Színpad",
+          "lat": 47.50361111,
+          "lon": 19.05972222
+        },
+        {
+          "pageid": 731970,
+          "title": "Emberi Erőforrások Minisztériuma",
+          "lat": 47.5015476,
+          "lon": 19.0469627
+        },
+        {
+          "pageid": 1609816,
+          "title": "Tüköry utca",
+          "lat": 47.502285,
+          "lon": 19.04779
+        },
+        {
+          "pageid": 1276582,
+          "title": "Petőfi Színház (Budapest 1960–1964)",
+          "lat": 47.50366,
+          "lon": 19.0598
+        },
+        {
+          "pageid": 533253,
+          "title": "Radnóti Miklós Színház",
+          "lat": 47.50305556,
+          "lon": 19.06111111
+        },
+        {
+          "pageid": 236847,
+          "title": "Nagymező utca",
+          "lat": 47.503621,
+          "lon": 19.060014
+        },
+        {
+          "pageid": 1013572,
+          "title": "Klebelsberg Központ",
+          "lat": 47.5045719,
+          "lon": 19.0543504
+        },
+        {
+          "pageid": 792307,
+          "title": "Fehér Ló vendégfogadó",
+          "lat": 47.495027777778,
+          "lon": 19.063708333333
+        },
+        {
+          "pageid": 1034553,
+          "title": "Fém Színház",
+          "lat": 47.491413635108,
+          "lon": 19.054508134471
+        },
+        {
+          "pageid": 1091810,
+          "title": "Lengyel Intézet (Budapest)",
+          "lat": 47.5036,
+          "lon": 19.06016
+        },
+        {
+          "pageid": 383,
+          "title": "Magyar Tudományos Akadémia",
+          "lat": 47.501111111111,
+          "lon": 19.046388888889
+        },
+        {
+          "pageid": 1046088,
+          "title": "Thália Színház",
+          "lat": 47.503728,
+          "lon": 19.059863
+        },
+        {
+          "pageid": 154683,
+          "title": "Bartók Béla Zeneművészeti és Hangszerészképző Gyakorló Szakgimnázium",
+          "lat": 47.502449,
+          "lon": 19.062278
+        },
+        {
+          "pageid": 691209,
+          "title": "Magyar Államkincstár",
+          "lat": 47.504418,
+          "lon": 19.052513
+        },
+        {
+          "pageid": 2071835,
+          "title": "Egészségügyi Minisztérium",
+          "lat": 47.502121,
+          "lon": 19.047183
+        },
+        {
+          "pageid": 1612060,
+          "title": "Mátyás-pince",
+          "lat": 47.49145,
+          "lon": 19.052895
+        },
+        {
+          "pageid": 475793,
+          "title": "Nova Irodalmi Intézet",
+          "lat": 47.503611111111,
+          "lon": 19.060555555556
+        },
+        {
+          "pageid": 3631,
+          "title": "Széchenyi Irodalmi és Művészeti Akadémia",
+          "lat": 47.50147,
+          "lon": 19.046418
+        },
+        {
+          "pageid": 123353,
+          "title": "Szent István-bazilika (Budapest)",
+          "lat": 47.504722222222,
+          "lon": 19.053888888889
+        },
+        {
+          "pageid": 347620,
+          "title": "Petőfi Irodalmi Múzeum",
+          "lat": 47.491591944444,
+          "lon": 19.058235
+        },
+        {
+          "pageid": 1174919,
+          "title": "Kádár étkezde",
+          "lat": 47.499669,
+          "lon": 19.0647326
+        },
+        {
+          "pageid": 792168,
+          "title": "Balaton kávéház",
+          "lat": 47.495138888889,
+          "lon": 19.064166666667
+        },
+        {
+          "pageid": 177456,
+          "title": "Budapesti Operettszínház",
+          "lat": 47.503903769801,
+          "lon": 19.060096404485
+        },
+        {
+          "pageid": 219284,
+          "title": "ELTE Apáczai Csere János Gyakorló Gimnázium és Kollégium",
+          "lat": 47.491295,
+          "lon": 19.057057
+        },
+        {
+          "pageid": 1376537,
+          "title": "Klauzál téri vásárcsarnok",
+          "lat": 47.5002,
+          "lon": 19.0646
+        },
+        {
+          "pageid": 1618654,
+          "title": "Tőzsdepalota (Budapest)",
+          "lat": 47.50371,
+          "lon": 19.04926
+        },
+        {
+          "pageid": 21713,
+          "title": "Magyar Tudományos Akadémia Könyvtár és Információs Központ",
+          "lat": 47.501629,
+          "lon": 19.046241
+        },
+        {
+          "pageid": 1916360,
+          "title": "Light Art Museum Budapest",
+          "lat": 47.5048147,
+          "lon": 19.0528129
+        },
+        {
+          "pageid": 1644052,
+          "title": "Szabadság tér 12. (Budapest)",
+          "lat": 47.50455,
+          "lon": 19.051419444444
+        },
+        {
+          "pageid": 22553,
+          "title": "Az Amerikai Egyesült Államok budapesti nagykövetsége",
+          "lat": 47.504551,
+          "lon": 19.051419
+        },
+        {
+          "pageid": 1379591,
+          "title": "Károlyi-palota (Belváros)",
+          "lat": 47.491388888889,
+          "lon": 19.058333333333
+        },
+        {
+          "pageid": 1376539,
+          "title": "Hold utcai vásárcsarnok",
+          "lat": 47.5048865,
+          "lon": 19.0531109
+        },
+        {
+          "pageid": 241102,
+          "title": "Franklin Irodalmi és Nyomdai Rt.",
+          "lat": 47.491388888889,
+          "lon": 19.058611111111
+        },
+        {
+          "pageid": 2022202,
+          "title": "Dessewffy utcai zsinagóga",
+          "lat": 47.504952,
+          "lon": 19.056875
+        },
+        {
+          "pageid": 458682,
+          "title": "Magyar utca (Budapest)",
+          "lat": 47.491944444444,
+          "lon": 19.060416666667
+        },
+        {
+          "pageid": 462841,
+          "title": "Király utca (Budapest)",
+          "lat": 47.5023,
+          "lon": 19.0634
+        },
+        {
+          "pageid": 277658,
+          "title": "Párisi Nagy Áruház",
+          "lat": 47.5037,
+          "lon": 19.0614
+        },
+        {
+          "pageid": 801839,
+          "title": "Ávilai Nagy Szent Teréz-plébániatemplom",
+          "lat": 47.5027,
+          "lon": 19.063
+        },
+        {
+          "pageid": 1097612,
+          "title": "Uránia Nemzeti Filmszínház",
+          "lat": 47.495277777778,
+          "lon": 19.065
+        },
+        {
+          "pageid": 1117383,
+          "title": "A német megszállás áldozatainak emlékműve",
+          "lat": 47.504722,
+          "lon": 19.050278
+        },
+        {
+          "pageid": 10736,
+          "title": "Újépület",
+          "lat": 47.504722,
+          "lon": 19.050278
+        },
+        {
+          "pageid": 390253,
+          "title": "Szabadság tér (Budapest)",
+          "lat": 47.50472222,
+          "lon": 19.05027778
+        },
+        {
+          "pageid": 1158290,
+          "title": "Eleven Emlékmű",
+          "lat": 47.504722222222,
+          "lon": 19.050277777778
+        },
+        {
+          "pageid": 22380,
+          "title": "Pest (történelmi település)",
+          "lat": 47.504722222222,
+          "lon": 19.050277777778
+        },
+        {
+          "pageid": 793854,
+          "title": "ELTE Trefort Ágoston Gyakorlóiskola",
+          "lat": 47.493832,
+          "lon": 19.064469
+        },
+        {
+          "pageid": 111826,
+          "title": "Büntetés-végrehajtás Országos Parancsnoksága",
+          "lat": 47.503333333333,
+          "lon": 19.046763888889
+        },
+        {
+          "pageid": 658325,
+          "title": "Akadémia utca",
+          "lat": 47.503052,
+          "lon": 19.046367
+        },
+        {
+          "pageid": 1324333,
+          "title": "Szabadság téri bankrablás",
+          "lat": 47.504843,
+          "lon": 19.0493768
+        },
+        {
+          "pageid": 185152,
+          "title": "Budapesti Olasz Kultúrintézet",
+          "lat": 47.492183,
+          "lon": 19.062878
+        },
+        {
+          "pageid": 762360,
+          "title": "Nemzeti Adó- és Vámhivatal",
+          "lat": 47.502824572409,
+          "lon": 19.045738679009
+        },
+        {
+          "pageid": 131962,
+          "title": "Írók Boltja",
+          "lat": 47.504186,
+          "lon": 19.062341
+        },
+        {
+          "pageid": 1743422,
+          "title": "K Galéria",
+          "lat": 47.491027777778,
+          "lon": 19.060777777778
+        },
+        {
+          "pageid": 458622,
+          "title": "Liszt Ferenc tér",
+          "lat": 47.5039,
+          "lon": 19.0631
+        },
+        {
+          "pageid": 24467,
+          "title": "Liszt Ferenc Zeneművészeti Egyetem",
+          "lat": 47.50325,
+          "lon": 19.06434
+        },
+        {
+          "pageid": 1419866,
+          "title": "Magyar Nemzeti Múzeum Központi Könyvtár",
+          "lat": 47.49138889,
+          "lon": 19.06277778
+        },
+        {
+          "pageid": 731205,
+          "title": "Múzeumkert",
+          "lat": 47.491111111111,
+          "lon": 19.062777777778
+        },
+        {
+          "pageid": 99814,
+          "title": "Magyar Nemzeti Múzeum",
+          "lat": 47.491111,
+          "lon": 19.062778
+        },
+        {
+          "pageid": 1770594,
+          "title": "Történelmi Képcsarnok",
+          "lat": 47.491111111111,
+          "lon": 19.062780555556
+        },
+        {
+          "pageid": 1704226,
+          "title": "Nemzeti Lovarda (épület, 1858–1948)",
+          "lat": 47.491777777778,
+          "lon": 19.064055555556
+        },
+        {
+          "pageid": 671083,
+          "title": "Andrássy Gyula Budapesti Német Nyelvű Egyetem",
+          "lat": 47.49179,
+          "lon": 19.064208
+        },
+        {
+          "pageid": 658071,
+          "title": "Abbázia kávéház",
+          "lat": 47.504852777778,
+          "lon": 19.063269444444
+        },
+        {
+          "pageid": 1667406,
+          "title": "Pollack Mihály tér",
+          "lat": 47.491356,
+          "lon": 19.063879
+        },
+        {
+          "pageid": 1095453,
+          "title": "Oktogon metróállomás",
+          "lat": 47.505,
+          "lon": 19.063333333333
+        },
+        {
+          "pageid": 110399,
+          "title": "Magyar Rádió",
+          "lat": 47.491075,
+          "lon": 19.064363888889
+        }
+      ]
+    }
+  },
+  "https://hu.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&prop=pageprops%7Clanglinks&ppprop=wikibase_item&lllimit=max&pageids=1019088%7C58985%7C741161%7C125851%7C1029026%7C176452%7C1554643%7C176442%7C1961347%7C2034387%7C7488%7C1095467%7C164137%7C1607131%7C1368639%7C1608672%7C727858%7C1027178%7C743469%7C430589%7C947438%7C1608675%7C764011%7C1643769%7C163702%7C352698%7C897969%7C1500098%7C2072313%7C779916%7C1673428%7C1098303%7C458363%7C1643249%7C1341902%7C1085655%7C1094903%7C307932%7C233551%7C582706%7C1085735%7C1753284%7C741848%7C1085724%7C1107520%7C109356%7C16456%7C459594%7C471026%7C350865": {
+    "query": {
+      "pages": [
+        {
+          "pageid": 7488,
+          "pageprops": {
+            "wikibase_item": "Q1472269"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 16456,
+          "pageprops": {
+            "wikibase_item": "Q1042732"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "V. Budapester Bezirk"
+            },
+            {
+              "lang": "en",
+              "title": "Belváros-Lipótváros"
+            }
+          ]
+        },
+        {
+          "pageid": 58985,
+          "pageprops": {
+            "wikibase_item": "Q1005927"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "U-Bahn-Museum Budapest"
+            },
+            {
+              "lang": "en",
+              "title": "Underground Railway Museum (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 109356,
+          "pageprops": {
+            "wikibase_item": "Q785837"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Straßenbahn Budapest"
+            },
+            {
+              "lang": "en",
+              "title": "Trams in Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 125851,
+          "pageprops": {
+            "wikibase_item": "Q904825"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Deák Ferenc tér"
+            },
+            {
+              "lang": "en",
+              "title": "Deák Ferenc tér"
+            }
+          ]
+        },
+        {
+          "pageid": 163702,
+          "pageprops": {
+            "wikibase_item": "Q569083"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Synagoge Rumbach utca"
+            },
+            {
+              "lang": "en",
+              "title": "Rumbach Street Synagogue"
+            }
+          ]
+        },
+        {
+          "pageid": 164137,
+          "pageprops": {
+            "wikibase_item": "Q904846"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 176442,
+          "pageprops": {
+            "wikibase_item": "Q934453"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Erzsébet tér"
+            }
+          ]
+        },
+        {
+          "pageid": 176452,
+          "pageprops": {
+            "wikibase_item": "Q721281"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Evangelische Kirche (Deák tér)"
+            }
+          ]
+        },
+        {
+          "pageid": 233551,
+          "pageprops": {
+            "wikibase_item": "Q1233438"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 307932,
+          "pageprops": {
+            "wikibase_item": "Q1243082"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Ministry of Finance (Hungary)"
+            }
+          ]
+        },
+        {
+          "pageid": 350865,
+          "pageprops": {
+            "wikibase_item": "Q23013199"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 352698,
+          "pageprops": {
+            "wikibase_item": "Q1027774"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Gozsdu-udvar"
+            }
+          ]
+        },
+        {
+          "pageid": 430589,
+          "pageprops": {
+            "wikibase_item": "Q1106716"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Kempinski Hotel Corvinus, Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 458363,
+          "pageprops": {
+            "wikibase_item": "Q570848"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Vörösmarty tér"
+            },
+            {
+              "lang": "en",
+              "title": "Vörösmarty tér"
+            }
+          ]
+        },
+        {
+          "pageid": 459594,
+          "pageprops": {
+            "wikibase_item": "Q1212958"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 471026,
+          "pageprops": {
+            "wikibase_item": "Q16517805"
+          }
+        },
+        {
+          "pageid": 582706,
+          "pageprops": {
+            "wikibase_item": "Q1028191"
+          }
+        },
+        {
+          "pageid": 727858,
+          "pageprops": {
+            "wikibase_item": "Q608917"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Budapesti Közlekedési Központ"
+            }
+          ]
+        },
+        {
+          "pageid": 741161,
+          "pageprops": {
+            "wikibase_item": "Q770795"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 741848,
+          "pageprops": {
+            "wikibase_item": "Q1233428"
+          }
+        },
+        {
+          "pageid": 743469,
+          "pageprops": {
+            "wikibase_item": "Q1176046"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 764011,
+          "pageprops": {
+            "wikibase_item": "Q853910"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 779916,
+          "pageprops": {
+            "wikibase_item": "Q1224773"
+          }
+        },
+        {
+          "pageid": 897969,
+          "pageprops": {
+            "wikibase_item": "Q792572"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 947438,
+          "pageprops": {
+            "wikibase_item": "Q1162254"
+          }
+        },
+        {
+          "pageid": 1019088,
+          "pageprops": {
+            "wikibase_item": "Q12813589"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Anker Palace"
+            }
+          ]
+        },
+        {
+          "pageid": 1027178,
+          "pageprops": {
+            "wikibase_item": "Q16522986"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1029026,
+          "pageprops": {
+            "wikibase_item": "Q1028696"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Deák Ferenc tér (Metró Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Deák Ferenc tér metro station"
+            }
+          ]
+        },
+        {
+          "pageid": 1085655,
+          "pageprops": {
+            "wikibase_item": "Q464845"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Café Gerbeaud"
+            },
+            {
+              "lang": "en",
+              "title": "Café Gerbeaud"
+            }
+          ]
+        },
+        {
+          "pageid": 1085724,
+          "pageprops": {
+            "wikibase_item": "Q16523308"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1085735,
+          "pageprops": {
+            "wikibase_item": "Q16520603"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1094903,
+          "pageprops": {
+            "wikibase_item": "Q1029092"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Vörösmarty tér (Metró Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Vörösmarty tér metro station"
+            }
+          ]
+        },
+        {
+          "pageid": 1095467,
+          "pageprops": {
+            "wikibase_item": "Q1028985"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Bajcsy-Zsilinszky út (Metró Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Bajcsy-Zsilinszky út metro station"
+            }
+          ]
+        },
+        {
+          "pageid": 1098303,
+          "pageprops": {
+            "wikibase_item": "Q25452283"
+          }
+        },
+        {
+          "pageid": 1107520,
+          "pageprops": {
+            "wikibase_item": "Q20829225"
+          }
+        },
+        {
+          "pageid": 1341902,
+          "pageprops": {
+            "wikibase_item": "Q25456145"
+          }
+        },
+        {
+          "pageid": 1368639,
+          "pageprops": {
+            "wikibase_item": "Q17126013"
+          }
+        },
+        {
+          "pageid": 1500098,
+          "pageprops": {
+            "wikibase_item": "Q21565052"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1554643,
+          "pageprops": {
+            "wikibase_item": "Q53232154"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1607131,
+          "pageprops": {
+            "wikibase_item": "Q61365994"
+          }
+        },
+        {
+          "pageid": 1608672,
+          "pageprops": {
+            "wikibase_item": "Q21619521"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Palais Saxlehner"
+            }
+          ]
+        },
+        {
+          "pageid": 1608675,
+          "pageprops": {
+            "wikibase_item": "Q61740407"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Palais Foncière"
+            }
+          ]
+        },
+        {
+          "pageid": 1643249,
+          "pageprops": {
+            "wikibase_item": "Q65354856"
+          }
+        },
+        {
+          "pageid": 1643769,
+          "pageprops": {
+            "wikibase_item": "Q65553050"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1673428,
+          "pageprops": {
+            "wikibase_item": "Q18005345"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1753284,
+          "pageprops": {
+            "wikibase_item": "Q105376905"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1961347,
+          "pageprops": {
+            "wikibase_item": "Q124251800"
+          }
+        },
+        {
+          "pageid": 2034387,
+          "pageprops": {
+            "wikibase_item": "Q134778303"
+          }
+        },
+        {
+          "pageid": 2072313,
+          "pageprops": {
+            "wikibase_item": "Q18380152"
+          },
+          "langlinks": []
+        }
+      ]
+    }
+  },
+  "https://hu.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&prop=pageprops%7Clanglinks&ppprop=wikibase_item&lllimit=max&pageids=1458115%7C1666363%7C1666386%7C796506%7C1005926%7C581933%7C1005915%7C795631%7C29468%7C1817585%7C458568%7C461239%7C619849%7C410041%7C112396%7C17561%7C1612230%7C1562245%7C459166%7C741244%7C1475258%7C2062415%7C909369%7C1133913%7C1667682%7C112134%7C793538%7C897472%7C1774273%7C1644528%7C965116%7C965266%7C903200%7C1792877%7C2002370%7C1092238%7C1383159%7C1095452%7C1047945%7C87419%7C1256536%7C1793805%7C1499780%7C296971%7C1644376%7C22368%7C895310%7C87480%7C810323%7C909599": {
+    "query": {
+      "pages": [
+        {
+          "pageid": 17561,
+          "pageprops": {
+            "wikibase_item": "Q1162298"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 22368,
+          "pageprops": {
+            "wikibase_item": "Q854317"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Gresham-palota"
+            },
+            {
+              "lang": "en",
+              "title": "Gresham Palace"
+            }
+          ]
+        },
+        {
+          "pageid": 29468,
+          "pageprops": {
+            "wikibase_item": "Q754397"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Große Synagoge (Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Dohány Street Synagogue"
+            }
+          ]
+        },
+        {
+          "pageid": 87419,
+          "pageprops": {
+            "wikibase_item": "Q14949709"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Astoria, Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 87480,
+          "pageprops": {
+            "wikibase_item": "Q779202"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Danubius Hotel Astoria"
+            }
+          ]
+        },
+        {
+          "pageid": 112134,
+          "pageprops": {
+            "wikibase_item": "Q386492"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Háttér Gesellschaft und Archiv Budapest"
+            },
+            {
+              "lang": "en",
+              "title": "Háttér Society"
+            }
+          ]
+        },
+        {
+          "pageid": 112396,
+          "pageprops": {
+            "wikibase_item": "Q769677"
+          }
+        },
+        {
+          "pageid": 296971,
+          "pageprops": {
+            "wikibase_item": "Q837275"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ferenciek tere"
+            },
+            {
+              "lang": "en",
+              "title": "Ferenciek tere"
+            }
+          ]
+        },
+        {
+          "pageid": 410041,
+          "pageprops": {
+            "wikibase_item": "Q674032"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Pesti Vigadó"
+            },
+            {
+              "lang": "en",
+              "title": "Vigadó of Pest"
+            }
+          ]
+        },
+        {
+          "pageid": 458568,
+          "pageprops": {
+            "wikibase_item": "Q1426272"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 459166,
+          "pageprops": {
+            "wikibase_item": "Q1105598"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 461239,
+          "pageprops": {
+            "wikibase_item": "Q1223621"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 581933,
+          "pageprops": {
+            "wikibase_item": "Q1288865"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Singer and Wolfner"
+            }
+          ]
+        },
+        {
+          "pageid": 619849,
+          "pageprops": {
+            "wikibase_item": "Q792611"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Innenministerium (Ungarn)"
+            },
+            {
+              "lang": "en",
+              "title": "Ministry of Interior (Hungary)"
+            }
+          ]
+        },
+        {
+          "pageid": 741244,
+          "pageprops": {
+            "wikibase_item": "Q775071"
+          }
+        },
+        {
+          "pageid": 793538,
+          "pageprops": {
+            "wikibase_item": "Q774313"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 795631,
+          "pageprops": {
+            "wikibase_item": "Q909232"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 796506,
+          "pageprops": {
+            "wikibase_item": "Q1006820"
+          }
+        },
+        {
+          "pageid": 810323,
+          "pageprops": {
+            "wikibase_item": "Q755089"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 895310,
+          "pageprops": {
+            "wikibase_item": "Q1574573"
+          }
+        },
+        {
+          "pageid": 897472,
+          "pageprops": {
+            "wikibase_item": "Q1216611"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 903200,
+          "pageprops": {
+            "wikibase_item": "Q850156"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Pariser Hof (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 909369,
+          "pageprops": {
+            "wikibase_item": "Q1472665"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 909599,
+          "pageprops": {
+            "wikibase_item": "Q1111022"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Kleine Prinzessin (Skulptur)"
+            },
+            {
+              "lang": "en",
+              "title": "Little Princess statue"
+            }
+          ]
+        },
+        {
+          "pageid": 965116,
+          "pageprops": {
+            "wikibase_item": "Q1119479"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 965266,
+          "pageprops": {
+            "wikibase_item": "Q21517361"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1005915,
+          "pageprops": {
+            "wikibase_item": "Q6314992"
+          }
+        },
+        {
+          "pageid": 1005926,
+          "pageprops": {
+            "wikibase_item": "Q6324080"
+          }
+        },
+        {
+          "pageid": 1047945,
+          "pageprops": {
+            "wikibase_item": "Q779210"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Astoria (Metró Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Astoria metro station"
+            }
+          ]
+        },
+        {
+          "pageid": 1092238,
+          "pageprops": {
+            "wikibase_item": "Q601096"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ferenciek tere (Metró Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Ferenciek tere metro station"
+            }
+          ]
+        },
+        {
+          "pageid": 1095452,
+          "pageprops": {
+            "wikibase_item": "Q1029127"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Opera (Metró Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Opera metro station (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 1133913,
+          "pageprops": {
+            "wikibase_item": "Q18150365"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Danube Palace"
+            }
+          ]
+        },
+        {
+          "pageid": 1256536,
+          "pageprops": {
+            "wikibase_item": "Q17123204"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Franziskanerkirche (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 1383159,
+          "pageprops": {
+            "wikibase_item": "Q25459300"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1458115,
+          "pageprops": {
+            "wikibase_item": "Q29271185"
+          }
+        },
+        {
+          "pageid": 1475258,
+          "pageprops": {
+            "wikibase_item": "Q31093849"
+          }
+        },
+        {
+          "pageid": 1499780,
+          "pageprops": {
+            "wikibase_item": "Q5221261"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Danube Promenade"
+            }
+          ]
+        },
+        {
+          "pageid": 1562245,
+          "pageprops": {
+            "wikibase_item": "Q18758814"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1612230,
+          "pageprops": {
+            "wikibase_item": "Q62650648"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1644376,
+          "pageprops": {
+            "wikibase_item": "Q65590302"
+          }
+        },
+        {
+          "pageid": 1644528,
+          "pageprops": {
+            "wikibase_item": "Q65619090"
+          }
+        },
+        {
+          "pageid": 1666363,
+          "pageprops": {
+            "wikibase_item": "Q75104164"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1666386,
+          "pageprops": {
+            "wikibase_item": "Q75114478"
+          }
+        },
+        {
+          "pageid": 1667682,
+          "pageprops": {
+            "wikibase_item": "Q76117058"
+          }
+        },
+        {
+          "pageid": 1774273,
+          "pageprops": {
+            "wikibase_item": "Q7096202"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Blinken Open Society Archives"
+            }
+          ]
+        },
+        {
+          "pageid": 1792877,
+          "pageprops": {
+            "wikibase_item": "Q108811077"
+          }
+        },
+        {
+          "pageid": 1793805,
+          "pageprops": {
+            "wikibase_item": "Q15228738"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "InterContinental Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 1817585,
+          "pageprops": {
+            "wikibase_item": "Q110914902"
+          }
+        },
+        {
+          "pageid": 2002370,
+          "pageprops": {
+            "wikibase_item": "Q131129758"
+          }
+        },
+        {
+          "pageid": 2062415,
+          "pageprops": {
+            "wikibase_item": "Q138024260"
+          }
+        }
+      ]
+    }
+  },
+  "https://hu.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&prop=pageprops%7Clanglinks&ppprop=wikibase_item&lllimit=max&pageids=768253%7C1092620%7C2022195%7C331125%7C1526823%7C425799%7C286845%7C53101%7C1839071%7C1479060%7C852535%7C476577%7C1575701%7C2167%7C1605377%7C998034%7C177134%7C1841211%7C957557%7C1439853%7C177131%7C898965%7C1602898%7C282534%7C269599%7C1699672%7C459857%7C239547%7C34744%7C1555035%7C10251%7C183704%7C1029799%7C658228%7C1574947%7C69474%7C1700359%7C402199%7C1773368%7C1734710%7C1820931%7C151654%7C582188%7C1318911%7C899463%7C2009294%7C1611393%7C1264016%7C339198%7C1762835": {
+    "query": {
+      "pages": [
+        {
+          "pageid": 2167,
+          "pageprops": {
+            "wikibase_item": "Q598014"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Lipótváros"
+            }
+          ]
+        },
+        {
+          "pageid": 10251,
+          "pageprops": {
+            "wikibase_item": "Q667713"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Contra Aquincum"
+            }
+          ]
+        },
+        {
+          "pageid": 34744,
+          "pageprops": {
+            "wikibase_item": "Q648004"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Inner City (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 53101,
+          "pageprops": {
+            "wikibase_item": "Q36833"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ungarische Staatsoper"
+            },
+            {
+              "lang": "en",
+              "title": "Hungarian State Opera House"
+            }
+          ]
+        },
+        {
+          "pageid": 69474,
+          "pageprops": {
+            "wikibase_item": "Q774636"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Magyar Nemzeti Bank"
+            },
+            {
+              "lang": "en",
+              "title": "Hungarian National Bank"
+            }
+          ]
+        },
+        {
+          "pageid": 151654,
+          "pageprops": {
+            "wikibase_item": "Q792586"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Innerstädtische Pfarrkirche (Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Inner City Parish Church in Pest"
+            }
+          ]
+        },
+        {
+          "pageid": 177131,
+          "pageprops": {
+            "wikibase_item": "Q1256618"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 177134,
+          "pageprops": {
+            "wikibase_item": "Q1103425"
+          }
+        },
+        {
+          "pageid": 183704,
+          "pageprops": {
+            "wikibase_item": "Q994543"
+          }
+        },
+        {
+          "pageid": 239547,
+          "pageprops": {
+            "wikibase_item": "Q593186"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 269599,
+          "pageprops": {
+            "wikibase_item": "Q950534"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Váci utca"
+            },
+            {
+              "lang": "en",
+              "title": "Váci Street"
+            }
+          ]
+        },
+        {
+          "pageid": 282534,
+          "pageprops": {
+            "wikibase_item": "Q772557"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Universitätsbibliothek Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 286845,
+          "pageprops": {
+            "wikibase_item": "Q851122"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Budapest mit Donau-Ufern, Burgviertel Buda und Andrássy-Straße"
+            }
+          ]
+        },
+        {
+          "pageid": 331125,
+          "pageprops": {
+            "wikibase_item": "Q725839"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Synagoge Kazinczy-Straße (Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Kazinczy Street Synagogue, Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 339198,
+          "pageprops": {
+            "wikibase_item": "Q990938"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Ernst Museum"
+            }
+          ]
+        },
+        {
+          "pageid": 402199,
+          "pageprops": {
+            "wikibase_item": "Q1252448"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "F-4 Object"
+            }
+          ]
+        },
+        {
+          "pageid": 425799,
+          "pageprops": {
+            "wikibase_item": "Q788688"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Bajcsy-Zsilinszky út"
+            }
+          ]
+        },
+        {
+          "pageid": 459857,
+          "pageprops": {
+            "wikibase_item": "Q1220164"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 476577,
+          "pageprops": {
+            "wikibase_item": "Q1235280"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Piaristengymnasium (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 582188,
+          "pageprops": {
+            "wikibase_item": "Q633712"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Klauzál tér"
+            },
+            {
+              "lang": "en",
+              "title": "Klauzál tér (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 658228,
+          "pageprops": {
+            "wikibase_item": "Q506458"
+          }
+        },
+        {
+          "pageid": 768253,
+          "pageprops": {
+            "wikibase_item": "Q792380"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 852535,
+          "pageprops": {
+            "wikibase_item": "Q1243189"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 898965,
+          "pageprops": {
+            "wikibase_item": "Q3509700"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Szimpla Kert"
+            }
+          ]
+        },
+        {
+          "pageid": 899463,
+          "pageprops": {
+            "wikibase_item": "Q859537"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Central Café"
+            }
+          ]
+        },
+        {
+          "pageid": 957557,
+          "pageprops": {
+            "wikibase_item": "Q1114018"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Klothilden-Paläste"
+            }
+          ]
+        },
+        {
+          "pageid": 998034,
+          "pageprops": {
+            "wikibase_item": "Q12815667"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1029799,
+          "pageprops": {
+            "wikibase_item": "Q4723914"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Alfréd Rényi Institute of Mathematics"
+            }
+          ]
+        },
+        {
+          "pageid": 1092620,
+          "pageprops": {
+            "wikibase_item": "Q2525170"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Arany János utca (Metró Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Arany János utca metro station"
+            }
+          ]
+        },
+        {
+          "pageid": 1264016,
+          "pageprops": {
+            "wikibase_item": "Q21499507"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Robert-Capa-Zentrum für zeitgenössische Fotografie"
+            },
+            {
+              "lang": "en",
+              "title": "Robert Capa Contemporary Photography Center"
+            }
+          ]
+        },
+        {
+          "pageid": 1318911,
+          "pageprops": {
+            "wikibase_item": "Q22970911"
+          }
+        },
+        {
+          "pageid": 1439853,
+          "pageprops": {
+            "wikibase_item": "Q4478052"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Metropolitankirche der Entschlafung der Gottesmutter"
+            }
+          ]
+        },
+        {
+          "pageid": 1479060,
+          "pageprops": {
+            "wikibase_item": "Q32276544"
+          }
+        },
+        {
+          "pageid": 1526823,
+          "pageprops": {
+            "wikibase_item": "Q22704448"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1555035,
+          "pageprops": {
+            "wikibase_item": "Q53852188"
+          }
+        },
+        {
+          "pageid": 1574947,
+          "pageprops": {
+            "wikibase_item": "Q56392591"
+          }
+        },
+        {
+          "pageid": 1575701,
+          "pageprops": {
+            "wikibase_item": "Q58917650"
+          }
+        },
+        {
+          "pageid": 1602898,
+          "pageprops": {
+            "wikibase_item": "Q60480382"
+          }
+        },
+        {
+          "pageid": 1605377,
+          "pageprops": {
+            "wikibase_item": "Q61365571"
+          }
+        },
+        {
+          "pageid": 1611393,
+          "pageprops": {
+            "wikibase_item": "Q61718426"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Public Library (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 1699672,
+          "pageprops": {
+            "wikibase_item": "Q92434197"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1700359,
+          "pageprops": {
+            "wikibase_item": "Q94579786"
+          }
+        },
+        {
+          "pageid": 1734710,
+          "pageprops": {
+            "wikibase_item": "Q52109860"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Fakultät für Geisteswissenschaften der Eötvös-Loránd-Universität"
+            },
+            {
+              "lang": "en",
+              "title": "ELTE Faculty of Humanities"
+            }
+          ]
+        },
+        {
+          "pageid": 1762835,
+          "pageprops": {
+            "wikibase_item": "Q106453497"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1773368,
+          "pageprops": {
+            "wikibase_item": "Q106967076"
+          }
+        },
+        {
+          "pageid": 1820931,
+          "pageprops": {
+            "wikibase_item": "Q111041035"
+          }
+        },
+        {
+          "pageid": 1839071,
+          "pageprops": {
+            "wikibase_item": "Q112505908"
+          }
+        },
+        {
+          "pageid": 1841211,
+          "pageprops": {
+            "wikibase_item": "Q112708569"
+          }
+        },
+        {
+          "pageid": 2009294,
+          "pageprops": {
+            "wikibase_item": "Q131342358"
+          }
+        },
+        {
+          "pageid": 2022195,
+          "pageprops": {
+            "wikibase_item": "Q3508093"
+          },
+          "langlinks": []
+        }
+      ]
+    }
+  },
+  "https://hu.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&prop=pageprops%7Clanglinks&ppprop=wikibase_item&lllimit=max&pageids=1699511%7C407022%7C1077680%7C212768%7C1144570%7C731970%7C1609816%7C1276582%7C533253%7C236847%7C1013572%7C792307%7C1034553%7C1091810%7C383%7C1046088%7C154683%7C691209%7C2071835%7C1612060%7C475793%7C3631%7C123353%7C347620%7C1174919%7C792168%7C177456%7C219284%7C1376537%7C1618654%7C21713%7C1916360%7C1644052%7C22553%7C1379591%7C1376539%7C241102%7C2022202%7C458682%7C462841%7C277658%7C801839%7C1097612%7C1117383%7C10736%7C390253%7C1158290%7C22380%7C793854%7C111826": {
+    "query": {
+      "pages": [
+        {
+          "pageid": 383,
+          "pageprops": {
+            "wikibase_item": "Q265058"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ungarische Akademie der Wissenschaften"
+            },
+            {
+              "lang": "en",
+              "title": "Hungarian Academy of Sciences"
+            }
+          ]
+        },
+        {
+          "pageid": 3631,
+          "pageprops": {
+            "wikibase_item": "Q1301877"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Széchenyi Academy of Literature and Arts"
+            }
+          ]
+        },
+        {
+          "pageid": 10736,
+          "pageprops": {
+            "wikibase_item": "Q1472941"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Neugebäude in Pest"
+            },
+            {
+              "lang": "en",
+              "title": "New Building"
+            }
+          ]
+        },
+        {
+          "pageid": 21713,
+          "pageprops": {
+            "wikibase_item": "Q458921"
+          }
+        },
+        {
+          "pageid": 22380,
+          "pageprops": {
+            "wikibase_item": "Q210205"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Pest (Stadt)"
+            },
+            {
+              "lang": "en",
+              "title": "Pest, Hungary"
+            }
+          ]
+        },
+        {
+          "pageid": 22553,
+          "pageprops": {
+            "wikibase_item": "Q783754"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Botschaft der Vereinigten Staaten in Budapest"
+            },
+            {
+              "lang": "en",
+              "title": "Embassy of the United States, Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 111826,
+          "pageprops": {
+            "wikibase_item": "Q855605"
+          }
+        },
+        {
+          "pageid": 123353,
+          "pageprops": {
+            "wikibase_item": "Q338665"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "St.-Stephans-Basilika (Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "St. Stephen's Basilica"
+            }
+          ]
+        },
+        {
+          "pageid": 154683,
+          "pageprops": {
+            "wikibase_item": "Q791024"
+          }
+        },
+        {
+          "pageid": 177456,
+          "pageprops": {
+            "wikibase_item": "Q113070485"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Operettentheater Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 212768,
+          "pageprops": {
+            "wikibase_item": "Q1239733"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Postsparkasse (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 219284,
+          "pageprops": {
+            "wikibase_item": "Q987373"
+          }
+        },
+        {
+          "pageid": 236847,
+          "pageprops": {
+            "wikibase_item": "Q1214981"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 241102,
+          "pageprops": {
+            "wikibase_item": "Q1003577"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 277658,
+          "pageprops": {
+            "wikibase_item": "Q906503"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Divatcsarnok"
+            }
+          ]
+        },
+        {
+          "pageid": 347620,
+          "pageprops": {
+            "wikibase_item": "Q1234343"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Petőfi-Literaturmuseum"
+            },
+            {
+              "lang": "en",
+              "title": "Petőfi Literary Museum"
+            }
+          ]
+        },
+        {
+          "pageid": 390253,
+          "pageprops": {
+            "wikibase_item": "Q299975"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Szabadság tér"
+            },
+            {
+              "lang": "en",
+              "title": "Liberty Square (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 407022,
+          "pageprops": {
+            "wikibase_item": "Q1123461"
+          }
+        },
+        {
+          "pageid": 458682,
+          "pageprops": {
+            "wikibase_item": "Q1162573"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 462841,
+          "pageprops": {
+            "wikibase_item": "Q1109303"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 475793,
+          "pageprops": {
+            "wikibase_item": "Q1218756"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 533253,
+          "pageprops": {
+            "wikibase_item": "Q1244983"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 691209,
+          "pageprops": {
+            "wikibase_item": "Q1162606"
+          }
+        },
+        {
+          "pageid": 731970,
+          "pageprops": {
+            "wikibase_item": "Q989266"
+          }
+        },
+        {
+          "pageid": 792168,
+          "pageprops": {
+            "wikibase_item": "Q789235"
+          }
+        },
+        {
+          "pageid": 792307,
+          "pageprops": {
+            "wikibase_item": "Q997184"
+          }
+        },
+        {
+          "pageid": 793854,
+          "pageprops": {
+            "wikibase_item": "Q987378"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Minta-Gymnasium Budapest"
+            },
+            {
+              "lang": "en",
+              "title": "Minta Gymnasium"
+            }
+          ]
+        },
+        {
+          "pageid": 801839,
+          "pageprops": {
+            "wikibase_item": "Q782936"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1013572,
+          "pageprops": {
+            "wikibase_item": "Q16521272"
+          }
+        },
+        {
+          "pageid": 1034553,
+          "pageprops": {
+            "wikibase_item": "Q16519886"
+          }
+        },
+        {
+          "pageid": 1046088,
+          "pageprops": {
+            "wikibase_item": "Q15633242"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1077680,
+          "pageprops": {
+            "wikibase_item": "Q2605415"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Budapester Ghettos"
+            },
+            {
+              "lang": "en",
+              "title": "Budapest Ghetto"
+            }
+          ]
+        },
+        {
+          "pageid": 1091810,
+          "pageprops": {
+            "wikibase_item": "Q15980569"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1097612,
+          "pageprops": {
+            "wikibase_item": "Q20439850"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Urania National Film Theatre"
+            }
+          ]
+        },
+        {
+          "pageid": 1117383,
+          "pageprops": {
+            "wikibase_item": "Q17395483"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Gedenkstätte für die Opfer der deutschen Besatzung"
+            },
+            {
+              "lang": "en",
+              "title": "Memorial for Victims of the German Occupation"
+            }
+          ]
+        },
+        {
+          "pageid": 1144570,
+          "pageprops": {
+            "wikibase_item": "Q20439368"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1158290,
+          "pageprops": {
+            "wikibase_item": "Q18755710"
+          }
+        },
+        {
+          "pageid": 1174919,
+          "pageprops": {
+            "wikibase_item": "Q20439995"
+          }
+        },
+        {
+          "pageid": 1276582,
+          "pageprops": {
+            "wikibase_item": "Q23783449"
+          }
+        },
+        {
+          "pageid": 1376537,
+          "pageprops": {
+            "wikibase_item": "Q3115166"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Klauzál Square Market Hall, Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 1376539,
+          "pageprops": {
+            "wikibase_item": "Q3115164"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Hold Street Marketplace"
+            }
+          ]
+        },
+        {
+          "pageid": 1379591,
+          "pageprops": {
+            "wikibase_item": "Q19853477"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Palais Károlyi (Károlyi utca)"
+            }
+          ]
+        },
+        {
+          "pageid": 1609816,
+          "pageprops": {
+            "wikibase_item": "Q22704528"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1612060,
+          "pageprops": {
+            "wikibase_item": "Q2184578"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1618654,
+          "pageprops": {
+            "wikibase_item": "Q22677355"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1644052,
+          "pageprops": {
+            "wikibase_item": "Q65548299"
+          }
+        },
+        {
+          "pageid": 1699511,
+          "pageprops": {
+            "wikibase_item": "Q91934408"
+          }
+        },
+        {
+          "pageid": 1916360,
+          "pageprops": {
+            "wikibase_item": "Q129167221"
+          }
+        },
+        {
+          "pageid": 2022202,
+          "pageprops": {
+            "wikibase_item": "Q3508046"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 2071835,
+          "pageprops": {
+            "wikibase_item": "Q33121057"
+          }
+        }
+      ]
+    }
+  },
+  "https://hu.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&prop=pageprops%7Clanglinks&ppprop=wikibase_item&lllimit=max&pageids=658325%7C1324333%7C185152%7C762360%7C131962%7C1743422%7C458622%7C24467%7C1419866%7C731205%7C99814%7C1770594%7C1704226%7C671083%7C658071%7C1667406%7C1095453%7C110399": {
+    "query": {
+      "pages": [
+        {
+          "pageid": 24467,
+          "pageprops": {
+            "wikibase_item": "Q847099"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Franz-Liszt-Musikakademie"
+            },
+            {
+              "lang": "en",
+              "title": "Franz Liszt Academy of Music"
+            }
+          ]
+        },
+        {
+          "pageid": 99814,
+          "pageprops": {
+            "wikibase_item": "Q914141"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ungarisches Nationalmuseum"
+            },
+            {
+              "lang": "en",
+              "title": "Hungarian National Museum"
+            }
+          ]
+        },
+        {
+          "pageid": 110399,
+          "pageprops": {
+            "wikibase_item": "Q765515"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Magyar Rádió"
+            },
+            {
+              "lang": "en",
+              "title": "Magyar Rádió"
+            }
+          ]
+        },
+        {
+          "pageid": 131962,
+          "pageprops": {
+            "wikibase_item": "Q1471517"
+          }
+        },
+        {
+          "pageid": 185152,
+          "pageprops": {
+            "wikibase_item": "Q851197"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 458622,
+          "pageprops": {
+            "wikibase_item": "Q1130443"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 658071,
+          "pageprops": {
+            "wikibase_item": "Q479528"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 658325,
+          "pageprops": {
+            "wikibase_item": "Q1497839"
+          },
+          "langlinks": [
+            {
+              "lang": "en",
+              "title": "Akadémia utca"
+            }
+          ]
+        },
+        {
+          "pageid": 671083,
+          "pageprops": {
+            "wikibase_item": "Q281572"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Andrássy Universität Budapest"
+            },
+            {
+              "lang": "en",
+              "title": "Andrássy University Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 731205,
+          "pageprops": {
+            "wikibase_item": "Q1213361"
+          }
+        },
+        {
+          "pageid": 762360,
+          "pageprops": {
+            "wikibase_item": "Q1216609"
+          }
+        },
+        {
+          "pageid": 1095453,
+          "pageprops": {
+            "wikibase_item": "Q1029098"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Oktogon (Metró Budapest)"
+            },
+            {
+              "lang": "en",
+              "title": "Oktogon metro station"
+            }
+          ]
+        },
+        {
+          "pageid": 1324333,
+          "pageprops": {
+            "wikibase_item": "Q21163844"
+          }
+        },
+        {
+          "pageid": 1419866,
+          "pageprops": {
+            "wikibase_item": "Q28722905"
+          }
+        },
+        {
+          "pageid": 1667406,
+          "pageprops": {
+            "wikibase_item": "Q22343257"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 1704226,
+          "pageprops": {
+            "wikibase_item": "Q94508486"
+          }
+        },
+        {
+          "pageid": 1743422,
+          "pageprops": {
+            "wikibase_item": "Q111827957"
+          }
+        },
+        {
+          "pageid": 1770594,
+          "pageprops": {
+            "wikibase_item": "Q111828022"
+          }
+        }
+      ]
+    }
+  },
+  "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&list=geosearch&gsbbox=47.505%7C19.045%7C47.491%7C19.065&gslimit=500&gsprimary=primary&gsnamespace=0": {
+    "query": {
+      "geosearch": [
+        {
+          "pageid": 59184013,
+          "title": "Anker Palace",
+          "lat": 47.49785656907723,
+          "lon": 19.0553552708005
+        },
+        {
+          "pageid": 8592627,
+          "title": "Deák Ferenc tér metro station",
+          "lat": 47.4975,
+          "lon": 19.055
+        },
+        {
+          "pageid": 2612503,
+          "title": "Deák Ferenc tér",
+          "lat": 47.4975,
+          "lon": 19.055
+        },
+        {
+          "pageid": 75078576,
+          "title": "Underground Railway Museum (Budapest)",
+          "lat": 47.4975,
+          "lon": 19.055
+        },
+        {
+          "pageid": 2613249,
+          "title": "Bajcsy-Zsilinszky út metro station",
+          "lat": 47.4994,
+          "lon": 19.055
+        },
+        {
+          "pageid": 25765982,
+          "title": "Kempinski Hotel Corvinus, Budapest",
+          "lat": 47.49713055555556,
+          "lon": 19.05227222222222
+        },
+        {
+          "pageid": 16374183,
+          "title": "Rumbach Street Synagogue",
+          "lat": 47.49780555555556,
+          "lon": 19.058833333333332
+        },
+        {
+          "pageid": 1033919,
+          "title": "St. Stephen's Basilica",
+          "lat": 47.500833,
+          "lon": 19.053889
+        },
+        {
+          "pageid": 2612516,
+          "title": "Vörösmarty tér",
+          "lat": 47.49659444444445,
+          "lon": 19.050666666666668
+        },
+        {
+          "pageid": 20973362,
+          "title": "Café Gerbeaud",
+          "lat": 47.49701388888889,
+          "lon": 19.050416666666667
+        },
+        {
+          "pageid": 8601802,
+          "title": "Vörösmarty tér metro station",
+          "lat": 47.49673,
+          "lon": 19.05037
+        },
+        {
+          "pageid": 68869225,
+          "title": "Budapest 1st constituency",
+          "lat": 47.5,
+          "lon": 19.05
+        },
+        {
+          "pageid": 9968079,
+          "title": "Váci Street",
+          "lat": 47.49422222222222,
+          "lon": 19.052425
+        },
+        {
+          "pageid": 24409928,
+          "title": "Ministry of Interior (Hungary)",
+          "lat": 47.49916666666667,
+          "lon": 19.04888888888889
+        },
+        {
+          "pageid": 4204795,
+          "title": "Vigadó of Pest",
+          "lat": 47.495894444444446,
+          "lon": 19.049455555555557
+        },
+        {
+          "pageid": 38022532,
+          "title": "Raoul Wallenberg Holocaust Memorial Park",
+          "lat": 47.49644,
+          "lon": 19.06113
+        },
+        {
+          "pageid": 7706391,
+          "title": "Dohány Street Synagogue",
+          "lat": 47.49583333333334,
+          "lon": 19.060833333333335
+        },
+        {
+          "pageid": 43921329,
+          "title": "Danube Palace",
+          "lat": 47.5003,
+          "lon": 19.0492
+        },
+        {
+          "pageid": 17195812,
+          "title": "Blinken Open Society Archives",
+          "lat": 47.5025,
+          "lon": 19.0534
+        },
+        {
+          "pageid": 48479024,
+          "title": "Belváros-Lipótváros",
+          "lat": 47.5,
+          "lon": 19.048611111111114
+        },
+        {
+          "pageid": 8601781,
+          "title": "Opera metro station (Budapest)",
+          "lat": 47.5022,
+          "lon": 19.0586
+        },
+        {
+          "pageid": 3424151,
+          "title": "Astoria, Budapest",
+          "lat": 47.49444444444445,
+          "lon": 19.060000000000002
+        },
+        {
+          "pageid": 8603545,
+          "title": "Astoria metro station",
+          "lat": 47.4944,
+          "lon": 19.06
+        },
+        {
+          "pageid": 9033099,
+          "title": "Danube Promenade",
+          "lat": 47.495555555555555,
+          "lon": 19.048611111111114
+        },
+        {
+          "pageid": 23547308,
+          "title": "InterContinental Budapest",
+          "lat": 47.4981,
+          "lon": 19.04765
+        },
+        {
+          "pageid": 2612603,
+          "title": "Ferenciek tere",
+          "lat": 47.493069444444444,
+          "lon": 19.05598611111111
+        },
+        {
+          "pageid": 8592626,
+          "title": "Ferenciek tere metro station",
+          "lat": 47.49305555555556,
+          "lon": 19.05611111111111
+        },
+        {
+          "pageid": 4116284,
+          "title": "Gresham Palace",
+          "lat": 47.499747222222226,
+          "lon": 19.047980555555558
+        },
+        {
+          "pageid": 38595315,
+          "title": "Little Princess statue",
+          "lat": 47.49593,
+          "lon": 19.04817
+        },
+        {
+          "pageid": 2612609,
+          "title": "Arany János utca metro station",
+          "lat": 47.503055555555555,
+          "lon": 19.054444444444446
+        },
+        {
+          "pageid": 63518500,
+          "title": "Kazinczy Street Synagogue, Budapest",
+          "lat": 47.498333333333335,
+          "lon": 19.0625
+        },
+        {
+          "pageid": 25584610,
+          "title": "Danubius Hotel Astoria",
+          "lat": 47.4941,
+          "lon": 19.0599
+        },
+        {
+          "pageid": 1438363,
+          "title": "Hungarian State Opera House",
+          "lat": 47.50277777777778,
+          "lon": 19.058055555555555
+        },
+        {
+          "pageid": 4405163,
+          "title": "Bajcsy-Zsilinszky út",
+          "lat": 47.50352777777778,
+          "lon": 19.054972222222222
+        },
+        {
+          "pageid": 69630468,
+          "title": "Feltépve",
+          "lat": 47.499722,
+          "lon": 19.047222
+        },
+        {
+          "pageid": 71782826,
+          "title": "ELTE School of English and American Studies",
+          "lat": 47.49444444444445,
+          "lon": 19.06138888888889
+        },
+        {
+          "pageid": 73876113,
+          "title": "Babel (restaurant)",
+          "lat": 47.4927,
+          "lon": 19.0522
+        },
+        {
+          "pageid": 55465278,
+          "title": "Szimpla Kert",
+          "lat": 47.497,
+          "lon": 19.0634
+        },
+        {
+          "pageid": 2395098,
+          "title": "Hungarian National Bank",
+          "lat": 47.50355,
+          "lon": 19.052311111111113
+        },
+        {
+          "pageid": 31714670,
+          "title": "Alfréd Rényi Institute of Mathematics",
+          "lat": 47.49277777777778,
+          "lon": 19.05888888888889
+        },
+        {
+          "pageid": 79261466,
+          "title": "Robert Capa Contemporary Photography Center",
+          "lat": 47.5022,
+          "lon": 19.0611
+        },
+        {
+          "pageid": 36787,
+          "title": "Budapest",
+          "lat": 47.4925,
+          "lon": 19.05138888888889
+        },
+        {
+          "pageid": 26009740,
+          "title": "1928 UCI Road World Championships",
+          "lat": 47.4925,
+          "lon": 19.05138888888889
+        },
+        {
+          "pageid": 57345245,
+          "title": "Inner City Parish Church in Pest",
+          "lat": 47.492222222222225,
+          "lon": 19.052222222222223
+        },
+        {
+          "pageid": 25430700,
+          "title": "F-4 Object",
+          "lat": 47.502921,
+          "lon": 19.049724
+        },
+        {
+          "pageid": 38142653,
+          "title": "Klauzál tér (Budapest)",
+          "lat": 47.499779,
+          "lon": 19.063722
+        },
+        {
+          "pageid": 74863194,
+          "title": "Public Library (Budapest)",
+          "lat": 47.494893,
+          "lon": 19.063117
+        },
+        {
+          "pageid": 1446794,
+          "title": "Budapest Ghetto",
+          "lat": 47.49888888888889,
+          "lon": 19.064444444444444
+        },
+        {
+          "pageid": 33586511,
+          "title": "Béla Bartók Music Institute",
+          "lat": 47.5025,
+          "lon": 19.0621
+        },
+        {
+          "pageid": 708241,
+          "title": "Hungarian Academy of Sciences",
+          "lat": 47.5011,
+          "lon": 19.0464
+        },
+        {
+          "pageid": 67109828,
+          "title": "Hungarian Postal Savings Bank",
+          "lat": 47.5044,
+          "lon": 19.0521
+        },
+        {
+          "pageid": 65898788,
+          "title": "Petőfi Literary Museum",
+          "lat": 47.4915919,
+          "lon": 19.058235
+        },
+        {
+          "pageid": 17986456,
+          "title": "Első Pesti Egyetemi Rádió",
+          "lat": 47.49278,
+          "lon": 19.06149
+        },
+        {
+          "pageid": 645001,
+          "title": "Magyar Televízió",
+          "lat": 47.50373333333334,
+          "lon": 19.04950277777778
+        },
+        {
+          "pageid": 63518062,
+          "title": "Klauzál Square Market Hall, Budapest",
+          "lat": 47.5002,
+          "lon": 19.0646
+        },
+        {
+          "pageid": 63518001,
+          "title": "Hold Street Marketplace",
+          "lat": 47.5048865,
+          "lon": 19.0531109
+        },
+        {
+          "pageid": 53454635,
+          "title": "New Building",
+          "lat": 47.5047,
+          "lon": 19.0503
+        },
+        {
+          "pageid": 39679657,
+          "title": "Liberty Square (Budapest)",
+          "lat": 47.50472222222222,
+          "lon": 19.05027777777778
+        },
+        {
+          "pageid": 73973353,
+          "title": "Minta Gymnasium",
+          "lat": 47.49385,
+          "lon": 19.06442
+        },
+        {
+          "pageid": 27464366,
+          "title": "Akadémia utca",
+          "lat": 47.5031,
+          "lon": 19.0464
+        },
+        {
+          "pageid": 3607021,
+          "title": "Franz Liszt Academy of Music",
+          "lat": 47.50324722222222,
+          "lon": 19.064516666666666
+        },
+        {
+          "pageid": 7799944,
+          "title": "Hungarian National Museum",
+          "lat": 47.49111111111111,
+          "lon": 19.06277777777778
+        },
+        {
+          "pageid": 1679740,
+          "title": "Small Boulevard (Budapest)",
+          "lat": 47.4911,
+          "lon": 19.0628
+        },
+        {
+          "pageid": 50390296,
+          "title": "Balloon (Merse)",
+          "lat": 47.4911,
+          "lon": 19.0628
+        },
+        {
+          "pageid": 50390056,
+          "title": "The New Eve",
+          "lat": 47.4911,
+          "lon": 19.0628
+        },
+        {
+          "pageid": 50390102,
+          "title": "Twofold movement",
+          "lat": 47.4911,
+          "lon": 19.0628
+        },
+        {
+          "pageid": 15023915,
+          "title": "Andrássy University Budapest",
+          "lat": 47.4918,
+          "lon": 19.0642
+        },
+        {
+          "pageid": 8601778,
+          "title": "Oktogon metro station",
+          "lat": 47.505,
+          "lon": 19.0633
+        }
+      ]
+    }
+  },
+  "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&prop=pageprops%7Clanglinks&ppprop=wikibase_item&lllimit=max&pageids=59184013%7C8592627%7C2612503%7C75078576%7C2613249%7C25765982%7C16374183%7C1033919%7C2612516%7C20973362%7C8601802%7C68869225%7C9968079%7C24409928%7C4204795%7C38022532%7C7706391%7C43921329%7C17195812%7C48479024%7C8601781%7C3424151%7C8603545%7C9033099%7C23547308%7C2612603%7C8592626%7C4116284%7C38595315%7C2612609%7C63518500%7C25584610%7C1438363%7C4405163%7C69630468%7C71782826%7C73876113%7C55465278%7C2395098%7C31714670%7C79261466%7C36787%7C26009740%7C57345245%7C25430700%7C38142653%7C74863194%7C1446794%7C33586511%7C708241": {
+    "continue": {
+      "llcontinue": "7706391|an",
+      "continue": "||pageprops"
+    },
+    "query": {
+      "pages": [
+        {
+          "pageid": 36787,
+          "pageprops": {
+            "wikibase_item": "Q1781"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Budapest"
+            },
+            {
+              "lang": "hu",
+              "title": "Budapest"
+            }
+          ]
+        },
+        {
+          "pageid": 708241,
+          "pageprops": {
+            "wikibase_item": "Q265058"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ungarische Akademie der Wissenschaften"
+            },
+            {
+              "lang": "hu",
+              "title": "Magyar Tudományos Akadémia"
+            }
+          ]
+        },
+        {
+          "pageid": 1033919,
+          "pageprops": {
+            "wikibase_item": "Q338665"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "St.-Stephans-Basilika (Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Szent István-bazilika (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 1438363,
+          "pageprops": {
+            "wikibase_item": "Q36833"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ungarische Staatsoper"
+            },
+            {
+              "lang": "hu",
+              "title": "Magyar Állami Operaház"
+            }
+          ]
+        },
+        {
+          "pageid": 1446794,
+          "pageprops": {
+            "wikibase_item": "Q2605415"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Budapester Ghettos"
+            },
+            {
+              "lang": "hu",
+              "title": "Budapesti gettó"
+            }
+          ]
+        },
+        {
+          "pageid": 2395098,
+          "pageprops": {
+            "wikibase_item": "Q774636"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Magyar Nemzeti Bank"
+            },
+            {
+              "lang": "hu",
+              "title": "Magyar Nemzeti Bank"
+            }
+          ]
+        },
+        {
+          "pageid": 2612503,
+          "pageprops": {
+            "wikibase_item": "Q904825"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Deák Ferenc tér"
+            },
+            {
+              "lang": "hu",
+              "title": "Deák Ferenc tér (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 2612516,
+          "pageprops": {
+            "wikibase_item": "Q570848"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Vörösmarty tér"
+            },
+            {
+              "lang": "hu",
+              "title": "Vörösmarty tér (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 2612603,
+          "pageprops": {
+            "wikibase_item": "Q837275"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ferenciek tere"
+            },
+            {
+              "lang": "hu",
+              "title": "Ferenciek tere"
+            }
+          ]
+        },
+        {
+          "pageid": 2612609,
+          "pageprops": {
+            "wikibase_item": "Q2525170"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Arany János utca (Metró Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Arany János utca metróállomás"
+            }
+          ]
+        },
+        {
+          "pageid": 2613249,
+          "pageprops": {
+            "wikibase_item": "Q1028985"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Bajcsy-Zsilinszky út (Metró Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Bajcsy-Zsilinszky út metróállomás"
+            }
+          ]
+        },
+        {
+          "pageid": 3424151,
+          "pageprops": {
+            "wikibase_item": "Q14949709"
+          },
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Astoria (csomópont)"
+            }
+          ]
+        },
+        {
+          "pageid": 4116284,
+          "pageprops": {
+            "wikibase_item": "Q854317"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Gresham-palota"
+            },
+            {
+              "lang": "hu",
+              "title": "Gresham-palota"
+            }
+          ]
+        },
+        {
+          "pageid": 4204795,
+          "pageprops": {
+            "wikibase_item": "Q674032"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Pesti Vigadó"
+            },
+            {
+              "lang": "hu",
+              "title": "Pesti Vigadó"
+            }
+          ]
+        },
+        {
+          "pageid": 4405163,
+          "pageprops": {
+            "wikibase_item": "Q788688"
+          },
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Bajcsy-Zsilinszky út (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 7706391,
+          "pageprops": {
+            "wikibase_item": "Q754397"
+          }
+        },
+        {
+          "pageid": 8592626,
+          "pageprops": {
+            "wikibase_item": "Q601096"
+          }
+        },
+        {
+          "pageid": 8592627,
+          "pageprops": {
+            "wikibase_item": "Q1028696"
+          }
+        },
+        {
+          "pageid": 8601781,
+          "pageprops": {
+            "wikibase_item": "Q1029127"
+          }
+        },
+        {
+          "pageid": 8601802,
+          "pageprops": {
+            "wikibase_item": "Q1029092"
+          }
+        },
+        {
+          "pageid": 8603545,
+          "pageprops": {
+            "wikibase_item": "Q779210"
+          }
+        },
+        {
+          "pageid": 9033099,
+          "pageprops": {
+            "wikibase_item": "Q5221261"
+          }
+        },
+        {
+          "pageid": 9968079,
+          "pageprops": {
+            "wikibase_item": "Q950534"
+          }
+        },
+        {
+          "pageid": 16374183,
+          "pageprops": {
+            "wikibase_item": "Q569083"
+          }
+        },
+        {
+          "pageid": 17195812,
+          "pageprops": {
+            "wikibase_item": "Q7096202"
+          }
+        },
+        {
+          "pageid": 20973362,
+          "pageprops": {
+            "wikibase_item": "Q464845"
+          }
+        },
+        {
+          "pageid": 23547308,
+          "pageprops": {
+            "wikibase_item": "Q15228738"
+          }
+        },
+        {
+          "pageid": 24409928,
+          "pageprops": {
+            "wikibase_item": "Q792611"
+          }
+        },
+        {
+          "pageid": 25430700,
+          "pageprops": {
+            "wikibase_item": "Q1252448"
+          }
+        },
+        {
+          "pageid": 25584610,
+          "pageprops": {
+            "wikibase_item": "Q779202"
+          }
+        },
+        {
+          "pageid": 25765982,
+          "pageprops": {
+            "wikibase_item": "Q1106716"
+          }
+        },
+        {
+          "pageid": 26009740,
+          "pageprops": {
+            "wikibase_item": "Q2035361"
+          }
+        },
+        {
+          "pageid": 31714670,
+          "pageprops": {
+            "wikibase_item": "Q4723914"
+          }
+        },
+        {
+          "pageid": 33586511,
+          "pageprops": {
+            "wikibase_item": "Q106588911"
+          }
+        },
+        {
+          "pageid": 38022532,
+          "pageprops": {
+            "wikibase_item": "Q7293766"
+          }
+        },
+        {
+          "pageid": 38142653,
+          "pageprops": {
+            "wikibase_item": "Q633712"
+          }
+        },
+        {
+          "pageid": 38595315,
+          "pageprops": {
+            "wikibase_item": "Q1111022"
+          }
+        },
+        {
+          "pageid": 43921329,
+          "pageprops": {
+            "wikibase_item": "Q18150365"
+          }
+        },
+        {
+          "pageid": 48479024,
+          "pageprops": {
+            "wikibase_item": "Q1042732"
+          }
+        },
+        {
+          "pageid": 55465278,
+          "pageprops": {
+            "wikibase_item": "Q3509700"
+          }
+        },
+        {
+          "pageid": 57345245,
+          "pageprops": {
+            "wikibase_item": "Q792586"
+          }
+        },
+        {
+          "pageid": 59184013,
+          "pageprops": {
+            "wikibase_item": "Q12813589"
+          }
+        },
+        {
+          "pageid": 63518500,
+          "pageprops": {
+            "wikibase_item": "Q725839"
+          }
+        },
+        {
+          "pageid": 68869225,
+          "pageprops": {
+            "wikibase_item": "Q15726431"
+          }
+        },
+        {
+          "pageid": 69630468,
+          "pageprops": {
+            "wikibase_item": "Q110324117"
+          }
+        },
+        {
+          "pageid": 71782826,
+          "pageprops": {
+            "wikibase_item": "Q106354134"
+          }
+        },
+        {
+          "pageid": 73876113,
+          "pageprops": {
+            "wikibase_item": "Q119198793"
+          }
+        },
+        {
+          "pageid": 74863194,
+          "pageprops": {
+            "wikibase_item": "Q61718426"
+          }
+        },
+        {
+          "pageid": 75078576,
+          "pageprops": {
+            "wikibase_item": "Q1005927"
+          }
+        },
+        {
+          "pageid": 79261466,
+          "pageprops": {
+            "wikibase_item": "Q21499507"
+          }
+        }
+      ]
+    }
+  },
+  "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&prop=pageprops%7Clanglinks&ppprop=wikibase_item&lllimit=max&pageids=59184013%7C8592627%7C2612503%7C75078576%7C2613249%7C25765982%7C16374183%7C1033919%7C2612516%7C20973362%7C8601802%7C68869225%7C9968079%7C24409928%7C4204795%7C38022532%7C7706391%7C43921329%7C17195812%7C48479024%7C8601781%7C3424151%7C8603545%7C9033099%7C23547308%7C2612603%7C8592626%7C4116284%7C38595315%7C2612609%7C63518500%7C25584610%7C1438363%7C4405163%7C69630468%7C71782826%7C73876113%7C55465278%7C2395098%7C31714670%7C79261466%7C36787%7C26009740%7C57345245%7C25430700%7C38142653%7C74863194%7C1446794%7C33586511%7C708241&llcontinue=7706391%7Can&continue=%7C%7Cpageprops": {
+    "query": {
+      "pages": [
+        {
+          "pageid": 36787
+        },
+        {
+          "pageid": 708241
+        },
+        {
+          "pageid": 1033919
+        },
+        {
+          "pageid": 1438363
+        },
+        {
+          "pageid": 1446794
+        },
+        {
+          "pageid": 2395098
+        },
+        {
+          "pageid": 2612503
+        },
+        {
+          "pageid": 2612516
+        },
+        {
+          "pageid": 2612603
+        },
+        {
+          "pageid": 2612609
+        },
+        {
+          "pageid": 2613249
+        },
+        {
+          "pageid": 3424151
+        },
+        {
+          "pageid": 4116284
+        },
+        {
+          "pageid": 4204795
+        },
+        {
+          "pageid": 4405163
+        },
+        {
+          "pageid": 7706391,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Große Synagoge (Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Dohány utcai zsinagóga"
+            }
+          ]
+        },
+        {
+          "pageid": 8592626,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ferenciek tere (Metró Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Ferenciek tere metróállomás"
+            }
+          ]
+        },
+        {
+          "pageid": 8592627,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Deák Ferenc tér (Metró Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Deák Ferenc tér metróállomás"
+            }
+          ]
+        },
+        {
+          "pageid": 8601781,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Opera (Metró Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Opera metróállomás"
+            }
+          ]
+        },
+        {
+          "pageid": 8601802,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Vörösmarty tér (Metró Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Vörösmarty tér metróállomás"
+            }
+          ]
+        },
+        {
+          "pageid": 8603545,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Astoria (Metró Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Astoria metróállomás"
+            }
+          ]
+        },
+        {
+          "pageid": 9033099,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Dunakorzó"
+            }
+          ]
+        },
+        {
+          "pageid": 9968079,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Váci utca"
+            },
+            {
+              "lang": "hu",
+              "title": "Váci utca"
+            }
+          ]
+        },
+        {
+          "pageid": 16374183,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Synagoge Rumbach utca"
+            },
+            {
+              "lang": "hu",
+              "title": "Rumbach utcai zsinagóga"
+            }
+          ]
+        },
+        {
+          "pageid": 17195812,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Blinken OSA Archívum"
+            }
+          ]
+        },
+        {
+          "pageid": 20973362,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Café Gerbeaud"
+            },
+            {
+              "lang": "hu",
+              "title": "Gerbeaud-ház"
+            }
+          ]
+        },
+        {
+          "pageid": 23547308,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "InterContinental Budapest Hotel"
+            }
+          ]
+        },
+        {
+          "pageid": 24409928,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Innenministerium (Ungarn)"
+            },
+            {
+              "lang": "hu",
+              "title": "Belügyminisztérium"
+            }
+          ]
+        },
+        {
+          "pageid": 25430700,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "F4 objektum"
+            }
+          ]
+        },
+        {
+          "pageid": 25584610,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Astoria Szálló (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 25765982,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Kempinski Hotel Corvinus"
+            }
+          ]
+        },
+        {
+          "pageid": 26009740,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Straßenradsport-Weltmeisterschaften 1928"
+            }
+          ]
+        },
+        {
+          "pageid": 31714670,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Rényi Alfréd Matematikai Kutatóintézet"
+            }
+          ]
+        },
+        {
+          "pageid": 33586511
+        },
+        {
+          "pageid": 38022532,
+          "langlinks": []
+        },
+        {
+          "pageid": 38142653,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Klauzál tér"
+            },
+            {
+              "lang": "hu",
+              "title": "Klauzál tér (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 38595315,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Kleine Prinzessin (Skulptur)"
+            },
+            {
+              "lang": "hu",
+              "title": "Kiskirálylány"
+            }
+          ]
+        },
+        {
+          "pageid": 43921329,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "BM Duna Palota"
+            }
+          ]
+        },
+        {
+          "pageid": 48479024,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "V. Budapester Bezirk"
+            },
+            {
+              "lang": "hu",
+              "title": "Budapest V. kerülete"
+            }
+          ]
+        },
+        {
+          "pageid": 55465278,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Szimpla romkocsma"
+            }
+          ]
+        },
+        {
+          "pageid": 57345245,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Innerstädtische Pfarrkirche (Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Belvárosi plébániatemplom (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 59184013,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Anker-palota"
+            }
+          ]
+        },
+        {
+          "pageid": 63518500,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Synagoge Kazinczy-Straße (Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Kazinczy utcai zsinagóga (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 68869225,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Budapesti 1. sz. országgyűlési egyéni választókerület (2014–2026)"
+            }
+          ]
+        },
+        {
+          "pageid": 69630468
+        },
+        {
+          "pageid": 71782826,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "ELTE BTK Angol–Amerikai Intézet"
+            }
+          ]
+        },
+        {
+          "pageid": 73876113
+        },
+        {
+          "pageid": 74863194,
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Közkincs Könyvtár"
+            }
+          ]
+        },
+        {
+          "pageid": 75078576,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "U-Bahn-Museum Budapest"
+            },
+            {
+              "lang": "hu",
+              "title": "Földalatti Vasúti Múzeum"
+            }
+          ]
+        },
+        {
+          "pageid": 79261466,
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Robert-Capa-Zentrum für zeitgenössische Fotografie"
+            },
+            {
+              "lang": "hu",
+              "title": "Robert Capa Kortárs Fotográfiai Központ"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&maxlag=5&prop=pageprops%7Clanglinks&ppprop=wikibase_item&lllimit=max&pageids=67109828%7C65898788%7C17986456%7C645001%7C63518062%7C63518001%7C53454635%7C39679657%7C73973353%7C27464366%7C3607021%7C7799944%7C1679740%7C50390296%7C50390056%7C50390102%7C15023915%7C8601778": {
+    "query": {
+      "pages": [
+        {
+          "pageid": 645001,
+          "pageprops": {
+            "wikibase_item": "Q367300"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Magyar Televízió"
+            },
+            {
+              "lang": "hu",
+              "title": "Magyar Televízió"
+            }
+          ]
+        },
+        {
+          "pageid": 1679740,
+          "pageprops": {
+            "wikibase_item": "Q897604"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Kiskörút"
+            },
+            {
+              "lang": "hu",
+              "title": "Kiskörút"
+            }
+          ]
+        },
+        {
+          "pageid": 3607021,
+          "pageprops": {
+            "wikibase_item": "Q847099"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Franz-Liszt-Musikakademie"
+            },
+            {
+              "lang": "hu",
+              "title": "Liszt Ferenc Zeneművészeti Egyetem"
+            }
+          ]
+        },
+        {
+          "pageid": 7799944,
+          "pageprops": {
+            "wikibase_item": "Q914141"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Ungarisches Nationalmuseum"
+            },
+            {
+              "lang": "hu",
+              "title": "Magyar Nemzeti Múzeum"
+            }
+          ]
+        },
+        {
+          "pageid": 8601778,
+          "pageprops": {
+            "wikibase_item": "Q1029098"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Oktogon (Metró Budapest)"
+            },
+            {
+              "lang": "hu",
+              "title": "Oktogon metróállomás"
+            }
+          ]
+        },
+        {
+          "pageid": 15023915,
+          "pageprops": {
+            "wikibase_item": "Q281572"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Andrássy Universität Budapest"
+            },
+            {
+              "lang": "hu",
+              "title": "Andrássy Gyula Budapesti Német Nyelvű Egyetem"
+            }
+          ]
+        },
+        {
+          "pageid": 17986456,
+          "pageprops": {
+            "wikibase_item": "Q989062"
+          },
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Első Pesti Egyetemi Rádió"
+            }
+          ]
+        },
+        {
+          "pageid": 27464366,
+          "pageprops": {
+            "wikibase_item": "Q1497839"
+          },
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Akadémia utca"
+            }
+          ]
+        },
+        {
+          "pageid": 39679657,
+          "pageprops": {
+            "wikibase_item": "Q299975"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Szabadság tér"
+            },
+            {
+              "lang": "hu",
+              "title": "Szabadság tér (Budapest)"
+            }
+          ]
+        },
+        {
+          "pageid": 50390056,
+          "pageprops": {
+            "wikibase_item": "Q21808511"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 50390102,
+          "pageprops": {
+            "wikibase_item": "Q23012068"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 50390296,
+          "pageprops": {
+            "wikibase_item": "Q21806470"
+          },
+          "langlinks": []
+        },
+        {
+          "pageid": 53454635,
+          "pageprops": {
+            "wikibase_item": "Q1472941"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Neugebäude in Pest"
+            },
+            {
+              "lang": "hu",
+              "title": "Újépület"
+            }
+          ]
+        },
+        {
+          "pageid": 63518001,
+          "pageprops": {
+            "wikibase_item": "Q3115164"
+          },
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Hold utcai vásárcsarnok"
+            }
+          ]
+        },
+        {
+          "pageid": 63518062,
+          "pageprops": {
+            "wikibase_item": "Q3115166"
+          },
+          "langlinks": [
+            {
+              "lang": "hu",
+              "title": "Klauzál téri vásárcsarnok"
+            }
+          ]
+        },
+        {
+          "pageid": 65898788,
+          "pageprops": {
+            "wikibase_item": "Q1234343"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Petőfi-Literaturmuseum"
+            },
+            {
+              "lang": "hu",
+              "title": "Petőfi Irodalmi Múzeum"
+            }
+          ]
+        },
+        {
+          "pageid": 67109828,
+          "pageprops": {
+            "wikibase_item": "Q111423047"
+          }
+        },
+        {
+          "pageid": 73973353,
+          "pageprops": {
+            "wikibase_item": "Q987378"
+          },
+          "langlinks": [
+            {
+              "lang": "de",
+              "title": "Minta-Gymnasium Budapest"
+            },
+            {
+              "lang": "hu",
+              "title": "ELTE Trefort Ágoston Gyakorlóiskola"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

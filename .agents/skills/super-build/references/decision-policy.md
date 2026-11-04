@@ -32,7 +32,7 @@ column is the skill to invoke.
 | Break a spec into tracer-bullet tickets | `mattpocock-skills:to-tickets` |
 | Design a module interface / find deepening opportunities | `mattpocock-skills:codebase-design` |
 | Pin domain terminology or record an ADR | `mattpocock-skills:domain-modeling` |
-| Resolve an in-progress merge/rebase conflict | `mattpocock-skills:resolving-merge-conflicts` |
+| Resolve an in-progress merge/rebase conflict | `mattpocock-skills:resolving-merge-conflicts`, or its fallback under "Resolving a conflict" |
 | Prove a claim before calling work done | `verification-before-completion` |
 | Decide *which kind* of test a change needs | `testing-strategy` |
 | Write a unit or integration test (TS/JS) | `vitest` |
@@ -118,7 +118,8 @@ implement against the spec before you reach for design vocabulary.
   ladder, never by label. A `ux` ticket whose defect reproduces in a pure
   function gets a unit test.
 - `testing-strategy` — when the issue leaves coverage scope open.
-- `mattpocock-skills:resolving-merge-conflicts` — on an in-progress conflict.
+- `mattpocock-skills:resolving-merge-conflicts` — on an in-progress conflict. See
+  "Resolving a conflict" below.
 - `mattpocock-skills:domain-modeling` — when the change names a concept the
   domain glossary does not have.
 
@@ -146,6 +147,24 @@ fails, apply this fallback and carry on:
 
 Ponytail picks *how little* to write. It never overrides an acceptance
 criterion, the `tdd` red test, or the decision ladder below.
+
+## Resolving a conflict
+
+`mattpocock-skills:resolving-merge-conflicts` was removed from its pack, so it is
+usually not installed. When `--require` reports the fallback `resolve-and-verify`,
+follow these steps instead:
+
+1. Read `git status` and every conflicted hunk.
+2. Find out why each side changed: read its commit message, PR and issue.
+3. Resolve each hunk so both changes survive, and add no new behaviour. For a
+   lockfile, take the base branch's copy and let the package manager add this
+   branch's dependencies.
+4. Run the project's `verify_commands`. Files git merged cleanly can still break,
+   so this step ends on green checks, not on an empty conflict list.
+5. Stage everything and commit the merge.
+
+When the two sides disagree about behaviour, or choosing needs a product decision,
+block the card with the usual template instead of picking a side.
 
 ## The decision ladder
 

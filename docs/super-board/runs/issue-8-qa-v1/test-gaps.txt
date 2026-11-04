@@ -1,0 +1,3 @@
+Medium/Low gaps not written (none needs a code change to pass an AC):
+- Low: kindLabels is a plain object, so an inherited key such as "constructor" or "toString" as a kind skips the Historic site / Shop fallback and returns the raw kind (kinds.ts kindLabel). Real OSM values never hit this. A null-prototype object or Map would close it.
+- Low: kindLabel for a category without a fallback (food, leisure, services, notable) returns the raw kind for an unlisted value. Every value those rules emit is listed, so this is unreachable from the data pipeline.

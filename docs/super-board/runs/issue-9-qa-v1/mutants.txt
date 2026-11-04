@@ -1,0 +1,78 @@
+Mutants of scripts/data/hours.ts and vite.config.ts at 4c3b1c0. Each one was applied alone, the command below ran, and the file was restored. None was committed.
+$ npx vitest run scripts/data/hours.test.ts
+
+baseline: exit 0, 22 passed (22)
+
+M1 drop the unknown check: RED (4 failed | 18 passed (22))
+    gives no hours for "Mo 18:00+", which is unknown inside the window
+    gives no hours for "Mo-Fr 08:00-18:00 \"by appointment\"", which is unknown inside the window
+    gives no hours for "Mo-Fr 08:00-18:00 unknown", which is unknown inside the window
+    gives no hours when one day inside the window is unknown
+M2 some -> every in the unknown check: RED (2 failed | 20 passed (22))
+    gives a place that is always closed an empty list, so its status is closed and not unknown
+    gives no hours when one day inside the window is unknown
+M3 Germany instead of Hungary: RED (1 failed | 21 passed (22))
+    uses Hungary's holidays and not another country's
+M4 no address at all: RED (2 failed | 20 passed (22))
+    counts Hungary's public holidays
+    uses Hungary's holidays and not another country's
+M5 numbers instead of strings for lat and lon: RED (1 failed | 21 passed (22))
+    works out sunrise and sunset for Budapest, and not the library's default
+M6 Berlin instead of Budapest: RED (1 failed | 21 passed (22))
+    works out sunrise and sunset for Budapest, and not the library's default
+M7 a library failure gives [] instead of no hours: RED (4 failed | 18 passed (22))
+    gives no hours for "", which does not parse
+    gives no hours for "Mo 12:00", which does not parse
+    gives no hours for "call us", which does not parse
+    gives no hours for a value the library can only reject when it works out the times
+M8 a library failure is not caught: RED (4 failed | 18 passed (22))
+    gives no hours for "", which does not parse
+    gives no hours for "Mo 12:00", which does not parse
+    gives no hours for "call us", which does not parse
+    gives no hours for a value the library can only reject when it works out the times
+M9 window of 14 calendar days: RED (2 failed | 20 passed (22))
+    gives 24/7 the whole window when the autumn clock change falls inside it
+    gives 24/7 the whole window when the spring clock change falls inside it
+M10 window of 13 days: RED (6 failed | 16 passed (22))
+    clips times that cross either end of the window
+    gives 24/7 the whole window
+    gives 24/7 the whole window when the autumn clock change falls inside it
+    gives 24/7 the whole window when the spring clock change falls inside it
+    opens at 08:00 local time on both sides of the autumn clock change
+    opens at 08:00 local time on both sides of the spring clock change
+M11 window of 15 days: RED (7 failed | 15 passed (22))
+    clips times that cross either end of the window
+    counts Hungary's public holidays
+    gives 24/7 the whole window
+    gives 24/7 the whole window when the autumn clock change falls inside it
+    gives 24/7 the whole window when the spring clock change falls inside it
+    opens at 08:00 local time on both sides of the autumn clock change
+    and 1 more
+M12 minutes follow the wall clock: RED (5 failed | 17 passed (22))
+    counts the real minutes of a time that spans a clock change
+    gives 24/7 the whole window when the autumn clock change falls inside it
+    gives 24/7 the whole window when the spring clock change falls inside it
+    opens at 08:00 local time on both sides of the autumn clock change
+    opens at 08:00 local time on both sides of the spring clock change
+M13 start and end swapped: RED (12 failed | 10 passed (22))
+    clips times that cross either end of the window
+    counts Hungary's public holidays
+    counts the real minutes of a time that spans a clock change
+    gives 24/7 the whole window
+    gives 24/7 the whole window when the autumn clock change falls inside it
+    gives 24/7 the whole window when the spring clock change falls inside it
+    and 6 more
+M14 state left out of the address (expected to survive): SURVIVED (22 passed (22))
+M15 no TZ in vite.config.ts, outer TZ=UTC: RED (9 failed | 13 passed (22))
+    clips times that cross either end of the window
+    counts Hungary's public holidays
+    counts the real minutes of a time that spans a clock change
+    gives each open time in minutes since the window start
+    ignores an unknown day outside the window
+    opens at 08:00 local time on both sides of the autumn clock change
+    and 3 more
+M15 control, no TZ in vite.config.ts, outer TZ=Europe/Budapest: exit 0 (22 passed (22))
+
+vite.config.ts restored, outer TZ=UTC: exit 0 (22 passed (22))
+restored, no outer TZ: exit 0 (22 passed (22))
+git status after restoring: clean
