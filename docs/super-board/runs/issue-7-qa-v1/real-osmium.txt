@@ -1,0 +1,47 @@
+Tested head: c8bf1e8. The three command lines come from extractArgs, tagsFilterArgs and exportArgs. The config file is JSON.stringify(EXPORT_CONFIG).
+osmium version 1.18.0 · libosmium version 2.22.0
+osmium-tool 1.18.0-1 from the Debian trixie arm64 package, unpacked into a scratch folder, not installed. The input is real-osmium-input.osm, written by hand for this run. It is not an extract of real OpenStreetMap data.
+
+$ osmium extract -s smart -b 18.925,47.35,19.335,47.62 input.osm -o box.osm.pbf
+exit=0
+$ osmium tags-filter box.osm.pbf nwr/tourism=attraction,museum,gallery,viewpoint,artwork,zoo,aquarium,theme_park nwr/historic nwr/amenity=place_of_worship,fountain,cafe,restaurant,fast_food,bar,pub,biergarten,ice_cream,food_court,theatre,cinema,arts_centre,library,community_centre,events_venue,nightclub,music_venue,planetarium,pharmacy,bank,bureau_de_change,post_office,clinic,doctors,dentist,veterinary,hospital,police,townhall,fuel,car_wash,car_rental,driving_school nwr/shop nwr/leisure=park,garden,playground,sports_centre,fitness_centre,swimming_pool,water_park,escape_game,bowling_alley -o places.osm.pbf
+exit=0
+$ osmium export -f geojsonseq --add-unique-id=type_id -x print_record_separator=false -c export.json places.osm.pbf -o places.geojsonseq
+exit=0
+
+RS byte anywhere in the output: false · lines: 20
+
+===== raw export: id · geometry · name · direction of each outer ring
+n1 · Point · Valódi Múzeum · -
+n2 · Point · (no name) · -
+n3 · Point · Tábla · -
+n4 · Point · Botlatókő · -
+n5 · Point · Üres · -
+n9 · Point · Könyves Mozi · -
+n10 · Point · Üres Ház · -
+n11 · Point · Bolt · -
+n1020 · Point · Kapu · -
+w101 · LineString · Városfal · -
+w103 · LineString · Nem Terület · -
+a200 · MultiPolygon · Opera · ccw
+a204 · MultiPolygon · (no name) · ccw
+a208 · MultiPolygon · Hely · ccw
+a210 · MultiPolygon · Udvar · ccw
+a212 · MultiPolygon · Óramutató Udvar · ccw
+a601 · MultiPolygon · Erzsébet tér · ccw,ccw
+a603 · MultiPolygon · Egy Gyűrű · ccw
+a607 · MultiPolygon · Peremkert · ccw
+a609 · MultiPolygon · Óramutató Park · ccw,ccw
+
+===== placesFromExport
+{"id":"n1","cat":"sights","kind":"museum","lat":47.49815,"lon":19.05346,"name":"Valódi Múzeum","names":{"en":"Real Museum"},"opening_hours":"Tu-Su 10:00-18:00"}
+{"id":"n9","cat":"leisure","kind":"cinema","lat":47.4995,"lon":19.057,"name":"Könyves Mozi"}
+{"id":"n10","cat":"sights","kind":"building","lat":47.4996,"lon":19.0571,"name":"Üres Ház"}
+{"id":"n11","cat":"shops","kind":"vintage","lat":47.4997,"lon":19.0572,"name":"Bolt"}
+{"id":"w100","cat":"leisure","kind":"theatre","lat":47.5028,"lon":19.0585,"name":"Opera","wikidata":"Q36833","wikipedia":"hu:Magyar Állami Operaház"}
+{"id":"w104","cat":"food","kind":"cafe","lat":47.4987,"lon":19.0511,"name":"Hely"}
+{"id":"w105","cat":"leisure","kind":"garden","lat":47.49525,"lon":19.05025,"name":"Udvar"}
+{"id":"w106","cat":"leisure","kind":"garden","lat":47.4902,"lon":19.0623,"name":"Óramutató Udvar"}
+{"id":"r300","cat":"leisure","kind":"park","lat":47.4984,"lon":19.0525,"name":"Erzsébet tér","wikipedia":"hu:Erzsébet tér (Budapest)"}
+{"id":"r301","cat":"sights","kind":"attraction","lat":47.4902,"lon":19.0603,"name":"Egy Gyűrű"}
+{"id":"r304","cat":"leisure","kind":"park","lat":47.4905,"lon":19.0655,"name":"Óramutató Park"}
