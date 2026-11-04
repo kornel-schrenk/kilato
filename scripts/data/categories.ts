@@ -36,14 +36,7 @@ export function categorize(tags: Tags): Pick<Place, 'cat' | 'kind'> | undefined 
   return undefined
 }
 
-/** One `osmium tags-filter` expression per key. The filter keeps a superset: `categorize` has the last word. */
+/** One `osmium tags-filter` expression per rule. osmium keeps what matches any of them, and `categorize` has the last word. */
 export function tagsFilterExpressions(): string[] {
-  const valuesByKey = new Map<string, string[] | 'any'>()
-  for (const { key, values } of CATEGORY_RULES) {
-    const seen = valuesByKey.get(key) ?? []
-    valuesByKey.set(key, seen === 'any' || values === 'any' ? 'any' : [...seen, ...values])
-  }
-  return [...valuesByKey].map(([key, values]) =>
-    values === 'any' ? `nwr/${key}` : `nwr/${key}=${values.join(',')}`,
-  )
+  return CATEGORY_RULES.map(({ key, values }) => (values === 'any' ? `nwr/${key}` : `nwr/${key}=${values.join(',')}`))
 }

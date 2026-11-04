@@ -238,7 +238,7 @@ describe('the osmium command lines', () => {
     expect(args[0]).toBe('tags-filter')
     expect(args[1]).toBe('box.osm.pbf')
     expect(args).toEqual(expect.arrayContaining(['nwr/historic', 'nwr/shop']))
-    expect(args.find((arg) => arg.startsWith('nwr/amenity='))).toContain('cafe')
+    expect(args).toContain('nwr/amenity=cafe,restaurant,fast_food,bar,pub,biergarten,ice_cream,food_court')
     expect(args.join(' ')).toContain('-o places.osm.pbf')
   })
 
