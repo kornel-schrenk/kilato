@@ -1,0 +1,45 @@
+Test-gap check. Tested head: b3e96cf. Range: develop...b3e96cf, base 8c2bb16. Written from this round's own runs.
+Component column: n/a for every AC. The repo has no component test harness, and the page tests drive src/ui/.
+No project verifier: .agents/skills/verify-* doesn't exist. target.url is null, so there is no health check.
+QA added no test this round: no High gap is open, and Medium and Low gaps don't block.
+
+===== ledger
+AC1 unit n/a: markup and CSS · e2e e2e/map.spec.ts:205 375 and 899 px, :227 900 and 1280 px, :243 header, :251 no sideways scroll
+AC2 unit n/a: Leaflet options · e2e :268 URLs and view, :293 zoom 19, :307 link, :317 not covered on a phone, :330 Referer, :344 no service worker
+AC3 unit src/core/point.test.ts:109 14.9 m, :116 15.1 m, :122 from the point, :128 accuracy, :135 a walk asks no zoom, :139 first fix asks the start zoom, :212 My location asks it, src/core/geo.test.ts · e2e :607 follows, :621 high accuracy, :638 dot and circles, :653 20 m, :679 14 m, :689 16 m, :699 two steps, :710 zoom kept, :832 zoom and share of the line at 10 viewports, :845 My location on a phone, :858 a later walk on a phone
+AC4 unit point.test.ts:60 Explore, :65 stops a request, :69 errors, :91 error with no fix · e2e :360 intro, :376 Hungarian, :386 asks nothing early, :402 refused earlier, :415 query rejected, :424 no API, :433 Explore stops a request, :458 Explore, :464 after a move, :477 during a zoom, :504 during a coast, :532 refusal, :542 errors, :734 error on load
+AC5 unit point.test.ts:181 tap, :186 drag end, :192 drag start, :196 tap during a coast, :212 My location · e2e :742 drag while following, :759 walking after it, :780 watch stopped, :796 and :873 My location, :890 slow drag, :900 quick drag, :916 tap, :929 tap during a coast, :994 asks, :1006 and :1022 refused or failed, :1048 touch tap, :1058 touch drag
+
+===== v1's two High gaps, re-run against this head
+1. AC3, the 1 km circle on a phone. PR #31 set the spec's Start zoom: 14 below 900 px wide, 15 from there. Measured with the 360-point read: 84% of the line on the map at 375x667, was 0. Also 100% at 1920x1080, 92% at 1024x768. :832 pins it at 10 viewports, both sides of 900 px.
+2. AC5, a tap during a coast. Witness: point.test.ts:196, and in the page e2e/map.spec.ts:929. The pin is 0 m from the tap after the map coasted another 587 m. Was 363 m. Both went red when the fix came out, mutants.txt.
+
+===== edge cases
+boundaries: 14.9 and 15.1 m pinned, point.test.ts:109, :116 · 14 and 16 m pinned, e2e/map.spec.ts:679, :689 · 899 and 900 px pinned for the layout, :205, :227, and for the zoom, :832 · zoom 19 pinned, :293
+dates, money, auth logic, input text: n/a, no such code. The location permission is covered under error paths
+volume: 0, 1 and 3 fixes pinned, point.test.ts:122 · tiles at load on a phone, probe.txt
+error paths: watch errors 1, 2 and 3 pinned, e2e/map.spec.ts:532, :542 · permission query rejected or missing pinned, :415, :424 · navigator.geolocation missing: gap, Low, below
+idempotency and races: fix after a drag pinned, point.test.ts:174 · Explore during a zoom and during a coast pinned, e2e/map.spec.ts:477, :504 · tap during a coast pinned, point.test.ts:196, e2e/map.spec.ts:929 · second press of My location pinned, :1022 · My location and its fix during a zoom, My location during a coast, a tap during a coast and then a drag, a touch tap during a coast, a tap during a zoom: probes only, all pass, probe.txt
+UI states: intro, following and exploring pinned · granted with no first fix yet: gap, Low, below
+accessibility: roles and names of the buttons, the map and the zoom controls pinned, :360, :567 · zoom buttons are 30 x 31 px at 375 wide: gap, Low, below
+
+===== test the tests
+Expected values are literals from the spec and the ticket, not recomputed with the code. The shares in :832 come from the spec's 310 px and 155 px radii, and QA's own read gives the same 84% and 92%.
+Every page test ends with an assertion after its last action, as AGENTS.md asks: checked with a script over all 59 test blocks in e2e/map.spec.ts, 0 without one.
+Mutants: 14 of 14 go red on at least one rung, mutants.txt. One survives the page tests: exploring at the screen's zoom. 6 unit tests go red on it. The page tests of AC4 run at 1280x720, where both rules give zoom 15.
+
+===== rank
+High: none open.
+Medium: none.
+Low, not written:
+- on a phone held sideways, the map is 144 to 176 px high, so zoom 14 leaves 31% of the circle's line on the map at 568x320, 37% at 667x375 and 38% at 844x390. The spec's Start zoom gives these screens zoom 14 and asks for nothing more. PR #31 named only upright phones
+- with a granted permission, the page draws Deák Ferenc tér at zoom 15 until the first fix: 6 tiles at zoom 15 and then 9 at zoom 14 on a phone. Those 6 are the view on screen at that moment, so AC2 holds. Until that fix there is no dot, note or button, and the spec asks for no more
+- the Hungarian note takes 2 lines at 320 px wide, and 1 line at 375. Measured in v1, and that code didn't change
+- with no navigator.geolocation, a press on Use my location throws a page error and the intro stays. Explore the map still works, and no current browser lacks the API. Measured in v1, and that code didn't change
+- the zoom buttons are 30 x 31 px at 375 wide, under the 44 px of the page's own buttons. It's Leaflet's size, and no AC asks for more. Measured in v1, and that code didn't change
+- AC4's zoom 15 on a phone is pinned in unit tests only, as above. #34 changes that rule anyway
+- the races listed as probes only above have no committed test
+- not run on a real phone: the tests use Chromium with a faked location, so a pinch that starts with one finger moving isn't covered
+
+===== not a gap on this card
+Exploring on a phone starts at zoom 15, with 0 of the circle's line on the map at 375x667. AC4 says zoom 15 and Kornel's answer keeps it on this card. #34 moves exploring to the Start zoom after this card merges.
