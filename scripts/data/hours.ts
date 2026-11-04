@@ -1,0 +1,35 @@
+import opening_hours, { type nominatim_object } from 'opening_hours'
+import type { Place } from '../../src/core/types'
+
+const MINUTE = 60_000
+/** 14 × 24 hours of real time, so `24/7` is `[0, 20160]` even when a clock change falls inside. */
+const WINDOW_MINUTES = 14 * 24 * 60
+
+/**
+ * Hungary for the public holidays, Budapest's position for sunrise and sunset.
+ * The library's types ask for numbers, but it ignores `lat` and `lon` unless they're strings.
+ */
+const BUDAPEST = {
+  lat: '47.4979',
+  lon: '19.0402',
+  address: { country_code: 'hu', state: 'Budapest' },
+} as unknown as nominatim_object
+
+/**
+ * The open times of an `opening_hours` value, as `[start, end]` pairs in real minutes since
+ * `windowStart`, clipped to the window. An empty list means closed throughout. There are no hours
+ * when the value doesn't parse or has anything marked unknown inside the window.
+ *
+ * The library reads local time, so this needs a process running with `TZ=Europe/Budapest`.
+ */
+export function hoursInWindow(windowStart: Date, value: string): Place['hours'] {
+  const windowEnd = new Date(windowStart.getTime() + WINDOW_MINUTES * MINUTE)
+  const minutesSinceStart = (date: Date) => (date.getTime() - windowStart.getTime()) / MINUTE
+  try {
+    const intervals = new opening_hours(value, BUDAPEST).getOpenIntervals(windowStart, windowEnd)
+    if (intervals.some(([, , unknown]) => unknown)) return undefined
+    return intervals.map(([start, end]) => [minutesSinceStart(start), minutesSinceStart(end)])
+  } catch {
+    return undefined
+  }
+}
