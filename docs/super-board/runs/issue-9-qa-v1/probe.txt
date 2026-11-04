@@ -1,0 +1,71 @@
+Probes of hoursInWindow at 4c3b1c0, under TZ=Europe/Budapest, in a throwaway Vitest file that isn't committed.
+Repeat A with Node 24:
+TZ=Europe/Budapest node -e "import('./scripts/data/hours.ts').then(m => console.log(m.hoursInWindow(new Date('2027-10-25T00:00:00+02:00'), 'Mo-Su sunrise-sunset')))"
+
+A. Sunrise and sunset around the autumn clock change
+The value parses and has nothing unknown, so the spec expects pairs.
+  window from 2027-10-16T00:00:00+02:00, "Mo-Su sunrise-sunset": 14 pairs [[423,1074],[1864,2512]]
+  window from 2027-10-17T00:00:00+02:00, "Mo-Su sunrise-sunset": no hours
+  window from 2027-10-25T00:00:00+02:00, "Mo-Su sunrise-sunset": no hours
+  window from 2027-10-31T00:00:00+02:00, "Mo-Su sunrise-sunset": no hours
+  window from 2027-11-01T00:00:00+01:00, "Mo-Su sunrise-sunset": 14 pairs [[387,987],[1828,2425]]
+  window from 2027-03-22T00:00:00+01:00, "Mo-Su sunrise-sunset": 14 pairs [[343,1078],[1781,2520]]
+  library call: RangeError: Variable time "sunrise" does not occur on this date
+
+Why: the library asks suncalc for the sun times of the instant it holds, that day, the day before and the day after, and keeps the result that falls on the local day. It evaluates the day from local midnight.
+For Sunday 2027-10-31 none of the three lands on that day (opening_hours.esm.mjs:16181 throws):
+  suncalc at 2027-10-31 00:00:00: sunrise 2027-10-30 07:24:01
+  suncalc at 2027-10-30 00:00:00: sunrise 2027-10-29 07:22:31
+  suncalc at 2027-11-01 00:00:00: sunrise 2027-11-01 06:27:02
+
+Window starts from 2026-11-05 to 2028-12-31 (788 local midnights) that give no hours:
+  "Mo-Su sunrise-sunset": 30 (2027-10-17..2027-10-31, 2028-10-15..2028-10-29)
+  "sunrise-22:00": 30 (2027-10-17..2027-10-31, 2028-10-15..2028-10-29)
+  "dawn-dusk": 30 (2027-10-17..2027-10-31, 2028-10-15..2028-10-29)
+  "Mo-Su (sunrise-00:30)-(sunset+00:30)": 30 (2027-10-17..2027-10-31, 2028-10-15..2028-10-29)
+  "06:00-sunset": 2 (2027-10-31, 2028-10-29)
+  "sunset-sunrise": 2 (2027-10-31, 2028-10-29)
+  "dusk-dawn": 2 (2027-10-31, 2028-10-29)
+  "Apr-Sep 08:00-sunset; Oct-Mar 09:00-sunset": 2 (2027-10-31, 2028-10-29)
+  "Mo-Su 08:00-18:00": 0
+  "24/7": 0
+
+B. An unknown day against the window edges, with the value "Dec 25 unknown"
+  the window ends at 00:00 on the 25th: 0 pairs []
+  the 25th is the last day: no hours
+  the 25th is the first day: no hours
+  the window starts on the 26th: 0 pairs []
+
+C. Inputs, in a window from 2026-11-02
+  "   ": no hours
+  "\n": no hours
+  ";": no hours
+  "open": 1 pairs [[0,20160]]
+  "closed": 0 pairs []
+  "off": 0 pairs []
+  "unknown": no hours
+  "\"call\"": no hours
+  "Mo-Fr 08:00-18:00;": 10 pairs [[480,1080],[1920,2520]]
+  "Mo-Fr 08:00–18:00": 10 pairs [[480,1080],[1920,2520]]
+  "H-P 8:00-18:00": no hours
+  "hétfő-péntek 8-18": 10 pairs [[480,1080],[1920,2520]]
+  "Mo-Fr 08:00-18:00; Sa \"by appointment\"": no hours
+  "Mo-Fr 08:00-18:00 open \"comment\"": 10 pairs [[480,1080],[1920,2520]]
+  "Mo-Fr 08:00-18:00 || unknown": no hours
+  "😀": no hours
+  "xxxxxxxx... (5000 characters)": no hours
+  "SH off; Mo-Fr 08:00-18:00": no hours
+  "Mo-Su 24:00-24:00": no hours
+
+D. Public holidays the library gives for Hungary in 2027 (noon closed under "Mo-Su 08:00-18:00; PH off")
+  13 days: 2027-01-01 2027-03-15 2027-03-26 2027-03-28 2027-03-29 2027-05-01 2027-05-16 2027-05-17 2027-08-20 2027-10-23 2027-11-01 2027-12-25 2027-12-26
+  Good Friday, Easter Sunday and Monday, and Pentecost Sunday and Monday fall on 03-26, 03-28, 03-29, 05-16 and 05-17 in 2027.
+
+E. Pairs against the library's own getState, every 5 minutes
+  values with no time inside the changed hour: 290304 instants, 0 disagree, 0 lists out of order or empty, 0 with fractions
+  values with a time inside the changed hour: 129024 instants, 120 disagree, 0 lists out of order or empty, 0 with fractions
+    Su 02:30-05:00, from 2027-03-28 03:00:00
+    Su 02:50-03:10, from 2027-03-28 03:00:00
+    Mo-Su 02:10-03:10, from 2027-03-28 03:00:00
+    Su 00:00-02:30, from 2027-03-28 03:00:00
+  Sample, spring: "Su 00:00-02:30" gives [8640,8790], which closes at 03:30 local time on 2027-03-28.
