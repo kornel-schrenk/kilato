@@ -1,0 +1,92 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      rebuild_data:
+        description: Rebuild the data even if this week's is in the cache
+        type: boolean
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Work out this week's cache key
+        id: week
+        run: echo "key=data-$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+      - name: Restore the data cache
+        id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: data
+          key: ${{ steps.week.outputs.key }}
+      - name: Install osmium-tool
+        if: steps.cache.outputs.cache-hit != 'true' || inputs.rebuild_data
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y osmium-tool
+      - name: Download the Hungary extract
+        if: steps.cache.outputs.cache-hit != 'true' || inputs.rebuild_data
+        run: |
+          curl --fail --location --remote-name https://download.geofabrik.de/europe/hungary-latest.osm.pbf
+          curl --fail --location --remote-name https://download.geofabrik.de/europe/hungary-latest.osm.pbf.md5
+          md5sum --check hungary-latest.osm.pbf.md5
+      - name: Build the data
+        if: steps.cache.outputs.cache-hit != 'true' || inputs.rebuild_data
+        run: npm run data:build -- --pbf hungary-latest.osm.pbf --out data
+      - name: Drop the cached data this rebuild replaces
+        # A cache can't be changed, and the key stays the same all week, so the save would otherwise do nothing.
+        if: steps.cache.outputs.cache-hit == 'true' && inputs.rebuild_data
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEY: ${{ steps.week.outputs.key }}
+        run: gh api --method DELETE "repos/$GITHUB_REPOSITORY/actions/caches?key=$KEY&ref=$GITHUB_REF"
+      - name: Save the data cache
+        if: steps.cache.outputs.cache-hit != 'true' || inputs.rebuild_data
+        uses: actions/cache/save@v6
+        with:
+          path: data
+          key: ${{ steps.week.outputs.key }}
+      - name: Build the page
+        run: npm run build
+      - name: Copy the data into the page
+        run: cp -r data dist/data
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+      - name: Deploy the site
+        id: deployment
+        uses: actions/deploy-pages@v5
+      - name: Keep the schedule alive
+        # GitHub turns off the schedule after 60 days without activity. A failed run keeps it alive too.
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "repos/$GITHUB_REPOSITORY/actions/workflows/deploy.yml/enable"
