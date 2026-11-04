@@ -1,0 +1,122 @@
+AC3. Tested head: 07fb80a (b6bc83a plus evidence files only). Host: Raspberry Pi, aarch64, Node v24.22.2, Playwright 1.64.1.
+
+===== request probes. A local server stood in for the real network and logged every hit. Plain tests, no test.fail(): a miss shows as a pass. Each URL is what the fixture reported.
+RED cross-origin fetch: failed · ['http://127.0.0.1:30939/fetch']
+RED cross-origin xhr: failed · ['http://127.0.0.1:30939/xhr']
+RED cross-origin img: failed · ['http://127.0.0.1:30939/img']
+RED cross-origin script: failed · ['http://127.0.0.1:30939/script']
+RED cross-origin stylesheet: failed · ['http://127.0.0.1:30939/stylesheet']
+RED cross-origin iframe: failed · ['http://127.0.0.1:30939/iframe']
+RED cross-origin sendBeacon: failed · ['http://127.0.0.1:30939/sendBeacon']
+RED cross-origin EventSource: failed · ['http://127.0.0.1:30939/EventSource']
+RED cross-origin dedicated worker fetch: failed · ['http://127.0.0.1:30939/dedicated%20worker%20fetch']
+RED cross-origin form post in iframe: failed · ['http://127.0.0.1:30939/form%20post%20in%20iframe']
+RED cross-origin popup: failed · ['http://127.0.0.1:30939/popup']
+RED cross-origin css background: failed · ['http://127.0.0.1:30939/css%20background']
+RED cross-origin font: failed · ['http://127.0.0.1:30939/font']
+RED cross-origin ping: failed · ['http://127.0.0.1:30939/ping']
+RED WebSocket to the sink: failed · ['ws://127.0.0.1:30939/ws']
+RED real page.goto to another origin: failed · ['http://127.0.0.1:30939/goto']
+RED same-origin /outside.json: failed · ['http://127.0.0.1:4939/outside.json']
+RED same-origin /data/manifest.json: failed · ['http://127.0.0.1:4939/data/manifest.json']
+RED same-origin /kilato/missing.js: failed · ['http://127.0.0.1:4939/kilato/missing.js']
+RED same-origin /kilato/assets/: failed · ['http://127.0.0.1:4939/kilato/assets/']
+RED same-origin /kilato: failed · ['http://127.0.0.1:4939/kilato']
+RED same-origin /kilato/..%2fpackage.json: failed · ['http://127.0.0.1:4939/kilato/..%2fpackage.json']
+RED same-origin /kilato/.%2e/package.json: failed · ['http://127.0.0.1:4939/package.json']
+RED same-origin /kilato/%2e%2e/package.json: failed · ['http://127.0.0.1:4939/package.json']
+RED same-origin /kilato/data/../../package.json: failed · ['http://127.0.0.1:4939/package.json']
+RED same-origin /kilato/assets/..%2f..%2fpackage.json: failed · ['http://127.0.0.1:4939/kilato/assets/..%2f..%2fpackage.json']
+RED same-origin /kilato/./../package.json: failed · ['http://127.0.0.1:4939/package.json']
+RED same-origin /: failed · ['http://127.0.0.1:4939/']
+RED same-origin /package.json: failed · ['http://127.0.0.1:4939/package.json']
+RED same-origin /src/main.tsx: failed · ['http://127.0.0.1:4939/src/main.tsx']
+RED same-origin /kilato/src/main.tsx: failed · ['http://127.0.0.1:4939/kilato/src/main.tsx']
+RED same-origin /kilato/package.json: failed · ['http://127.0.0.1:4939/kilato/package.json']
+RED localhost is not the page origin: failed · ['http://localhost:4939/kilato/']
+RED a tile host lookalike: failed · ['https://a.tile.openstreetmap.org/1/0/0.png']
+GREEN own file /kilato/: passed
+GREEN own file /kilato/index.html: passed
+GREEN own file /kilato/?x=1: passed
+GREEN own file /kilato/#a: passed
+GREEN own file /kilato/index.html?y=2: passed
+GREEN a hashed asset with a query: passed
+GREEN tile bytes and content type, image size 256: passed
+GREEN data json content type and query: passed
+GREEN a climb out of the data folder gets a 404, not a file: passed
+Local server hits during these probes: 0
+
+===== second probe set
+GREEN a data: image: failed
+GREEN a blob: fetch: passed
+RED shared worker fetch: passed
+RED a second page in the same context: failed · ['http://127.0.0.1:34034/second-page']
+GREEN a data: image failed on my own broken GIF, with no fixture message. Rerun with a valid 1x1 GIF: 1 passed.
+Local server hits: GET /shared. The SharedWorker test passed with its request sent.
+
+===== end-of-test races, 30 runs each. Each shape sends one unexpected request before the test ends, so a pass is a miss.
+race: fetch fired on the last line, not awaited: missed 10/30, caught 20/30
+race: the same, then page.close() in the test: missed 10/30, caught 20/30
+race: fetch at the load event, test checks the title: missed 0/30, caught 30/30
+race: fetch 20 ms after load, test checks the title: missed 0/30, caught 30/30
+Local server hits by path: {"/then-close": 10}
+
+===== mutants of the fixture and the config. landed = git diff of the edit. A survivor is exit 0.
+AC2 base dropped: exit 1 · failed 7 · 'Expected to fail, but passed' 0 · 1 file changed, 1 deletion(-)
+  red: ["Preact renders into the page", "a data request gets the file from site-data", "a data request to /kilato/data/, which is not a file, gets a 404", "a data request to /kilato/data/cells/none.json, which is not a file, gets a 404", "a tile request gets the blank tile", "the build serves its assets under /kilato/", "the page at /kilato/ is titled Kilátó"]
+AC3 no teardown check: exit 1 · failed 11 · 'Expected to fail, but passed' 11 · 1 file changed, 1 deletion(-)
+  red: ["a request to https://example.invalid/ fails the test", "a request to https://example.invalid/kilato/ fails the test", "a request to https://example.invalid/kilato/data/manifest.json fails the test", "a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test", "a same-origin request to /data/manifest.json fails the test", "a same-origin request to /kilato/..%2fpackage.json fails the test", "a same-origin request to /kilato/assets/ fails the test", "a same-origin request to /kilato/missing.js fails the test", "a same-origin request to /outside.json fails the test", "a same-origin request to /outside/index.html fails the test", "an unexpected WebSocket fails the test"]
+AC3 tile: host matched by includes: exit 1 · failed 1 · 'Expected to fail, but passed' 1 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: ["a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test"]
+AC3 tile: wrong file: exit 1 · failed 1 · 'Expected to fail, but passed' 0 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: ["a tile request gets the blank tile"]
+AC3 data: any origin: exit 1 · failed 1 · 'Expected to fail, but passed' 1 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: ["a request to https://example.invalid/kilato/data/manifest.json fails the test"]
+AC3 data: wrong folder: exit 1 · failed 1 · 'Expected to fail, but passed' 0 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: ["a data request gets the file from site-data"]
+AC3 data: no 404 for a non-file: exit 1 · failed 2 · 'Expected to fail, but passed' 0 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: ["a data request to /kilato/data/, which is not a file, gets a 404", "a data request to /kilato/data/cells/none.json, which is not a file, gets a 404"]
+AC3 own files: every same-origin path passes: exit 1 · failed 6 · 'Expected to fail, but passed' 6 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: ["a same-origin request to /data/manifest.json fails the test", "a same-origin request to /kilato/..%2fpackage.json fails the test", "a same-origin request to /kilato/assets/ fails the test", "a same-origin request to /kilato/missing.js fails the test", "a same-origin request to /outside.json fails the test", "a same-origin request to /outside/index.html fails the test"]
+AC3 own files: base not checked: exit 1 · failed 1 · 'Expected to fail, but passed' 1 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: ["a same-origin request to /outside/index.html fails the test"]
+AC3 own files: folders pass: exit 1 · failed 2 · 'Expected to fail, but passed' 1 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: ["a data request to /kilato/data/, which is not a file, gets a 404", "a same-origin request to /kilato/assets/ fails the test"]
+AC3 own files blocked: exit 1 · failed 13 · 'Expected to fail, but passed' 0 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: ["Preact renders into the page", "a data request gets the file from site-data", "a data request to /kilato/data/, which is not a file, gets a 404", "a data request to /kilato/data/cells/none.json, which is not a file, gets a 404", "a same-origin request to /data/manifest.json fails the test", "a same-origin request to /kilato/..%2fpackage.json fails the test", "a same-origin request to /kilato/assets/ fails the test", "a same-origin request to /kilato/missing.js fails the test", "a same-origin request to /outside.json fails the test", "a same-origin request to /outside/index.html fails the test", "a tile request gets the blank tile", "the build serves its assets under /kilato/", "the page at /kilato/ is titled Kilátó"]
+AC3 WebSocket not routed: exit 1 · failed 1 · 'Expected to fail, but passed' 1 · 1 file changed, 1 deletion(-)
+  red: ["an unexpected WebSocket fails the test"]
+AC3 unexpected request sent, not aborted: exit 0 · failed None · 'Expected to fail, but passed' 0 · 1 file changed, 1 insertion(+), 1 deletion(-)
+  red: []
+AC4 no launchOptions: exit 1 · failed 1 · 'Expected to fail, but passed' 0 · 1 file changed, 1 deletion(-)
+  red: []
+Gap serviceWorkers not blocked: exit 0 · failed None · 'Expected to fail, but passed' 0 · 1 file changed, 1 deletion(-)
+  red: []
+All mutants across the evidence files: 20 run, 18 killed, 2 survived.
+
+===== tile.png
+256 x 256, 369 bytes, one colour: grey 242 on all 65536 pixels (PIL getcolors).
+
+===== repro: the race spec, for e2e/ in a clone, with SINK set to a local server
+import { expect, test } from './fixtures'
+const SINK = process.env.SINK!
+// Every shape sends one unexpected request before the test ends. A pass here is a miss.
+test('race: fetch fired on the last line, not awaited', async ({ page }) => {
+  await page.goto('/kilato/')
+  await page.evaluate((u) => { void fetch(u + '/last-line').catch(() => null) }, SINK)
+})
+test('race: the same, then page.close() in the test', async ({ page }) => {
+  await page.goto('/kilato/')
+  await page.evaluate((u) => { void fetch(u + '/then-close').catch(() => null) }, SINK)
+  await page.close()
+})
+test('race: fetch at the load event, test checks the title', async ({ page }) => {
+  await page.addInitScript((u) => addEventListener('load', () => void fetch(u + '/on-load').catch(() => null)), SINK)
+  await page.goto('/kilato/')
+  await expect(page).toHaveTitle('Kilátó')
+})
+test('race: fetch 20 ms after load, test checks the title', async ({ page }) => {
+  await page.addInitScript((u) => addEventListener('load', () => setTimeout(() => void fetch(u + '/after-20ms').catch(() => null), 20)), SINK)
+  await page.goto('/kilato/')
+  await expect(page).toHaveTitle('Kilátó')
+})

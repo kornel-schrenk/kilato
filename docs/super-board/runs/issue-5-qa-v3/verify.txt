@@ -1,0 +1,114 @@
+Tested head: 07fb80a (b6bc83a plus evidence files only). Host: Raspberry Pi, aarch64, Node v24.22.2, Playwright 1.64.1.
+Every run below is new. None of it reuses runs/issue-5-qa-v2/.
+
+===== AC1: fresh clone from GitHub, no node_modules, no dist
+
+added 43 packages, and audited 44 packages in 4s
+
+13 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm ci exit=0
+
+===== AC1: same clone, npm run verify. The list reporter marks test.fail() tests with a cross; the summary counts them as passed.
+
+> kilato@0.0.0 verify
+> npm run typecheck && npm test && npm run build && npm run test:e2e
+
+
+> kilato@0.0.0 typecheck
+> tsc
+
+
+> kilato@0.0.0 test
+> vitest run
+
+
+ RUN  v5.1.0 <clean-clone>
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  08:49:43
+   Duration  1.99s (tests 92%, transform 4%, import 2%, worker 1%)
+
+
+> kilato@0.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                 0.32 kB │ gzip: 0.23 kB
+dist/assets/index-COVsjOCJ.js  11.58 kB │ gzip: 4.97 kB
+
+✓ built in 145ms
+
+> kilato@0.0.0 test:e2e
+> playwright test
+
+
+Running 18 tests using 2 workers
+
+  ✘   1 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/ fails the test (705ms)
+  ✓   2 e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó (855ms)
+  ✘   3 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test (396ms)
+  ✓   4 e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/ (510ms)
+  ✘   5 e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test (503ms)
+  ✓   6 e2e/page.spec.ts:13:1 › Preact renders into the page (533ms)
+  ✘   7 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test (340ms)
+  ✘   8 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test (388ms)
+  ✘   9 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test (382ms)
+  ✘  10 e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test (336ms)
+  ✘  11 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test (327ms)
+  ✘  12 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test (405ms)
+  ✘  13 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test (344ms)
+  ✘  14 e2e/fixtures.spec.ts:37:1 › an unexpected WebSocket fails the test (263ms)
+  ✓  15 e2e/fixtures.spec.ts:47:1 › a tile request gets the blank tile (373ms)
+  ✓  16 e2e/fixtures.spec.ts:61:1 › a data request gets the file from site-data (246ms)
+  ✓  17 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404 (261ms)
+  ✓  18 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404 (335ms)
+
+  18 passed (11.7s)
+verify exit=0
+
+===== PR merged with develop at 7cf4908 (merge commit local only, not pushed), run at the same time as a second verify in the clean clone
+--- merged-verify.log
+> tsc
+> vitest run
+      Tests  2 passed (2)
+> vite build
+✓ built in 193ms
+> playwright test
+  18 passed (18.4s)
+merged verify exit=0
+--- parallel-verify.log
+> tsc
+> vitest run
+      Tests  2 passed (2)
+> vite build
+✓ built in 196ms
+> playwright test
+  18 passed (18.1s)
+parallel verify exit=0
+
+===== A failure at each step stops the chain. steps_run lists the steps that started.
+AC1 type error in src: exit 1 · steps_run ['tsc'] · ['TS2322']
+AC1 strict: implicit any in src: exit 1 · steps_run ['tsc'] · ['TS7006']
+AC1 failing unit test: exit 1 · steps_run ['tsc', 'vitest run']
+AC1 broken build: exit 1 · steps_run ['tsc', 'vitest run', 'vite build']
+AC2 wrong title: exit 1 · steps_run ['tsc', 'vitest run', 'vite build', 'playwright test']
+
+===== step c: npm run preview on its default port, opened in a real browser with no fixture
+  ➜  Local:   http://localhost:4173/kilato/
+desktop 1920x1080 title="Kilátó" #app-main=1 errors=0 requests=["200 /kilato/","200 /kilato/assets/index-COVsjOCJ.js"]
+tablet 1024x768 title="Kilátó" #app-main=1 errors=0 requests=["200 /kilato/","200 /kilato/assets/index-COVsjOCJ.js"]
+mobile 375x667 title="Kilátó" #app-main=1 errors=0 requests=["200 /kilato/","200 /kilato/assets/index-COVsjOCJ.js"]
+
+===== npm run dev, which AGENTS.md lists
+dev title "Kilátó" #app main 1 errors 0 []
+
+After every run git status in the clone is empty, so verify dirties nothing tracked.
