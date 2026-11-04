@@ -1,0 +1,114 @@
+Mutants, round 2. Tested head: 251d5a9. Each break was made in the worktree, the unit tests ran, and the file was restored from a pristine copy before the next one. None reached a commit.
+R1-a is the break the Reviewer named. Its test is scripts/data/osm.test.ts:150.
+What survived, and why it does not block, is in test-gaps.txt. Files this round does not touch keep their v1 results.
+
+R1-a · the Reviewer's break: always the first outer ring · scripts/data/osm.ts · RED · 1 of 121 failed
+    scripts/data/osm.test.ts uses the largest outer ring when a smaller one comes first
+R1-b · always the last outer ring · scripts/data/osm.ts · RED · 1 of 121 failed
+    scripts/data/osm.test.ts places a multipolygon at the centroid of its largest outer ring, ignoring the hole
+R1-c · the smallest outer ring · scripts/data/osm.ts · RED · 2 of 121 failed
+    scripts/data/osm.test.ts places a multipolygon at the centroid of its largest outer ring, ignoring the hole
+    scripts/data/osm.test.ts uses the largest outer ring when a smaller one comes first
+R1-d · the mean of the outer rings' centroids · scripts/data/osm.ts · RED · 2 of 121 failed
+    scripts/data/osm.test.ts places a multipolygon at the centroid of its largest outer ring, ignoring the hole
+    scripts/data/osm.test.ts uses the largest outer ring when a smaller one comes first
+R1-e · a later ring wins a tie on area · scripts/data/osm.ts · survived · 0 of 121 failed
+R1-f · area keeps its sign (Math.abs dropped) · scripts/data/osm.ts · survived · 0 of 121 failed
+F-1 · filter drops the first rule (tourism) · scripts/data/categories.ts · RED · 2 of 121 failed
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+F-2 · filter drops the last rule (shop, any value) · scripts/data/categories.ts · RED · 3 of 121 failed
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+    scripts/data/osm.test.ts filters by the expressions the table generates
+F-3 · filter drops the leisure rule · scripts/data/categories.ts · RED · 2 of 121 failed
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+F-4 · filter drops one rule in the middle (food shops) · scripts/data/categories.ts · survived · 0 of 121 failed
+F-5 · filter drops the first value of each list · scripts/data/categories.ts · RED · 3 of 121 failed
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+    scripts/data/osm.test.ts filters by the expressions the table generates
+F-6 · filter drops the last value of each list · scripts/data/categories.ts · RED · 3 of 121 failed
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+    scripts/data/osm.test.ts filters by the expressions the table generates
+F-7 · an any-value rule is written as =any · scripts/data/categories.ts · RED · 3 of 121 failed
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+    scripts/data/osm.test.ts filters by the expressions the table generates
+F-8 · filter keeps nodes only (n/ for nwr/) · scripts/data/categories.ts · RED · 3 of 121 failed
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+    scripts/data/osm.test.ts filters by the expressions the table generates
+F-9 · filter keeps ways only, list rules only (w/ for nwr/) · scripts/data/categories.ts · RED · 3 of 121 failed
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+    scripts/data/osm.test.ts filters by the expressions the table generates
+F-10 · filter values joined with a space · scripts/data/categories.ts · RED · 3 of 121 failed
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+    scripts/data/osm.test.ts filters by the expressions the table generates
+F-11 · R2 undone: the merged filter back · scripts/data/categories.ts · RED · 1 of 121 failed
+    scripts/data/osm.test.ts filters by the expressions the table generates
+F-12 · filter drops one of the four amenity rules (services) · scripts/data/categories.ts · RED · 2 of 114 failed, run over scripts/data only
+    scripts/data/categories.test.ts leaves no table tag out of the osmium filter
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+T-1 · table loses amenity=cafe · scripts/data/categories.ts · RED · 12 of 121 failed
+    scripts/data/categories.test.ts puts amenity=cafe in food
+    scripts/data/categories.test.ts leaves no tag from the spec out of the osmium filter
+    scripts/data/osm.test.ts returns one place per kept feature
+    scripts/data/osm.test.ts lets the first matching rule set the category and the kind
+    scripts/data/osm.test.ts rounds coordinates to 5 decimals
+    scripts/data/osm.test.ts keeps a point on the edge of the coverage box and leaves out one just past it
+    scripts/data/osm.test.ts gets the same centroid from a clockwise ring
+    scripts/data/osm.test.ts uses the largest outer ring when a smaller one comes first
+    scripts/data/osm.test.ts keeps its accuracy on a small building
+    scripts/data/osm.test.ts treats an odd area id as a relation and an even one as a way
+    scripts/data/osm.test.ts reads several lines and ignores the last line break
+    scripts/data/osm.test.ts filters by the expressions the table generates
+T-2 · table loses shop=photo · scripts/data/categories.ts · RED · 1 of 121 failed
+    scripts/data/categories.test.ts puts shop=photo in services
+X-1 · extract uses -s simple · scripts/data/osm.ts · RED · 1 of 121 failed
+    scripts/data/osm.test.ts cuts the coverage box out of the extract
+X-2 · box written south before west · scripts/data/osm.ts · RED · 22 of 121 failed
+    scripts/data/osm.test.ts returns one place per kept feature
+    scripts/data/osm.test.ts gives a node exactly the fields it has
+    scripts/data/osm.test.ts rounds the coordinates osmium wrote with 7 decimals to 5
+    scripts/data/osm.test.ts lets the first matching rule set the category and the kind
+    scripts/data/osm.test.ts turns area ids into way and relation ids
+    scripts/data/osm.test.ts places a polygon at the area-weighted centroid of its outer ring
+    scripts/data/osm.test.ts places a multipolygon at the centroid of its largest outer ring, ignoring the hole
+    scripts/data/osm.test.ts keeps the wikidata, wikipedia and opening_hours tags
+    scripts/data/osm.test.ts keeps names.hu and names.en only when they differ from name
+    scripts/data/osm.test.ts still keeps a memorial that is not a plaque or a stolperstein
+    scripts/data/osm.test.ts files a vacant shop in a listed building under the rule that matches it
+    scripts/data/osm.test.ts rounds coordinates to 5 decimals
+    scripts/data/osm.test.ts keeps a point on the edge of the coverage box and leaves out one just past it
+    scripts/data/osm.test.ts gets the same centroid from a clockwise ring
+    scripts/data/osm.test.ts uses the largest outer ring when a smaller one comes first
+    scripts/data/osm.test.ts keeps its accuracy on a small building
+    scripts/data/osm.test.ts treats an odd area id as a relation and an even one as a way
+    scripts/data/osm.test.ts reads several lines and ignores the last line break
+    scripts/data/osm.test.ts has a kept place for every value in the category table
+    scripts/data/osm.test.ts has a shop and a historic place with values only the catch-all rules match
+    scripts/data/osm.test.ts has a polygon, a multipolygon with several outer rings, an open way and all three kinds of place id
+    scripts/data/osm.test.ts cuts the coverage box out of the extract
+X-3 · export uses --add-unique-id=counter · scripts/data/osm.ts · RED · 1 of 121 failed
+    scripts/data/osm.test.ts exports one GeoJSON feature per line, with type ids and no record separator
+X-4 · export keeps the record separator · scripts/data/osm.ts · RED · 1 of 121 failed
+    scripts/data/osm.test.ts exports one GeoJSON feature per line, with type ids and no record separator
+X-5 · export writes geojson, not geojsonseq · scripts/data/osm.ts · RED · 1 of 121 failed
+    scripts/data/osm.test.ts exports one GeoJSON feature per line, with type ids and no record separator
+X-6 · export drops the config file · scripts/data/osm.ts · RED · 1 of 121 failed
+    scripts/data/osm.test.ts exports one GeoJSON feature per line, with type ids and no record separator
+X-7 · linear_tags true · scripts/data/osm.ts · RED · 1 of 121 failed
+    scripts/data/osm.test.ts sets linear_tags to false in the export config
+
+24 of 27 mutants red. The working tree was clean after every restore.
+
+===== AC6, by hand
+scripts/data/qa-probe-652458.ts holds `export const probe = (value) => value`. It was removed afterwards.
+scripts in include: tsc exit 1, TS7006.
+scripts out of include: tsc exit 0, and test/typecheck.test.ts goes red: 1 of 1 failed.
+tsconfig.json restored: test/typecheck.test.ts passes.

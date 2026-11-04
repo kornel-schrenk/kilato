@@ -1,0 +1,38 @@
+Tested head: 251d5a9 (c50733b plus QA's test for R1).
+
+===== CI
+Check `verify` on c50733b, the last pushed head before this round: pass, GitHub Actions run 41819368833, job 126538363758.
+This file can't record CI on its own commit. The PR comment gives the state at handoff.
+
+===== merge with develop
+Merged tree b617a33821a3f3b1048a61a4f37da0391ab90dd5: head 251d5a9853bb7bab5bdad1fd355a1efb68b5d2af with develop af0e585a446883d6c1fd51ca347a900598ec63d7
+git merge-tree --write-tree: exit 0, no conflicts.
+A clean merge doesn't prove the result works, as develop added src/ code and this PR adds scripts to the type check. So the merged tree was unpacked into a scratch folder and checked:
+$ npm ci && npm run verify
+Tests  133 passed (133)
+29 passed (26.5s)
+npm run verify exit=0
+
+===== pr-security-review
+Diff of develop...251d5a9, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- scripts/data/osm.ts and categories.ts run only in the data build, and nothing under src/ or e2e/ imports them. They shell out to nothing: extractArgs, tagsFilterArgs and exportArgs return argument arrays, and #12 is what will run them. The filter expressions come from a fixed table, and since c50733b from one map over it.
+- placesFromExport reads osmium's own output with JSON.parse. Tag strings are community-edited, so they are untrusted, but this diff only copies them into place fields and has no HTML sink. Tags are read by fixed key names. Probed below: a tag named __proto__ adds no field and pollutes nothing.
+- src/core/cells.ts and types.ts do arithmetic and declare types.
+- test/typecheck.test.ts runs npx tsc with fixed arguments and no shell, and writes a file named after its own process id. It only runs in tests, so the skill's exclusion for test files applies.
+- real-osmium-run.mjs in this folder is QA's evidence. Nothing imports it, it isn't in tsconfig's include or Vitest's pattern, and it runs osmium with an argument array and no shell.
+- No dependency or workflow changes: the diff's file list holds no package.json, package-lock.json or .github/ path.
+- Token shapes in the diff (GitHub, AWS, Slack and OpenAI tokens, private keys): 0 matches, counted before this folder was added.
+
+===== probe: hostile tags and edge rings through placesFromExport
+__proto__ tag: [{"id":"n1","cat":"food","kind":"cafe","lat":47.5,"lon":19.05,"name":"Hely"}]
+constructor tag value: [{"id":"n1","cat":"shops","kind":"constructor","lat":47.5,"lon":19.05,"name":"Hely"}]
+__proto__ tag value: [{"id":"n1","cat":"shops","kind":"__proto__","lat":47.5,"lon":19.05,"name":"Hely"}]
+toString as a key the rules read: []
+script in a name: [{"id":"n1","cat":"food","kind":"cafe","lat":47.5,"lon":19.05,"name":"<script>alert(1)</script>"}]
+flat ring first, real ring second: [{"id":"r1","cat":"food","kind":"cafe","lat":47.515,"lon":19.065,"name":"Hely"}]
+real ring first, flat ring second: [{"id":"r1","cat":"food","kind":"cafe","lat":47.515,"lon":19.065,"name":"Hely"}]
+three rings, largest in the middle: [{"id":"r1","cat":"food","kind":"cafe","lat":47.515,"lon":19.065,"name":"Hely"}]
+two rings of equal area: [{"id":"r1","cat":"food","kind":"cafe","lat":47.505,"lon":19.055,"name":"Hely"}]
+largest ring has a hole, small ring first: [{"id":"r1","cat":"food","kind":"cafe","lat":47.515,"lon":19.065,"name":"Hely"}]
+Object.prototype polluted: false

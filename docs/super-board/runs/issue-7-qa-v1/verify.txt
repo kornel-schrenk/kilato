@@ -1,0 +1,73 @@
+Tested head: 5c46937. Host: Raspberry Pi, aarch64, Node v24.22.2.
+
+$ npm ci
+
+added 43 packages in 4s
+exit=0
+
+$ npm run verify
+
+> kilato@0.0.0 verify
+> npm run typecheck && npm test && npm run build && npm run test:e2e
+
+
+> kilato@0.0.0 typecheck
+> tsc
+
+
+> kilato@0.0.0 test
+> vitest run
+
+
+ RUN  v5.1.0 /home/kornel/Projects/kilato/.claude/worktrees/issue-7-qa
+
+
+ Test Files  6 passed (6)
+      Tests  120 passed (120)
+   Start at  11:28:36
+   Duration  4.00s (tests 79%, transform 11%, import 7%, worker 3%)
+
+    Isolate  6 workers spawned · ~514ms startup each (spawn + environment, per file)
+             at least ~514ms faster with isolate: false — reuses workers across files instead of one per file
+
+
+> kilato@0.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                 0.32 kB │ gzip: 0.23 kB
+dist/assets/index-COVsjOCJ.js  11.58 kB │ gzip: 4.97 kB
+
+✓ built in 172ms
+
+> kilato@0.0.0 test:e2e
+> playwright test
+
+
+Running 18 tests using 2 workers
+
+  ✘   2 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/ fails the test (715ms)
+  ✓   1 e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó (802ms)
+  ✘   3 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test (422ms)
+  ✓   4 e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/ (502ms)
+  ✘   5 e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test (430ms)
+  ✓   6 e2e/page.spec.ts:13:1 › Preact renders into the page (536ms)
+  ✘   7 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test (382ms)
+  ✘   8 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test (390ms)
+  ✘   9 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test (382ms)
+  ✘  10 e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test (350ms)
+  ✘  11 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test (375ms)
+  ✘  12 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test (358ms)
+  ✘  13 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test (358ms)
+  ✘  14 e2e/fixtures.spec.ts:37:1 › an unexpected WebSocket fails the test (276ms)
+  ✓  15 e2e/fixtures.spec.ts:47:1 › a tile request gets the blank tile (372ms)
+  ✓  16 e2e/fixtures.spec.ts:61:1 › a data request gets the file from site-data (243ms)
+  ✓  17 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404 (252ms)
+  ✓  18 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404 (325ms)
+
+  18 passed (11.4s)
+exit=0

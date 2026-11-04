@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='qa'>
+<node id='1' version='1' lat='47.4981456' lon='19.0534566'><tag k="name" v="Valódi Múzeum"/><tag k="name:en" v="Real Museum"/><tag k="tourism" v="museum"/><tag k="opening_hours" v="Tu-Su 10:00-18:00"/></node>
+<node id='2' version='1' lat='47.4971' lon='19.0551'><tag k="amenity" v="cafe"/></node>
+<node id='3' version='1' lat='47.4969' lon='19.0538'><tag k="name" v="Tábla"/><tag k="historic" v="memorial"/><tag k="memorial" v="plaque"/></node>
+<node id='4' version='1' lat='47.4966' lon='19.0536'><tag k="name" v="Botlatókő"/><tag k="historic" v="memorial"/><tag k="memorial:type" v="stolperstein"/></node>
+<node id='5' version='1' lat='47.4983' lon='19.0562'><tag k="name" v="Üres"/><tag k="shop" v="vacant"/></node>
+<node id='6' version='1' lat='47.7983' lon='18.7353'><tag k="name" v="Esztergom"/><tag k="amenity" v="place_of_worship"/></node>
+<node id='7' version='1' lat='47.4991' lon='19.0572'><tag k="name" v="Iroda"/><tag k="office" v="company"/></node>
+<node id='8' version='1' lat='47.4994' lon='19.0569'><tag k="name" v="Parkoló"/><tag k="amenity" v="parking"/></node>
+<node id='9' version='1' lat='47.4995' lon='19.057'><tag k="name" v="Könyves Mozi"/><tag k="amenity" v="cinema"/><tag k="shop" v="books"/></node>
+<node id='10' version='1' lat='47.4996' lon='19.0571'><tag k="name" v="Üres Ház"/><tag k="shop" v="vacant"/><tag k="historic" v="building"/></node>
+<node id='11' version='1' lat='47.4997' lon='19.0572'><tag k="name" v="Bolt"/><tag k="shop" v="vintage"/></node>
+<node id='1001' version='1' lat='47.5024' lon='19.0578'></node>
+<node id='1002' version='1' lat='47.5024' lon='19.0592'></node>
+<node id='1003' version='1' lat='47.5032' lon='19.0592'></node>
+<node id='1004' version='1' lat='47.5032' lon='19.0578'></node>
+<node id='1005' version='1' lat='47.4955' lon='19.0568'></node>
+<node id='1006' version='1' lat='47.4962' lon='19.0574'></node>
+<node id='1007' version='1' lat='47.4968' lon='19.0581'></node>
+<node id='1008' version='1' lat='47.4986' lon='19.0476'></node>
+<node id='1009' version='1' lat='47.4986' lon='19.0484'></node>
+<node id='1010' version='1' lat='47.4992' lon='19.0484'></node>
+<node id='1011' version='1' lat='47.4992' lon='19.0476'></node>
+<node id='1012' version='1' lat='47.4986' lon='19.0496'></node>
+<node id='1013' version='1' lat='47.4986' lon='19.0504'></node>
+<node id='1014' version='1' lat='47.4992' lon='19.0504'></node>
+<node id='1015' version='1' lat='47.4992' lon='19.0496'></node>
+<node id='1016' version='1' lat='47.4986' lon='19.051'></node>
+<node id='1017' version='1' lat='47.4986' lon='19.0512'></node>
+<node id='1018' version='1' lat='47.4988' lon='19.0512'></node>
+<node id='1019' version='1' lat='47.4988' lon='19.051'></node>
+<node id='1020' version='1' lat='47.495' lon='19.05'><tag k="name" v="Kapu"/><tag k="barrier" v="gate"/></node>
+<node id='1021' version='1' lat='47.495' lon='19.0505'></node>
+<node id='1022' version='1' lat='47.4955' lon='19.0505'></node>
+<node id='1023' version='1' lat='47.4955' lon='19.05'></node>
+<node id='1024' version='1' lat='47.4978' lon='19.0515'></node>
+<node id='1025' version='1' lat='47.4978' lon='19.0535'></node>
+<node id='1026' version='1' lat='47.499' lon='19.0535'></node>
+<node id='1027' version='1' lat='47.499' lon='19.0515'></node>
+<node id='1028' version='1' lat='47.4981' lon='19.0518'></node>
+<node id='1029' version='1' lat='47.4981' lon='19.0524'></node>
+<node id='1030' version='1' lat='47.4985' lon='19.0524'></node>
+<node id='1031' version='1' lat='47.4985' lon='19.0518'></node>
+<node id='1032' version='1' lat='47.4992' lon='19.0515'></node>
+<node id='1033' version='1' lat='47.4992' lon='19.0519'></node>
+<node id='1034' version='1' lat='47.4995' lon='19.0519'></node>
+<node id='1035' version='1' lat='47.4995' lon='19.0515'></node>
+<node id='1036' version='1' lat='47.49' lon='19.06'></node>
+<node id='1037' version='1' lat='47.49' lon='19.0606'></node>
+<node id='1038' version='1' lat='47.4904' lon='19.0606'></node>
+<node id='1039' version='1' lat='47.4904' lon='19.06'></node>
+<node id='1040' version='1' lat='47.5' lon='18.9'></node>
+<node id='1041' version='1' lat='47.5' lon='18.93'></node>
+<node id='1042' version='1' lat='47.51' lon='18.93'></node>
+<node id='1043' version='1' lat='47.51' lon='18.9'></node>
+<node id='1044' version='1' lat='47.49' lon='19.062'></node>
+<node id='1045' version='1' lat='47.49' lon='19.0626'></node>
+<node id='1046' version='1' lat='47.4904' lon='19.0626'></node>
+<node id='1047' version='1' lat='47.4904' lon='19.062'></node>
+<node id='1048' version='1' lat='47.49' lon='19.064'></node>
+<node id='1049' version='1' lat='47.49' lon='19.0642'></node>
+<node id='1050' version='1' lat='47.4902' lon='19.0642'></node>
+<node id='1051' version='1' lat='47.4902' lon='19.064'></node>
+<node id='1052' version='1' lat='47.49' lon='19.065'></node>
+<node id='1053' version='1' lat='47.49' lon='19.066'></node>
+<node id='1054' version='1' lat='47.491' lon='19.066'></node>
+<node id='1055' version='1' lat='47.491' lon='19.065'></node>
+<way id='100' version='1'><nd ref="1001"/><nd ref="1002"/><nd ref="1003"/><nd ref="1004"/><nd ref="1001"/><tag k="name" v="Opera"/><tag k="amenity" v="theatre"/><tag k="wikidata" v="Q36833"/><tag k="wikipedia" v="hu:Magyar Állami Operaház"/><tag k="building" v="yes"/></way>
+<way id='101' version='1'><nd ref="1005"/><nd ref="1006"/><nd ref="1007"/><tag k="name" v="Városfal"/><tag k="historic" v="citywalls"/></way>
+<way id='102' version='1'><nd ref="1008"/><nd ref="1009"/><nd ref="1010"/><nd ref="1011"/><nd ref="1008"/><tag k="historic" v="building"/></way>
+<way id='103' version='1'><nd ref="1012"/><nd ref="1013"/><nd ref="1014"/><nd ref="1015"/><nd ref="1012"/><tag k="name" v="Nem Terület"/><tag k="historic" v="citywalls"/><tag k="area" v="no"/></way>
+<way id='104' version='1'><nd ref="1016"/><nd ref="1017"/><nd ref="1018"/><nd ref="1019"/><nd ref="1016"/><tag k="name" v="Hely"/><tag k="amenity" v="cafe"/><tag k="area" v="yes"/></way>
+<way id='105' version='1'><nd ref="1020"/><nd ref="1021"/><nd ref="1022"/><nd ref="1023"/><nd ref="1020"/><tag k="name" v="Udvar"/><tag k="leisure" v="garden"/></way>
+<way id='106' version='1'><nd ref="1044"/><nd ref="1047"/><nd ref="1046"/><nd ref="1045"/><nd ref="1044"/><tag k="name" v="Óramutató Udvar"/><tag k="leisure" v="garden"/></way>
+<way id='200' version='1'><nd ref="1024"/><nd ref="1025"/><nd ref="1026"/><nd ref="1027"/><nd ref="1024"/></way>
+<way id='201' version='1'><nd ref="1028"/><nd ref="1029"/><nd ref="1030"/><nd ref="1031"/><nd ref="1028"/></way>
+<way id='202' version='1'><nd ref="1032"/><nd ref="1033"/><nd ref="1034"/><nd ref="1035"/><nd ref="1032"/></way>
+<way id='203' version='1'><nd ref="1036"/><nd ref="1037"/><nd ref="1038"/><nd ref="1039"/><nd ref="1036"/></way>
+<way id='204' version='1'><nd ref="1040"/><nd ref="1041"/><nd ref="1042"/><nd ref="1043"/><nd ref="1040"/></way>
+<way id='205' version='1'><nd ref="1048"/><nd ref="1051"/><nd ref="1050"/><nd ref="1049"/><nd ref="1048"/></way>
+<way id='206' version='1'><nd ref="1052"/><nd ref="1055"/><nd ref="1054"/><nd ref="1053"/><nd ref="1052"/></way>
+<relation id='300' version='1'><member type="way" ref="200" role="outer"/><member type="way" ref="201" role="inner"/><member type="way" ref="202" role="outer"/><tag k="type" v="multipolygon"/><tag k="name" v="Erzsébet tér"/><tag k="leisure" v="park"/><tag k="wikipedia" v="hu:Erzsébet tér (Budapest)"/></relation>
+<relation id='301' version='1'><member type="way" ref="203" role="outer"/><tag k="type" v="multipolygon"/><tag k="name" v="Egy Gyűrű"/><tag k="tourism" v="attraction"/></relation>
+<relation id='302' version='1'><member type="node" ref="1" role=""/><tag k="type" v="site"/><tag k="name" v="Telep"/><tag k="tourism" v="attraction"/></relation>
+<relation id='303' version='1'><member type="way" ref="204" role="outer"/><tag k="type" v="multipolygon"/><tag k="name" v="Peremkert"/><tag k="leisure" v="park"/></relation>
+<relation id='304' version='1'><member type="way" ref="205" role="outer"/><member type="way" ref="206" role="outer"/><tag k="type" v="multipolygon"/><tag k="name" v="Óramutató Park"/><tag k="leisure" v="park"/></relation>
+</osm>
