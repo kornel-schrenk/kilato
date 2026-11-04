@@ -251,7 +251,7 @@ describe('the osmium command lines', () => {
     expect(args.join(' ')).toContain('-o places.geojsonseq')
   })
 
-  it('tells osmium to write no linear features', () => {
+  it('sets linear_tags to false in the export config', () => {
     expect(EXPORT_CONFIG.linear_tags).toBe(false)
   })
 })

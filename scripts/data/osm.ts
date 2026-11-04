@@ -4,7 +4,10 @@ import { categorize, tagsFilterExpressions, type Tags } from './categories'
 /** Budapest: west, south, east, north. */
 export const COVERAGE_BOX: Manifest['box'] = [18.925, 47.35, 19.335, 47.62]
 
-/** The config file for `exportArgs`. Without linear tags, osmium writes no open ways. */
+/**
+ * The config file for `exportArgs`. It makes closed ways areas, unless they're tagged `area=no`.
+ * osmium still writes open ways, as `LineString`, so `placesFromExport` leaves those out.
+ */
 export const EXPORT_CONFIG = { linear_tags: false }
 
 export function extractArgs(pbf: string, output: string): string[] {
