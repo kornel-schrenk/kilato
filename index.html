@@ -4,6 +4,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kilátó</title>
+    <style>
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.25rem;
+      }
+      .lang-switch button {
+        min-width: 44px;
+        min-height: 44px;
+      }
+      .lang-switch button[aria-pressed='true'] {
+        font-weight: bold;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
