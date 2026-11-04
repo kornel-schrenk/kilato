@@ -1,0 +1,12 @@
+CI. GitHub check verify: success on builder head 6b82b61. The QA commits start their own run on push, and the merge gate reads the result.
+
+pr-security-review, diff of develop...a7ab0f3, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- src/ui/App.tsx: the localStorage value is only compared to "hu" and "en" in uiLanguage, and never reaches the DOM. A saved "<img src=x onerror=alert(1)>" gives the Hungarian page and 0 errors, probe.txt.
+- document.documentElement.lang only ever gets a Lang, hu or en.
+- Preact renders the strings in src/i18n as text. Grep of the shipped files for innerHTML, dangerouslySetInnerHTML, eval, new Function, document.write, fetch, cookie and external URLs: 0 matches.
+- index.html gains one static style tag.
+- Privacy: only kilato.lang is stored, hu or en, after a press. The spec's rule 7 allows it, and e2e/language.spec.ts:73 pins that opening the page saves nothing.
+- package.json and package-lock.json are unchanged. npm audit --omit=dev: 0 vulnerabilities.
+- e2e and unit test files are out of scope for the skill.
+- Secret scan of the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.

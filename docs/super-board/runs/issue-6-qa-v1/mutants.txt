@@ -1,0 +1,38 @@
+Mutants on head a7ab0f3. Each one landed (git diff checked), ran, and was restored. None is committed.
+31/31 killed: 17 unit, 14 page. 4 page mutants were killed only by the tests QA added.
+The first unit run used a Vitest reporter flag that does not exist, so nothing ran and every mutant read as survived. It was thrown away and rerun with a check that Vitest really ran.
+
+===== unit mutants, npx vitest run
+killed   AC3 key lost in hu.ts: src/i18n/i18n.test.ts > hu.ts and en.ts have the same keys
+killed   AC3 key added to en.ts: src/i18n/i18n.test.ts > hu.ts and en.ts have the same keys
+killed   AC3 key renamed in hu.ts: src/i18n/i18n.test.ts > hu.ts and en.ts have the same keys
+killed   AC4 secondName always names.hu: src/core/names.test.ts > secondName > is names.en when the UI is English · src/core/names.test.ts > secondName > is nothing when the place has no name in the UI language
+killed   AC4 secondName falls back to names.en: src/core/names.test.ts > secondName > is nothing when the place has no name in the UI language
+killed   AC4 secondName falls back to names.hu: src/core/names.test.ts > secondName > is nothing when the place has no name in the UI language
+killed   AC5 hu numbers use en-GB: src/core/lang.test.ts > formatDate > writes dates the way the spec shows them · src/core/lang.test.ts > formatNumber > formats the same number differently for hu and en
+killed   AC5 en locale is plain en: src/core/lang.test.ts > formatDate > writes dates the way the spec shows them
+killed   AC5 formatNumber without Intl: src/core/lang.test.ts > formatNumber > formats the same number differently for hu and en
+killed   AC5 formatNumber ignores the language: src/core/lang.test.ts > formatNumber > formats the same number differently for hu and en
+killed   AC5 formatDate ignores the language: src/core/lang.test.ts > formatDate > writes dates the way the spec shows them
+killed   AC5 dateStyle long: src/core/lang.test.ts > formatDate > writes dates the way the spec shows them
+killed   AC1 last language, not first: src/core/lang.test.ts > phoneLanguage > is the primary subtag of the first language
+killed   AC1 whole tag, not primary subtag: src/core/lang.test.ts > phoneLanguage > is the primary subtag of the first language
+killed   AC1 English phones get Hungarian: src/core/lang.test.ts > uiLanguage > ignores a saved value that is not a UI language · src/core/lang.test.ts > uiLanguage > is Hungarian on a Hungarian phone and English on any other
+killed   AC2 saved value not checked: src/core/lang.test.ts > uiLanguage > ignores a saved value that is not a UI language
+killed   AC2 saved value ignored: src/core/lang.test.ts > uiLanguage > follows the saved choice over the phone language
+===== page mutants, vite build then playwright test e2e/language.spec.ts. new = the 4 tests QA added
+killed   AC1 html lang never set: builder tests red 2, new tests red 2 · new: on a phone set to hu-HU › pressing back to the phone language is kept too; with the phone languages hu-HU, de-AT, only the first counts
+killed   AC2 html lang set 300 ms late: builder tests red 2, new tests red 0
+killed   AC2 text changes 300 ms late: builder tests red 2, new tests red 0
+killed   AC2 press not saved: builder tests red 2, new tests red 1 · new: on a phone set to hu-HU › pressing back to the phone language is kept too
+killed   AC2 saved choice not read: builder tests red 2, new tests red 0
+killed   AC2 saved on open: builder tests red 1, new tests red 0
+killed   AC2 buttons swapped: builder tests red 1, new tests red 1 · new: on a phone set to hu-HU › pressing back to the phone language is kept too
+killed   AC2 EN pressed state wrong: builder tests red 2, new tests red 0
+killed   AC2 read not guarded: builder tests red 1, new tests red 0
+killed   AC2 write not guarded: builder tests red 1, new tests red 0
+killed   AC1 App reads the last language: builder tests red 0, new tests red 2 · new: with the phone languages de-AT, hu-HU, only the first counts; with the phone languages hu-HU, de-AT, only the first counts
+killed   AC1 App looks for hu anywhere in the list: builder tests red 0, new tests red 1 · new: with the phone languages de-AT, hu-HU, only the first counts
+killed   AC2 press back to the phone language not saved: builder tests red 0, new tests red 1 · new: on a phone set to hu-HU › pressing back to the phone language is kept too
+killed   AC2 switch name not translated: builder tests red 0, new tests red 1 · new: on a phone set to hu-HU › the name of the switch changes with the language
+
