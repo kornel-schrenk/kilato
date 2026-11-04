@@ -154,6 +154,9 @@ const sendFix = (page: Page, { lat, lon }: LatLon) =>
     [lat, lon],
   )
 
+const watchCount = (page: Page) =>
+  page.evaluate(() => (window as unknown as { watches: Map<number, unknown> }).watches.size)
+
 /** Opens the page and starts exploring at Deák Ferenc tér. */
 async function explore(page: Page) {
   await page.goto('/kilato/')
@@ -375,6 +378,49 @@ test.describe('without a granted permission', () => {
     await page.goto('/kilato/')
     await expect(page.getByText(intro)).toBeVisible()
     expect(errors).toEqual([])
+  })
+
+  test('a permission refused on an earlier visit still gets the intro, and a press explores', async ({ page }) => {
+    await page.addInitScript(() => {
+      navigator.permissions.query = () => Promise.resolve({ state: 'denied' } as PermissionStatus)
+    })
+    await page.goto('/kilato/')
+    await expect(page.getByText(intro)).toBeVisible()
+
+    await button(page, 'Use my location').click()
+
+    await expect(page.getByText(note)).toBeVisible()
+    await expect(pin(page)).toBeVisible()
+  })
+
+  test('a browser that rejects the permission question gets the intro', async ({ page }) => {
+    await page.addInitScript(() => {
+      navigator.permissions.query = () => Promise.reject(new TypeError('Not supported'))
+    })
+    await page.goto('/kilato/')
+    await expect(page.getByText(intro)).toBeVisible()
+    await expect(button(page, 'Explore the map')).toBeVisible()
+  })
+
+  test('a browser with no Permissions API gets the intro', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'permissions', { value: undefined })
+    })
+    await page.goto('/kilato/')
+    await expect(page.getByText(intro)).toBeVisible()
+    await expect(button(page, 'Explore the map')).toBeVisible()
+  })
+
+  test('Explore the map stops a location request still waiting', async ({ page }) => {
+    await handFedLocation(page)
+    await page.goto('/kilato/')
+    await button(page, 'Use my location').click()
+    await expect.poll(() => watchCount(page)).toBe(1)
+
+    await button(page, 'Explore the map').click()
+
+    await expect(pin(page)).toBeVisible()
+    await expect.poll(() => watchCount(page)).toBe(0)
   })
 
   const startsExploring = async (page: Page) => {
@@ -710,6 +756,22 @@ test.describe('with the permission granted', () => {
     await expect(dot(page)).toHaveCount(0)
     await expectNear(() => pinPlace(page), left)
     await expectNear(() => mapCentre(page), left)
+  })
+
+  test('a drag stops the location watch, and My location starts just one again', async ({ page }) => {
+    await handFedLocation(page)
+    await page.goto('/kilato/')
+    await expect.poll(() => watchCount(page)).toBe(1)
+    await sendFix(page, home)
+    await expect(dot(page)).toBeVisible()
+    await expectNear(() => mapCentre(page), home)
+
+    await drag(page, -120, 60)
+    await expect(pin(page)).toBeVisible()
+    await expect.poll(() => watchCount(page)).toBe(0)
+
+    await button(page, 'My location').click()
+    await expect.poll(() => watchCount(page)).toBe(1)
   })
 
   test('My location switches back to following, at the location now', async ({ page }) => {

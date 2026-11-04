@@ -1,0 +1,15 @@
+CI. GitHub check verify: success on builder head a141379, run 41840811933. The QA commit starts its own run on push.
+
+pr-security-review, diff of develop...a141379, merge base fb6dc0d, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- src/ui/MapView.tsx:12: the pin's html is a constant, with one constant colour in it. No visitor text reaches it.
+- src/ui/MapView.tsx:43: the attribution html is a constant.
+- Preact renders the strings in src/i18n as text. Leaflet gets the zoom labels as titles, and they are our own constants.
+- The location stays in memory. Probe with the location at 47.49791, 19.05439: 26 requests, 0 carrying 47.49 or 19.05 in the URL or body. localStorage, sessionStorage and cookies hold nothing after exploring.
+- Tile URLs show which area is on screen. The spec's What is sent where says so, and the intent allows it.
+- The page asks for the location only after a press or a granted permission, e2e/map.spec.ts:367.
+- Added lines in src and index.html: 0 matches for innerHTML, dangerouslySetInnerHTML, eval, new Function, document.write, fetch, XMLHttpRequest, sendBeacon, localStorage, sessionStorage, cookie, postMessage, window.open, location.href.
+- URLs in the shipped JS: tile.openstreetmap.org, www.openstreetmap.org/copyright, leafletjs.com as a link, and XML namespaces. No serviceWorker string. referrerPolicy appears only in Leaflet's own unused option and Vite's preload helper.
+- New packages: leaflet 1.9.4, BSD-2-Clause. @types/leaflet and @types/geojson, MIT, types only. npm audit --omit=dev: 0 vulnerabilities.
+- Secret scan of the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.
+- e2e and unit test files are out of scope for the skill.

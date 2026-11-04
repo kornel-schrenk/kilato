@@ -1,0 +1,58 @@
+Test-gap check. Tested head: a141379. Range: develop...a141379, merge base fb6dc0d. Written from this round's own runs.
+Component column: n/a for every AC. The repo has no component test harness, and the page tests drive src/ui/.
+No project verifier: .agents/skills/verify-* doesn't exist. target.url is null, so there is no health check.
+(QA) marks a test added in this commit.
+
+===== ledger
+AC1 unit n/a: markup and CSS · e2e e2e/map.spec.ts:186 375 and 899 px, :208 900 and 1280 px, :224 header, :232 no sideways scroll
+AC2 unit n/a: Leaflet options · e2e :249 URLs and view, :274 zoom 19, :288 link, :298 not covered on a phone, :311 Referer, :325 no service worker
+AC3 unit src/core/point.test.ts:109 14.9 m, :116 15.1 m, :122 from the point, :128 accuracy, :135 zoom, src/core/geo.test.ts · e2e :588 follows, :602 high accuracy, :619 dot and circles, :634 20 m, :660 14 m, :670 16 m, :680 two steps, :691 zoom kept. The 1 km circle on a phone: none, see High below
+AC4 unit point.test.ts:60 Explore, :69 errors, :91 error with no fix · e2e :341 intro, :357 Hungarian, :383 refused earlier (QA), :396 query rejected (QA), :405 no API (QA), :414 Explore stops a request (QA), :439 Explore, :445 after a move, :458 during a zoom, :485 during a coast, :513 refusal, :523 errors, :715 error on load
+AC5 unit point.test.ts:177 tap, :182 drag end, :188 drag start, :196 My location · e2e :723 drag while following, :740 walking after it, :761 watch stopped (QA), :777 and :796 My location, :813 slow drag, :823 quick drag, :839 tap, :901 asks, :913 and :929 refused or failed, :955 touch tap, :965 touch drag. A tap during a coast: none, see High below
+
+===== edge cases
+boundaries: 14.9 and 15.1 m pinned, point.test.ts:109, :116 · 14 and 16 m pinned, e2e/map.spec.ts:660, :670 · 899 and 900 px pinned, :186, :208 · zoom 19 pinned, :274 · exactly 15.000 m: gap, Low, it can't be built in floats, and the code reads the AC's "or more" correctly at src/core/point.ts:67
+dates, money, auth logic, input text: n/a, no such code. The location permission is covered under error paths
+volume: 0, 1 and 3 fixes pinned, point.test.ts:122 · 3 rounds of drag and My location, probe only
+error paths: watch errors 1, 2 and 3 pinned, e2e/map.spec.ts:513, :523 · permission query rejected or missing pinned (QA), :396, :405 · navigator.geolocation missing: gap, Low. Witness: Object.defineProperty(navigator, 'geolocation', { value: undefined }), then a press on Use my location throws a page error and the intro stays. Explore the map still works, and no current browser lacks the API
+idempotency and races: fix after a drag pinned, point.test.ts:170 · Explore during a zoom and during a coast pinned, e2e/map.spec.ts:458, :485 · second press of My location pinned, :929 · a fix during a zoom, a second drag during a coast: probe only · a tap during a coast: GAP, High, a real bug, below
+UI states: intro, following and exploring pinned · granted with no first fix yet: gap, Low. From the code, src/ui/App.tsx:61 and :74, src/ui/MapView.tsx:122: the map stays at Deák Ferenc tér with no dot, note or button, until a fix, an error or a drag. The spec doesn't ask for more
+accessibility: roles and names of the buttons, the map and the zoom controls pinned, :341, :548 · zoom buttons are 30 x 31 px at 375 wide, under the 44 px of the page's own buttons: gap, Low. It's Leaflet's size, and no AC asks for more
+
+===== test the tests
+Expected values are literals from the spec and the ticket, not recomputed with the code. Every page test ends with an assertion after its last action, as AGENTS.md asks: checked with a script over all 50 test blocks.
+40 of 42 mutants killed, 2 equivalent, mutants.txt.
+2 breaks survive the builder's page tests, and QA wrote tests for them:
+- permission query not guarded: the page stays blank with no intro. e2e/map.spec.ts:396, :405
+- a permission refused earlier counts as granted: :383. It's the ticket's Context step e
+Both were seen red on the break and green on the restored code, mutants.txt.
+A watch that is never cleared already goes red in the builder's :777 and :796. QA's :414 and :761 name it directly, and went red on the same break.
+A test that can't catch what its name says: e2e/map.spec.ts:619 uses toBeVisible on .km-circle at 1280x720. toBeVisible asks for a non-empty box, so it would pass on a phone too, with the circle entirely off screen. e2e/map.spec.ts:852 has the same limit.
+
+===== rank
+High, both need app code, so they are a Fail and go to the builder:
+
+1. AC3, the 1 km circle on a phone. Rung: e2e, it's layout.
+   Witness: viewport 375x667, permission granted, location 47.51, 19.06, open the page and wait for the dot.
+   Measure: sample the circle's line, c + r(cos a, sin a), over 360 degrees from the .km-circle box, and count the points inside the .leaflet-container box.
+   Actual: 0 of 360. Radius 310 px at zoom 15, in a map of 375 x 300. Also 0 at 320x568, 390x844 and 412x915, 54% at 768x1024, 34% at 899x700, 92% at 1024x768, 100% from 1280x720.
+   Expected: the line is on screen, at load and right after My location. A later walk keeps the zoom the user chose.
+   One zoom out, to 14, gives 84% at 375x667, and two give 100%. The spec pins zoom 15 only for exploring. It gives following no zoom.
+   Target: src/ui/MapView.tsx:38 and :74, src/core/point.ts:76. e2e/map.spec.ts:588 pins zoom 15 for following, and it will need to change.
+
+2. AC5, a tap during a coast. Rung: unit.
+   Witness, in src/core/point.test.ts: run([{ type: 'dragStart' }, { type: 'tap', at: pin }, { type: 'dragEnd', center: deakTer }], exploring).point
+   Actual: deakTer. Expected: pin.
+   In the page: flick the map, tap while it coasts. The pin goes to the tap, 1 m off, then to the map centre when the map stops, 363 m from the tap. Leaflet stops a coast at a drag start, node_modules/leaflet/src/map/handler/Map.Drag.js:99, and not at a tap.
+   Target: src/core/point.ts:101, where tap leaves dragging true. A temporary dragging: false there passed the witness, all 40 tests in point.test.ts and the page probe, with the pin 1 m from the tap after the coast. Not committed.
+
+Medium: the 2 survivors above, now written.
+Low, not written:
+- the Hungarian note takes 2 lines at 320 px wide, and 1 line at 375
+- navigator.geolocation missing, above
+- granted with no first fix, above
+- zoom buttons at 30 x 31 px, above
+- not run on a real phone: the tests use Chromium with a faked location, so a pinch that starts with one finger moving isn't covered
+
+===== question for the product owner, not a builder task
+AC4 and the spec pin exploring at zoom 15, and AC4 passes as written. On a phone that puts the 1 km circle off screen too: 0 of 360 at 375x667. Changing that means changing the spec, which only the product owner can do.

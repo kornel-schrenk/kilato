@@ -1,0 +1,70 @@
+Probes on head a141379. They ran in a throwaway spec beside e2e/fixtures.ts, so the fixture stubbed every request. None is committed.
+Screenshots use labelled stub tiles, z/x/y, because tests never call OpenStreetMap.
+
+===== how much of the 1 km circle's line is on screen at load, zoom 15. lineInView is a share of 360 sampled degrees
+following 320x568: {"radiusPx":310,"mapW":320,"mapH":256,"lineInView":0}
+exploring 320x568: {"radiusPx":310,"mapW":320,"mapH":256,"lineInView":0}
+following 375x667: {"radiusPx":310,"mapW":375,"mapH":300,"lineInView":0}
+exploring 375x667: {"radiusPx":310,"mapW":375,"mapH":300,"lineInView":0}
+following 390x844: {"radiusPx":310,"mapW":390,"mapH":380,"lineInView":0}
+exploring 390x844: {"radiusPx":310,"mapW":390,"mapH":380,"lineInView":0}
+following 412x915: {"radiusPx":310,"mapW":412,"mapH":412,"lineInView":0}
+exploring 412x915: {"radiusPx":310,"mapW":412,"mapH":412,"lineInView":0}
+following 768x1024: {"radiusPx":310,"mapW":768,"mapH":461,"lineInView":0.5388888888888889}
+exploring 768x1024: {"radiusPx":310,"mapW":768,"mapH":461,"lineInView":0.5333333333333333}
+following 899x700: {"radiusPx":310,"mapW":899,"mapH":315,"lineInView":0.3388888888888889}
+exploring 899x700: {"radiusPx":310,"mapW":899,"mapH":315,"lineInView":0.3388888888888889}
+following 1024x768: {"radiusPx":310,"mapW":614.390625,"mapH":768,"lineInView":0.9166666666666666}
+exploring 1024x768: {"radiusPx":310,"mapW":614.390625,"mapH":768,"lineInView":0.9166666666666666}
+following 1280x720: {"radiusPx":310,"mapW":768,"mapH":720,"lineInView":1}
+exploring 1280x720: {"radiusPx":310,"mapW":768,"mapH":720,"lineInView":1}
+following 1920x1080: {"radiusPx":310,"mapW":1152,"mapH":1080,"lineInView":1}
+exploring 1920x1080: {"radiusPx":310,"mapW":1152,"mapH":1080,"lineInView":1}
+
+===== the same on 375x667 and the standard viewports, with one and two zoom outs
+exploring desktop, zoom 15: {"radiusPx":310,"lineInView":100}
+following desktop, zoom 15: {"radiusPx":310,"lineInView":100}
+exploring tablet, zoom 15: {"radiusPx":310,"lineInView":92}
+following tablet, zoom 15: {"radiusPx":310,"lineInView":92}
+exploring mobile, zoom 15: {"radiusPx":310,"lineInView":0}
+following mobile, zoom 15: {"radiusPx":310,"lineInView":0}
+following mobile, zoom 14: {"radiusPx":155,"lineInView":84}
+following mobile, zoom 13: {"radiusPx":78,"lineInView":100}
+zoom button size, mobile: {"width":30,"height":31}
+pin right after the tap, metres from the tap: 0
+after the coast, mobile: {"pinFromTap":195,"pinFromMapCentre":2}
+
+===== a tap while the map coasts, 1280x720, paused clock, real Leaflet
+map centre when tapped, metres from Deak: 1037
+pin right after the tap, metres from the tap: 1
+after the coast: {"pinFromTap":363,"pinFromMapCentre":0,"mapMovedAfterTap":533}
+The AC wants the pin at the tap. It ends 363 m away, at the map centre.
+
+===== the same with a temporary dragging: false at src/core/point.ts:101. Never committed
+map centre when tapped, metres from Deak: 1037
+pin right after the tap, metres from the tap: 1
+after the coast: {"pinFromTap":1,"pinFromMapCentre":362,"mapMovedAfterTap":533}
+The control, a tap after the coast has ended, passes on the unchanged code. So do a double click, a second drag during a coast, wheel zoom and arrow keys, which leave or move the pin as they should.
+
+===== the rest
+note en-GB 320: {"lineHeight":{"rects":1,"height":19},"introWidth":320,"buttons":[{"w":111,"h":44},{"w":113,"h":44}],"exploreWidth":320}
+note en-GB 375: {"lineHeight":{"rects":1,"height":19},"introWidth":375,"buttons":[{"w":111,"h":44},{"w":113,"h":44}],"exploreWidth":375}
+note hu-HU 320: {"lineHeight":{"rects":2,"height":38},"introWidth":320,"buttons":[{"w":157,"h":44},{"w":137,"h":44}],"exploreWidth":320}
+note hu-HU 375: {"lineHeight":{"rects":1,"height":19},"introWidth":375,"buttons":[{"w":157,"h":44},{"w":137,"h":44}],"exploreWidth":375}
+stored after exploring: {"local":{},"session":{},"cookie":""}
+no geolocation: {"seen":["pageerror: Cannot read properties of undefined (reading 'watchPosition')"],"note":0,"intro":1}
+requests, count: 26
+requests carrying the location: []
+tiles at load, phone: 6
+tiles outside the view, phone: 0
+
+===== checks with no log line, all passing
+- resize from 375 wide to 1280 and to 667: the map fills its area, tiles cover its corners, the pin and the centre stay, 0 errors
+- language switch while following: 1 watch, 1 watchPosition call, the dot stays
+- 3 rounds of drag and My location: 0 watches after each drag, 1 after each press
+- a fix during a zoom animation: the map reaches it and keeps zoom 16
+- query rejected, no Permissions API: the intro shows, 0 errors. Both now in e2e/map.spec.ts
+- reload after exploring: the intro again, no pin. localStorage, sessionStorage and cookies hold nothing
+
+===== first probe run, thrown away
+3 probes failed. 2 were my mistakes: a wheel step moved 2 zoom levels where I expected 1, and I compared the pin with a place read while the map still moved. The third was the Hungarian note at 320 px, a real result.
