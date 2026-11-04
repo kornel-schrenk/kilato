@@ -7,8 +7,9 @@ import type { en } from '../i18n/en'
 
 const pointColor = '#1a56c4'
 const kmRadius = 1000
-// getBoundsZoom lets bounds overflow by up to 1% of a zoom level, which clips the circle's line by a pixel or two.
-const circleFitPadding = L.point(6, 6)
+
+// The spec's Start zoom. 900 px is also where the layout switches, in index.html.
+const zoomForScreen = () => (matchMedia('(min-width: 900px)').matches ? 15 : 14)
 
 // The tip of the pin is its bottom centre, so the anchor sits exactly on the point.
 const pin = L.divIcon({
@@ -73,10 +74,8 @@ export function MapView({ state, onEvent, t }: Props) {
   useEffect(() => {
     if (!view) return
     const map = mapRef.current!
-    const center = L.latLng(toLeaflet(view.center))
-    // ponytail: this fits once, when following starts. A phone turned sideways keeps its zoom.
-    const circleZoom = () => map.getBoundsZoom(center.toBounds(2 * kmRadius), false, circleFitPadding)
-    const go = () => map.setView(center, view.zoom === 'showCircle' ? circleZoom() : (view.zoom ?? map.getZoom()))
+    const go = () =>
+      map.setView(toLeaflet(view.center), view.zoom === 'forScreen' ? zoomForScreen() : (view.zoom ?? map.getZoom()))
     // Leaflet silently drops a new zoom asked for during a zoom animation, so this waits that one out.
     if (zooming.current) map.once('zoomend', go)
     else go()

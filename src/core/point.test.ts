@@ -38,13 +38,13 @@ describe('from the intro', () => {
     expect(asked).toMatchObject({ mode: 'intro', point: null, watching: true })
   })
 
-  it('the first fix starts following there, and shows the whole 1 km circle', () => {
+  it('the first fix starts following there, at the start zoom for the screen', () => {
     expect(run([fix(start, 19.05, 30)], asked)).toMatchObject({
       mode: 'following',
       point: { lat: start, lon: 19.05 },
       accuracy: 30,
       watching: true,
-      view: { center: { lat: start, lon: 19.05 }, zoom: 'showCircle' },
+      view: { center: { lat: start, lon: 19.05 }, zoom: 'forScreen' },
     })
   })
 
@@ -136,8 +136,8 @@ describe('following', () => {
     expect(run([fix(start + 1)], following).view).not.toHaveProperty('zoom')
   })
 
-  it('the first fix on load asks the map to show the whole 1 km circle', () => {
-    expect(following.view).toEqual({ center: { lat: start, lon: 19.05 }, zoom: 'showCircle' })
+  it('the first fix on load asks for the start zoom for the screen', () => {
+    expect(following.view).toEqual({ center: { lat: start, lon: 19.05 }, zoom: 'forScreen' })
   })
 
   it('ignores a tap', () => {
@@ -209,14 +209,14 @@ describe('exploring', () => {
       expect(asked).toMatchObject({ mode: 'exploring', point: pin, watching: true })
     })
 
-    it('the first fix switches back to following, and the map goes there and shows the whole 1 km circle', () => {
+    it('the first fix switches back to following, and the map goes there at the start zoom for the screen', () => {
       const point = { lat: start, lon: 19.05 }
       expect(run([fix(start)], asked)).toMatchObject({
         mode: 'following',
         point,
         accuracy: 20,
         watching: true,
-        view: { center: point, zoom: 'showCircle' },
+        view: { center: point, zoom: 'forScreen' },
       })
     })
 

@@ -812,30 +812,29 @@ test.describe('with the permission granted', () => {
     await expectNear(() => circlePlace(page, '.location-dot'), walked)
   })
 
-  // At Budapest's latitude, 1 km is 310 px at zoom 15, 155 px at 14 and 78 px at 13. So the circle
-  // is 620, 310 or 155 px across, and the map takes the closest of those that fits.
-  for (const { width, height, zoom } of [
-    { width: 320, height: 568, zoom: 13 },
-    { width: 375, height: 667, zoom: 13 },
-    { width: 390, height: 844, zoom: 14 },
-    { width: 412, height: 915, zoom: 14 },
-    { width: 899, height: 700, zoom: 14 },
-    { width: 1024, height: 768, zoom: 14 },
-    // A map 618 px wide is a little too narrow for the 620 px circle, and one 624 px wide is not.
-    { width: 1030, height: 1000, zoom: 14 },
-    { width: 1040, height: 1000, zoom: 15 },
-    { width: 1280, height: 720, zoom: 15 },
-    { width: 1920, height: 1080, zoom: 15 },
+  // The spec's Start zoom: 14 below 900 px wide, 15 from there. The share is how much of the 1 km
+  // circle's line that leaves on the map, worked out from its radius of 310 px at 15 and 155 px at 14.
+  for (const { width, height, zoom, share } of [
+    { width: 320, height: 568, zoom: 14, share: 0.62 },
+    { width: 375, height: 667, zoom: 14, share: 0.84 },
+    { width: 390, height: 844, zoom: 14, share: 1 },
+    { width: 412, height: 915, zoom: 14, share: 1 },
+    { width: 768, height: 1024, zoom: 14, share: 1 },
+    { width: 899, height: 700, zoom: 14, share: 1 },
+    { width: 900, height: 700, zoom: 15, share: 0.67 },
+    { width: 1024, height: 768, zoom: 15, share: 0.91 },
+    { width: 1280, height: 720, zoom: 15, share: 1 },
+    { width: 1920, height: 1080, zoom: 15, share: 1 },
   ]) {
     test.describe(`at ${width}x${height}`, () => {
       test.use({ viewport: { width, height } })
 
-      test(`the whole 1 km circle is on the map on load, at zoom ${zoom}`, async ({ page }) => {
+      test(`following starts at zoom ${zoom}, with ${share * 100}% of the 1 km circle on the map`, async ({ page }) => {
         await page.goto('/kilato/')
         await expect(dot(page)).toBeVisible()
 
         await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
-        await expect.poll(() => lineOnMap(page, '.km-circle')).toBe(1)
+        await expect.poll(() => lineOnMap(page, '.km-circle')).toBeCloseTo(share, 1)
       })
     })
   }
@@ -843,25 +842,23 @@ test.describe('with the permission granted', () => {
   test.describe('on a phone', () => {
     test.use({ viewport: { width: 375, height: 667 } })
 
-    test('My location shows the whole 1 km circle again, whatever the zoom was', async ({ page }) => {
+    test('My location goes back to zoom 14, whatever the zoom was', async ({ page }) => {
       await page.goto('/kilato/')
       await expect(dot(page)).toBeVisible()
-      await expect.poll(async () => (await geography(page)).zoom).toBe(13)
-      await zoomTo(page, 14)
+      await expect.poll(async () => (await geography(page)).zoom).toBe(14)
       await zoomTo(page, 15)
       await drag(page, -60, 30)
       await button(page, 'My location').click()
 
       await expect(dot(page)).toBeVisible()
-      await expect.poll(async () => (await geography(page)).zoom).toBe(13)
-      await expect.poll(() => lineOnMap(page, '.km-circle')).toBe(1)
+      await expect.poll(async () => (await geography(page)).zoom).toBe(14)
+      await expect.poll(() => lineOnMap(page, '.km-circle')).toBeCloseTo(0.84, 1)
     })
 
     test('a later walk keeps the zoom the user chose, even with the circle off the map', async ({ page }) => {
       await page.goto('/kilato/')
       await expect(dot(page)).toBeVisible()
-      await expect.poll(async () => (await geography(page)).zoom).toBe(13)
-      await zoomTo(page, 14)
+      await expect.poll(async () => (await geography(page)).zoom).toBe(14)
       await zoomTo(page, 15)
       const next = metresNorth(home, 100)
 
@@ -869,7 +866,7 @@ test.describe('with the permission granted', () => {
 
       await expectNear(() => mapCentre(page), next)
       expect((await geography(page)).zoom).toBe(15)
-      expect(await lineOnMap(page, '.km-circle')).toBeLessThan(1)
+      expect(await lineOnMap(page, '.km-circle')).toBe(0)
     })
   })
 

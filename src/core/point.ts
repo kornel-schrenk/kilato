@@ -18,9 +18,9 @@ export interface PointState {
   dragging: boolean
   /**
    * The last view the map was asked to go to. A new object is a new request. With no zoom, the map
-   * keeps the one it has. `showCircle` is the closest zoom that fits the whole 1 km circle on the map.
+   * keeps the one it has. `forScreen` is the spec's start zoom for this screen, which only the page can read.
    */
-  view: { center: LatLon; zoom?: number | 'showCircle' } | null
+  view: { center: LatLon; zoom?: number | 'forScreen' } | null
 }
 
 export type PointEvent =
@@ -78,7 +78,7 @@ export function nextPoint(state: PointState, event: PointEvent): PointState {
         accuracy: event.accuracy,
         dragging: false,
         // Only the start of following picks a zoom. A walk keeps the one the user chose.
-        view: walkedFrom ? { center: point } : { center: point, zoom: 'showCircle' },
+        view: walkedFrom ? { center: point } : { center: point, zoom: 'forScreen' },
       }
     }
 
