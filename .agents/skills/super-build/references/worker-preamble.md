@@ -59,7 +59,8 @@ on missing requirements and recheck each conditional helper before use.
    (see 6a). **When the situation calls for it:** `vitest` or
    `playwright-best-practices` — picked by the localisation ladder in
    `references/decision-policy.md`, **never by label**; `testing-strategy` when
-   coverage scope is open; `resolving-merge-conflicts` on a live conflict.
+   coverage scope is open; `resolving-merge-conflicts` on a live conflict, or its
+   fallback in `references/decision-policy.md` → "Resolving a conflict".
 
    Invoke each via the Skill tool BEFORE writing any code. `tdd` tells you how to
    write a test worth having; the ladder tells you which layer to write it at.

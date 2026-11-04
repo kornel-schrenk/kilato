@@ -683,8 +683,8 @@ function. Three cards lost a wave to a mechanical edit.
 [ ] comment on the PR: which files conflicted, or which verify command failed, and its output
 ```
 
-The Builder picks it up as an ordinary pass, routes `mattpocock-skills:resolving-merge-conflicts`,
-and pushes. Its finish line is a **green verification**, not an empty `git diff --diff-filter=U`:
+The Builder picks it up as an ordinary pass, routes `mattpocock-skills:resolving-merge-conflicts`
+or its `resolve-and-verify` fallback, and pushes. Its finish line is a **green verification**, not an empty `git diff --diff-filter=U`:
 when a shared interface grows on both sides, the files git merged cleanly are where most of the
 work is. In the run above, thirteen conflict hunks were followed by ten further files that merged
 without a marker and still failed to typecheck.
