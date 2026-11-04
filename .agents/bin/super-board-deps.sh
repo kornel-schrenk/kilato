@@ -58,6 +58,8 @@
 # "nothing on this board clears it" — credentials, permissions, a product ruling.
 # The sweep must never free one of those; only a person can.
 set -euo pipefail
+# Local patch: this read's command is fixed, and a graph we can't fetch has to stop the run.
+export SB_GITHUB_READ_STRICT=1
 
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=""; LIMIT="200"; ONLY=""; FROM=""

@@ -7,8 +7,10 @@
 ## Required GitHub reads can pause a run
 
 Use `.claude/bin/super-board-github-read.py` for required API evidence. It retries
-one failed read at most twice (three total attempts); invalid queries or missing
-authority halt immediately. Exit **79** means stop dispatch and pause the current
+one failed read at most twice (three total attempts); missing authority halts
+immediately, and so do invalid queries in strict scripts. An agent's own read that
+GitHub rejects fails only that call (local patch: `docs/super-board/local-patches.md`).
+Exit **79** means stop dispatch and pause the current
 run. Never substitute an empty board, OPEN issue, full quota, or empty diff.
 Check the helper's `--check` before each write, migration, or merge. Preserve
 worktrees, claims, card/approval state, and the shared local halt record. Report

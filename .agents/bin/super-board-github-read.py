@@ -8,9 +8,9 @@ Only an explicit new run clears it with --resume after preserving the old reason
 Mutations never enter this retry helper. For the agent-facing kinds in FORMS, a
 payload that fails its shape on every attempt is the caller's malformed read, not
 an outage: that call exits 64 with the valid form and the run keeps going. So does
-a gh flag error or an HTTP 404 on a command-line read of those kinds (local patch,
-see docs/super-board/local-patches.md). Scripts whose commands are fixed set
-SB_GITHUB_READ_STRICT=1 to keep halting on both.
+any failed command-line read of those kinds that isn't an access failure or an
+outage (local patch, see docs/super-board/local-patches.md). Scripts whose commands
+are fixed set SB_GITHUB_READ_STRICT=1 to keep halting on both.
 """
 from __future__ import annotations
 
@@ -121,10 +121,16 @@ def read_only(args):
     return True
 
 
-# gh refused the read's flags, or GitHub says the path isn't there. The read is wrong, or
-# the answer is "no such thing". GitHub is fine, so only this call should fail.
-CALLER_ERROR = re.compile(r'option is not supported|unknown (?:shorthand )?flag:|Unknown JSON field:|'
-                          r'invalid argument "|required flag|accepts \d+ arg|HTTP 404')
+# GitHub or our access to it is the problem. Only these stop a run from an agent's own read.
+# Any other failure means the read is wrong or the thing isn't there, so only that call fails.
+# Keep these specific: GraphQL type names contain words like "Connection", so a loose
+# pattern would turn a query typo back into a halt.
+ACCESS_OR_OUTAGE = re.compile(r'HTTP (?:401|403|408|429|5\d\d)|Bad credentials|requires authentication|'
+                              r'Resource not accessible|required scopes|gh auth login|[Rr]ate limit|'
+                              r'error connecting|internet connection|proxyconnect|dial tcp|no such host|'
+                              r'connection (?:refused|reset|closed|timed out)|network is unreachable|'
+                              r'Temporary failure|TLS handshake|i/o timeout|Client\.Timeout|timed out|'
+                              r'deadline exceeded|": (?:unexpected )?EOF')
 
 
 def permanent_error(text):
@@ -351,9 +357,12 @@ def read(args, kind='json', meta=None, recovering=False, command_line=False):
             # Imported callers (human-approval checks), the recovery read and strict
             # scripts never take this path, so they still halt.
             if (result.returncode and command_line and not recovering and kind in FORMS
-                    and not os.environ.get('SB_GITHUB_READ_STRICT') and CALLER_ERROR.search(result.stderr)):
-                reason = result.stderr.strip().splitlines()[0]
-                raise ValueError(f'{reason}; this call failed, the run continues. Valid form: --kind {kind} -- {FORMS[kind]}')
+                    and not os.environ.get('SB_GITHUB_READ_STRICT')):
+                # First line only: help text and jq's caret lines follow it, and they can
+                # read like an outage ("unexpected EOF").
+                reason = (result.stderr.strip().splitlines() or [f'gh exited {result.returncode}'])[0]
+                if not ACCESS_OR_OUTAGE.search(reason):
+                    raise ValueError(f'{reason}; this call failed, the run continues. Valid form: --kind {kind} -- {FORMS[kind]}')
             if permanent_error(diagnostic):
                 halt('GitHub rejected a required read (query, authentication, or permission error); fix it before restarting', attempt, operation)
             if result.returncode:
