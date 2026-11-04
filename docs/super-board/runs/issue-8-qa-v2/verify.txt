@@ -1,0 +1,9 @@
+QA round 2 on fb533ce (npm ci, then each verify step singly)
+typecheck: tsc exit 0
+test: Vitest 10 files, 255/255 passed
+build: vite build exit 0
+test:e2e: CHROMIUM_PATH=/usr/bin/chromium, Playwright 29/29 passed
+Mutations, each red then restored:
+- 'swimming_pool' added to the shops set: "does not take a label another category lists" fails
+- 'sports' dropped from the shops set: "finds every listed value in its category" fails
+pr-security-review: 0 findings (pure label lookup, no input sink, no network, no storage)
