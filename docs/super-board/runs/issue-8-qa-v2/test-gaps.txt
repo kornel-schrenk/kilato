@@ -1,0 +1,3 @@
+Round 1 Low gaps (inherited keys, categories without a fallback): the inherited-key gap is closed by the it.each over constructor, __proto__, toString, valueOf, hasOwnProperty.
+Not written (Low): a value in kindsByCat that categories.ts does not list is not caught; it only matters if someone adds a value by hand with no category rule behind it.
+Not written (Low): kindLabel for a category without a fallback returns the raw kind for an unlisted value; unreachable, every value those rules emit is listed.
