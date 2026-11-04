@@ -1,0 +1,17 @@
+AC5. Tested head: 07fb80a.
+GitHub Actions run 41783084804, job 126418912221: event=pull_request, head=07fb80a, conclusion=success, path=.github/workflows/ci.yml
+Steps, all success: checkout, setup-node, npm ci, npx playwright install --with-deps chromium, npm run verify
+ci.yml, parsed as YAML: on = pull_request, push to branches [main]. permissions = contents: read. Steps = actions/checkout@v7, actions/setup-node@v7, npm ci, npx playwright install --with-deps chromium, npm run verify
+The push trigger is checked by reading only: it has not fired, as nothing has reached main.
+AGENTS.md: "## Commands" is present and outside the managed block. The "There is no stack, build command or test command yet" line is gone. Every npm script it names exists in package.json. npm run preview answers at http://localhost:4173/kilato/ as it says, and npm run dev loads the page, verify.txt.
+PR state: mergeable, merge state clean. Base develop moved from a1dbb90 to 7cf4908, and the merged result passes verify, verify.txt.
+
+pr-security-review, diff of develop...07fb80a, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- ci.yml: pull_request (not pull_request_target), contents: read, no ${{ }} interpolation, no secrets.
+- src/main.tsx and index.html: no unsafe DOM sinks, no external URLs. Preact's render takes a static element.
+- playwright.config.ts: executablePath and the port come from environment variables, which are trusted. The preview binds to 127.0.0.1.
+- e2e/fixtures.ts: joins a URL path to a file path, but runs only in tests, so the skill's exclusion for test files applies. Climbs were probed anyway: encoded ones get a 404 or fail the test, fixture-guard.txt.
+- The late-request and SharedWorker gaps in test-gaps.txt are about test reliability. Neither is a vulnerability in anything that ships, as the fixture never reaches the phone.
+- package-lock.json: 87 packages, all from registry.npmjs.org with integrity hashes. The only install script is fsevents (optional, macOS only). npm audit: 0 vulnerabilities.
+- Secret scan of the evidence folders and the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.

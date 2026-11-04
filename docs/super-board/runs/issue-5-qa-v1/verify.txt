@@ -1,0 +1,123 @@
+AC1 and the preview command. Tested head: 653f5ec. Host: Raspberry Pi, aarch64, Node v24.22.2, npm 11.19.1.
+
+===== clean clone: npm ci (exit 0)
+
+added 43 packages, and audited 44 packages in 4s
+
+13 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+real	0m3.865s
+user	0m4.446s
+sys	0m0.955s
+
+===== clean clone: npm run verify (exit 0). The list reporter marks test.fail() tests with a cross; the summary counts them as passed.
+
+> kilato@0.0.0 verify
+> npm run typecheck && npm test && npm run build && npm run test:e2e
+
+
+> kilato@0.0.0 typecheck
+> tsc
+
+
+> kilato@0.0.0 test
+> vitest run
+
+
+ RUN  v5.1.0 <clean-clone>
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  23:10:06
+   Duration  1.92s (tests 92%, transform 5%, import 3%, worker 1%)
+
+
+> kilato@0.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                 0.32 kB │ gzip: 0.23 kB
+dist/assets/index-COVsjOCJ.js  11.58 kB │ gzip: 4.97 kB
+
+✓ built in 139ms
+
+> kilato@0.0.0 test:e2e
+> playwright test
+
+
+Running 10 tests using 2 workers
+
+  ✓   1 e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó (806ms)
+  ✘   2 e2e/fixtures.spec.ts:12:3 › a request to https://example.invalid/ fails the test (623ms)
+  ✘   4 e2e/fixtures.spec.ts:12:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test (389ms)
+  ✓   3 e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/ (481ms)
+  ✘   5 e2e/fixtures.spec.ts:12:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test (462ms)
+  ✓   6 e2e/page.spec.ts:13:1 › Preact renders into the page (487ms)
+  ✘   7 e2e/fixtures.spec.ts:18:1 › an unexpected WebSocket fails the test (345ms)
+  ✓   8 e2e/fixtures.spec.ts:28:1 › a tile request gets the blank tile (299ms)
+  ✓   9 e2e/fixtures.spec.ts:42:1 › a data request gets the file from site-data (306ms)
+  ✓  10 e2e/fixtures.spec.ts:50:1 › a data file that does not exist gets a 404 (248ms)
+
+  10 passed (7.9s)
+
+real	0m16.307s
+user	0m20.517s
+sys	0m3.092s
+
+===== verify stops at the first failing step. Each case broke one step in the throwaway clone, then restored it.
+### type error in src (strict: implicit any)
+exit=1
+> kilato@0.0.0 verify
+> kilato@0.0.0 typecheck
+src/qa.ts(1,19): error TS7006: Parameter 'x' implicitly has an 'any' type.
+### failing Vitest test
+exit=1
+> kilato@0.0.0 verify
+> kilato@0.0.0 typecheck
+> kilato@0.0.0 test
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 2 passed (3)
+### broken production build
+exit=1
+> kilato@0.0.0 verify
+> kilato@0.0.0 typecheck
+> kilato@0.0.0 test
+      Tests  2 passed (2)
+> kilato@0.0.0 build
+✗ Build failed in 98ms
+Build failed with 1 error:
+### failing Playwright test
+exit=1
+> kilato@0.0.0 verify
+> kilato@0.0.0 typecheck
+> kilato@0.0.0 test
+      Tests  2 passed (2)
+> kilato@0.0.0 build
+✓ built in 147ms
+> kilato@0.0.0 test:e2e
+  1 failed
+  9 passed (13.2s)
+  1) e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó 
+
+===== QA worktree (npm ci && npm run verify) and the clean clone (npm run verify), started together
+worktree exit=0
+clone exit=0
+worktree:       Tests  2 passed (2)
+worktree:   10 passed (9.0s)
+clone:          Tests  2 passed (2)
+clone:      10 passed (9.3s)
+
+===== npm run preview, as AGENTS.md describes it, plus a browser load at each viewport
+GET localhost:4173/kilato/ -> 200 text/html
+<title>Kilátó</title>
+desktop Kilátó errors: 0
+tablet Kilátó errors: 0
+mobile Kilátó errors: 0

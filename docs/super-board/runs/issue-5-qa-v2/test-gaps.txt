@@ -1,0 +1,30 @@
+Test-gap check. Tested head: b6bc83a. Range: develop...b6bc83a.
+
+===== ledger
+AC1 unit n/a, a shell chain in package.json:17 · component n/a · e2e n/a · proven by running: clean clone, and a break at each step, verify.txt
+AC2 unit n/a · component n/a · e2e e2e/page.spec.ts:3 title, e2e/page.spec.ts:8 asset path
+AC3 unit n/a · component n/a · e2e e2e/fixtures.spec.ts:7 cross-origin, :22 same-origin, :37 WebSocket, :47 tile, :61 data, :69 data 404 · own files e2e/page.spec.ts:3, :8, :13
+AC4 unit test/playwright-config.test.ts:13 set, :18 unset · component n/a · e2e n/a · real runs on both browsers, chromium-path.txt
+AC5 no automated test, n/a: it is CI config. Proven by the GitHub run for pull_request. The push trigger is checked by reading only, as nothing has reached main.
+
+===== edge cases
+boundaries: /kilato and /kilato/data with no slash fail the test, probe only · /kilato/assets/ and /kilato/data/ folders pinned, e2e/fixtures.spec.ts:27, :69
+input: encoded climb pinned, e2e/fixtures.spec.ts:28 · %2e%2e, backslash and double slash, probe only
+money and dates: n/a, no such code
+volume: n/a, no lists yet
+auth: n/a, no accounts
+error paths: missing data file pinned, e2e/fixtures.spec.ts:69 · a page that does not open is a plain failure, e2e/fixtures.spec.ts:31
+idempotency and races: gap, see the Medium list · two runs at once: the suite stayed 18/18 while the mutation run used the same machine
+UI states and accessibility: n/a, the page is empty on purpose
+
+===== test the tests
+No test asserts on its own mock or recomputes its expected value. Every test.fail() witness goes "Expected to fail, but passed" when its guard is removed, fixture-guard.txt.
+
+===== gaps, none written. None is High: this is test harness code, with no auth, money, security or data loss.
+Medium: tsconfig.json:16 leaves out scripts/. Witness: scripts/data/qa-any.ts with an implicit any gives tsc exit 0, the same file in src, e2e, test or the root gives TS7006. The spec's data build lives in scripts/data/, and vite.config.ts:6 already lists scripts/ for tests. Nothing is there yet. Fix: add "scripts" to include, in this PR or in the first data issue.
+Medium: e2e/fixtures.ts:46 checks as soon as the test ends, with the page still open, so a request fired on the last line with no await can arrive after the check. Witness: fetch fired and not awaited, then the test ends. Expected: red. Actual: green in 41 of 130 runs. None reached the sink. A trial wait of 250 ms before the check caught 40/40 under load, with the suite 18/18.
+Medium: the same request followed by page.close() in the test is missed in 15 of 60 runs, and all 15 reached the sink, so that shape can pass with a real request sent. No committed test closes its page. The 250 ms trial was not run on this shape.
+Low: mutant, removing serviceWorkers: 'block' at playwright.config.ts:15 survives. The page has no service worker.
+Low: mutants, adding the query string to the file check at e2e/fixtures.ts:29 or e2e/fixtures.ts:32 survive, as no committed test uses a query string. A probe shows both work today.
+Low: SharedWorker requests skip Playwright's routes. A tool limit, and nothing in the spec uses one.
+Low: the author note key=teardown-check on e2e/fixtures.ts:46 says the check runs "once the page has closed". It runs with the page open.

@@ -1,0 +1,103 @@
+AC1 and the preview command. Tested head: b6bc83a. Host: Raspberry Pi, aarch64, Node v24.22.2, npm 11.19.1.
+
+===== clean clone from GitHub: npm ci (exit 0)
+added 43 packages, and audited 44 packages in 4s
+
+13 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+===== clean clone: npm run verify (exit 0). The list reporter marks test.fail() tests with a cross; the summary counts them as passed.
+> kilato@0.0.0 verify
+> npm run typecheck && npm test && npm run build && npm run test:e2e
+
+
+> kilato@0.0.0 typecheck
+> tsc
+
+
+> kilato@0.0.0 test
+> vitest run
+
+
+ RUN  v5.1.0 <clean-clone>
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  06:23:53
+   Duration  2.00s (tests 91%, transform 5%, import 2%, worker 1%)
+
+
+> kilato@0.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                 0.32 kB │ gzip: 0.23 kB
+dist/assets/index-COVsjOCJ.js  11.58 kB │ gzip: 4.97 kB
+
+✓ built in 150ms
+
+> kilato@0.0.0 test:e2e
+> playwright test
+
+
+Running 18 tests using 2 workers
+
+  ✘   1 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/ fails the test (628ms)
+  ✓   2 e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó (823ms)
+  ✘   3 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test (412ms)
+  ✓   4 e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/ (520ms)
+  ✘   5 e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test (415ms)
+  ✓   6 e2e/page.spec.ts:13:1 › Preact renders into the page (534ms)
+  ✘   7 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test (394ms)
+  ✘   8 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test (408ms)
+  ✘   9 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test (398ms)
+  ✘  10 e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test (330ms)
+  ✘  11 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test (351ms)
+  ✘  12 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test (353ms)
+  ✘  13 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test (334ms)
+  ✘  14 e2e/fixtures.spec.ts:37:1 › an unexpected WebSocket fails the test (273ms)
+  ✓  15 e2e/fixtures.spec.ts:47:1 › a tile request gets the blank tile (369ms)
+  ✓  16 e2e/fixtures.spec.ts:61:1 › a data request gets the file from site-data (253ms)
+  ✓  17 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404 (262ms)
+  ✓  18 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404 (319ms)
+
+  18 passed (11.4s)
+
+===== a failure at each step stops the chain, and the type check scope
+### type error in src/main.tsx (implicit any): verify exit=1, steps reached: typecheck 
+### failing unit test: verify exit=1, steps reached: typecheck test 
+### build error: index.html names a missing file, tsc does not see it: verify exit=1, steps reached: typecheck test build 
+### failing page test: an unexpected request: verify exit=1, steps reached: typecheck test build test:e2e 
+
+=== type check scope: one implicit-any file in each folder, then tsc
+src/qa-any.ts: tsc exit=1  TS7006
+e2e/qa-any.ts: tsc exit=1  TS7006
+test/qa-any.ts: tsc exit=1  TS7006
+./qa-any.ts: tsc exit=1  TS7006
+scripts/data/qa-any.ts: tsc exit=0  
+
+=== strict off: the same file in src, with strict false
+tsc exit=0 (proves strict is what catches it)
+
+===== npm run preview, then /kilato/
+> kilato@0.0.0 preview
+> vite preview
+
+  ➜  Local:   http://localhost:4173/kilato/
+  ➜  Network: use --host to expose
+GET http://localhost:4173/kilato/: 200, <title>Kilátó</title>, script /kilato/assets/index-COVsjOCJ.js
+
+===== the page at three viewports, from npm run preview. It is empty on purpose, so the screenshots are blank.
+desktop 1920x1080 {"title":"Kilátó","main":true,"scrollW":1920,"clientW":1920} console/page errors: 0 failed responses: 0 requests: 200 /kilato/, 200 /kilato/assets/index-COVsjOCJ.js
+tablet 1024x768 {"title":"Kilátó","main":true,"scrollW":1024,"clientW":1024} console/page errors: 0 failed responses: 0 requests: 200 /kilato/, 200 /kilato/assets/index-COVsjOCJ.js
+mobile 375x667 {"title":"Kilátó","main":true,"scrollW":375,"clientW":375} console/page errors: 0 failed responses: 0 requests: 200 /kilato/, 200 /kilato/assets/index-COVsjOCJ.js
+
+===== npm run dev
+dev server: title "Kilátó" main rendered 1 errors 0

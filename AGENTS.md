@@ -25,8 +25,24 @@ Read the stage from the artifacts. The newest accepted artifact in the table abo
 
 - Commit and PR titles: `<emoji> [type] scope: subject`. Types: 📝 docs, ✨ feat, 🐛 fix, 🔧 chore, ♻️ refactor, 🧪 test.
 - Product constraints (data sources, privacy, languages, licences) live in the accepted intent and spec. Read them there, and don't restate them here.
-- There is no stack, build command or test command yet. Add them here when the first build issue sets them up.
 - There is no limit on a PR's size. `merge_policy.auto_max_lines` is 0, and that overrides the 400-line default in the super-board skills. Don't hold, stop or split a card because of its line count.
+
+## Commands
+
+| Command | Does |
+|---|---|
+| `npm ci` | installs the locked dependencies |
+| `npx playwright install chromium` | installs Playwright's Chromium, once per Playwright version |
+| `npm run verify` | runs `typecheck`, `test`, `build` and `test:e2e`, in that order. super-board's merge gate runs it |
+| `npm run typecheck` | checks types with `tsc`, in strict mode |
+| `npm test` | runs the Vitest unit tests |
+| `npm run build` | builds the page into `dist/`, with the base `/kilato/` |
+| `npm run preview` | serves that build at `http://localhost:4173/kilato/` |
+| `npm run test:e2e` | runs the Playwright page tests against `vite preview`, on the last build |
+| `npm run dev` | starts the Vite dev server |
+
+- Page tests import `test` from `e2e/fixtures.ts`. Its fixture passes files in `dist/`, stubs tile and data requests, and fails the test on any other request.
+- With `CHROMIUM_PATH=/usr/bin/chromium` set, page tests launch that browser instead of Playwright's own Chromium.
 
 <!-- super-board:begin v3.3.0 (managed; edits inside are overwritten on upgrade) -->
 ## Super Board
