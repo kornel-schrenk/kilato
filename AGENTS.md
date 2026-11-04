@@ -41,7 +41,7 @@ Read the stage from the artifacts. The newest accepted artifact in the table abo
 | `npm run test:e2e` | runs the Playwright page tests against `vite preview`, on the last build |
 | `npm run dev` | starts the Vite dev server |
 
-- Page tests import `test` from `e2e/fixtures.ts`. Its fixture stubs tile and data requests, and fails the test on any other request.
+- Page tests import `test` from `e2e/fixtures.ts`. Its fixture passes files in `dist/`, stubs tile and data requests, and fails the test on any other request.
 - With `CHROMIUM_PATH=/usr/bin/chromium` set, page tests launch that browser instead of Playwright's own Chromium.
 
 <!-- super-board:begin v3.3.0 (managed; edits inside are overwritten on upgrade) -->

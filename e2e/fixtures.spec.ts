@@ -6,12 +6,31 @@ import { expect, test } from './fixtures'
 // all that can fail them.
 for (const url of [
   'https://example.invalid/',
+  'https://example.invalid/kilato/',
   'https://tile.openstreetmap.org.example.invalid/1/0/0.png',
   'https://example.invalid/kilato/data/manifest.json',
 ]) {
   test(`a request to ${url} fails the test`, async ({ page }) => {
     test.fail()
     await page.evaluate((target) => fetch(target).catch(() => null), url)
+  })
+}
+
+// Same origin, but not a file of the build: the preview answers some of these with a 200
+// index.html, so only the fixture can catch them. test.fail() comes after goto, so a page
+// that doesn't open is a plain failure.
+for (const path of [
+  '/outside.json',
+  '/outside/index.html',
+  '/data/manifest.json',
+  '/kilato/missing.js',
+  '/kilato/assets/',
+  '/kilato/..%2fpackage.json',
+]) {
+  test(`a same-origin request to ${path} fails the test`, async ({ page }) => {
+    await page.goto('/kilato/')
+    test.fail()
+    await page.evaluate((target) => fetch(target).catch(() => null), path)
   })
 }
 
@@ -47,10 +66,13 @@ test('a data request gets the file from site-data', async ({ page }) => {
   expect(manifest.version).toBe(1)
 })
 
-test('a data file that does not exist gets a 404', async ({ page }) => {
-  await page.goto('/kilato/')
-  const status = await page.evaluate(() =>
-    fetch('/kilato/data/cells/none.json').then((response) => response.status),
-  )
-  expect(status).toBe(404)
-})
+for (const path of ['/kilato/data/cells/none.json', '/kilato/data/']) {
+  test(`a data request to ${path}, which is not a file, gets a 404`, async ({ page }) => {
+    await page.goto('/kilato/')
+    const status = await page.evaluate(
+      (target) => fetch(target).then((response) => response.status),
+      path,
+    )
+    expect(status).toBe(404)
+  })
+}
