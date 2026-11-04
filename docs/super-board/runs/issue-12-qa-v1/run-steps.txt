@@ -1,0 +1,37 @@
+===== the cache key
+ok    the real step writes the key · key=data-2026-W45
+ok    2026-11-02 gives data-2026-W45 · data-2026-W45
+ok    2026-11-08 gives data-2026-W45 · data-2026-W45
+ok    2026-11-09 gives data-2026-W46 · data-2026-W46
+ok    2026-12-31 gives data-2026-W53 · data-2026-W53
+ok    2027-01-01 gives data-2026-W53 · data-2026-W53
+ok    2027-01-03 gives data-2026-W53 · data-2026-W53
+ok    2027-01-04 gives data-2027-W01 · data-2027-W01
+
+===== the page build and the copy, with the fixture as the restored cache
+ok    npm run build exits 0
+ok    the copy exits 0
+ok    dist/data/manifest.json exists
+ok    no nested dist/data/data
+
+===== what actions/upload-pages-artifact@v5 would pack
+ok    the page is in it
+ok    the page is at the root, not under dist/
+ok    all 9 data files are under data/
+ok    no extract, cache or repo files are in it
+ok    the manifest is the same bytes as the data
+      12 files, modes ['0o664']
+
+===== the data at its live address, under vite preview
+ok    /kilato/data/manifest.json answers 200 with the manifest
+ok    /kilato/data/cells/4749_1269.json answers 200 with places
+ok    /kilato/data/cells/4749_1270.json answers 200 with places
+ok    /kilato/data/search.json answers 200
+ok    /kilato/data/LICENSE.txt answers 200 with both notices
+ok    /kilato/ still answers with the page
+
+===== no data: the copy has to stop the run
+ok    the copy exits non-zero · cp: cannot stat 'data': No such file or directory
+ok    nothing was published to dist/data
+
+all as expected

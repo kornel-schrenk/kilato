@@ -1,0 +1,20 @@
+The step as written:
+curl --fail --location --remote-name https://download.geofabrik.de/europe/hungary-latest.osm.pbf
+curl --fail --location --remote-name https://download.geofabrik.de/europe/hungary-latest.osm.pbf.md5
+md5sum --check hungary-latest.osm.pbf.md5
+
+===== Hungary, the .md5 and the headers only
+.md5 says: 3d740529839a29cd519b9f81ebf31796  hungary-latest.osm.pbf
+first answer: HTTP/1.1 307 Temporary Redirect
+redirects to: https://download.geofabrik.de/europe/hungary-261103.osm.pbf
+
+===== the same step, with Monaco in place of Hungary
+exit 0
+stdout: monaco-latest.osm.pbf: OK
+saved: ['monaco-latest.osm.pbf', 'monaco-latest.osm.pbf.md5']
+
+===== the same check, on a corrupted file
+$ md5sum --check monaco-latest.osm.pbf.md5
+exit 1
+stdout: monaco-latest.osm.pbf: FAILED
+stderr: md5sum: WARNING: 1 computed checksum did NOT match
