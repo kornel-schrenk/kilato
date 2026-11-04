@@ -1,0 +1,47 @@
+Tested code: 92022c1, the builder's head. QA adds only this folder, and changes no workflow, test or app code.
+
+===== CI and merge
+Check `verify` on 92022c1: conclusion success. https://github.com/kornel-schrenk/kilato/actions/runs/41928991694/job/126920762424
+This file can't record CI on its own commit. The PR comment gives the state at handoff.
+Against develop ba5d70f: 92022c1 sits directly on it, and `git merge-tree --write-tree` finds no conflict.
+
+===== project verifier
+None: .agents/skills has no verify-* map, so only the issue's ACs apply.
+
+===== the actions it names exist
+Read from GitHub during this run. Each tag resolves:
+actions/checkout@v7 3d3c42e · actions/setup-node@v7 949feb2 · actions/cache@v6 55cc834 · actions/upload-pages-artifact@v5 fc324d3 · actions/deploy-pages@v5 368f825
+actions/cache at v6 has restore/action.yml and save/action.yml, both with the inputs `path` and `key`. Restore has the output `cache-hit`, for an exact match of the key.
+actions/upload-pages-artifact at v5 takes `path`. Its Linux tar command is the one run-steps.py runs.
+
+===== workflow schema
+schema-check.py against https://json.schemastore.org/github-workflow.json: deploy.yml 0 errors. A control copy with `runs_on` for `runs-on`: 1 error.
+actionlint was not run. This machine's permission policy refused the download of its binary, so I didn't try another way. It would add checks of expressions and action inputs that the schema doesn't do. step-walk.py and the reads above cover the expressions and inputs this file uses, by other means.
+
+===== the builder's open question, inputs.rebuild_data on a push or a schedule
+Closed from the docs, not from a run. docs.github.com/en/actions/reference/workflows-and-actions/contexts: "If you attempt to dereference a nonexistent property, it will evaluate to an empty string." .../expressions: in conditionals, "" and null are both coerced to false. So it is falsy whichever it is, and the rebuild condition rests on the cache alone. The first run on main is still the first real proof.
+
+===== other docs checked
+rest/actions/cache: DELETE .../actions/caches takes `key` and `ref`, and `ref` is the full ref, refs/heads/<branch>. The live cache list here shows that form: refs/pull/39/merge.
+rest/actions/workflows: PUT .../actions/workflows/{workflow_id}/enable takes the file name.
+
+===== pr-security-review
+Diff of develop...92022c1, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- Triggers are push to main, a schedule and workflow_dispatch. No pull_request_target, no workflow_run, so nothing runs code from a fork with this token. workflow_dispatch needs write access.
+- No `${{ }}` inside a `run:` script: step-walk.txt checks it. KEY and GH_TOKEN arrive through env. The only input is a boolean, and it reaches only `if:`.
+- No secrets. The token is `github.token`, and neither `gh api` call prints it.
+- `ref=$GITHUB_REF` goes into a query string unencoded. A branch name with `&` could add a parameter to the DELETE, but only someone with write access can make that branch and dispatch, and they can delete caches already. Quoted, so no shell injection. Rejected: no gain for the attacker.
+- Cache poisoning: GitHub scopes a cache to its ref, and a run on main reads only main's. PR runs write to refs/pull/N/merge, as the live cache list shows. Rejected.
+- .md5 from the same host over HTTPS isn't a signature. It catches a broken download, which is what the spec asks of it. An attacker who controls Geofabrik's answer controls both files. Rejected: the spec's own source of trust, not a weak check of it.
+- pages: write, id-token: write and actions: write cover every step, including npm ci and the data build, because this is one job. deploy-pages recommends a separate job, and the builder's commit records why not. The skill's hard exclusions leave out a lack of hardening, and an attack would first need a compromised locked dependency. Rejected as a finding. Noted for the reviewer, as a choice the builder made in the open.
+- Actions are pinned to a major tag, not a sha, all first-party `actions/`. Hardening again. Rejected.
+- OpenStreetMap and Wikipedia text is untrusted, but this diff only copies the JSON. It adds no sink.
+- test/deploy-workflow.test.ts is test code: hard exclusion 11.
+
+===== what QA ran outside the test suite
+Live calls to Geofabrik, by hand, once each: Hungary's .md5, a HEAD on Hungary's extract, and Monaco's extract and .md5. See live-download.txt. Nothing else, and not 328 MB.
+Live calls to Wikipedia, OpenStreetMap or tile servers: 0.
+The mutation pass ran under `unshare -rn`, with no network.
+Nothing was installed on the machine, and no osmium-tool was used: #11's QA ran the real command with real osmium, and this card changes no build code.
+GET .../actions/permissions/workflow answered 403 for the bot, so I couldn't read the repository's default token setting. It doesn't matter here: the workflow's own `permissions:` block sets all four.

@@ -1,0 +1,37 @@
+ok    a push, this week is cached: reuse it
+ok    a push, first of the week: rebuild
+ok    the schedule, this week is cached: reuse it
+ok    the schedule, first of the week: rebuild
+ok    by hand, box unticked, cached: reuse it
+ok    by hand, box unticked, not cached: rebuild
+ok    by hand, box ticked, cached: rebuild, replace the cache
+ok    by hand, box ticked, not cached: rebuild, nothing to replace
+ok    the data build fails on a rebuild over a cache
+ok    the data build fails on a miss
+ok    the download fails its .md5
+ok    the deploy itself fails
+ok    npm ci fails
+ok    cancelled during the deploy: no enable call
+
+14 of 14 cases match the table.
+
+ok    push branches
+ok    schedule
+ok    rebuild_data is boolean
+ok    only three triggers
+ok    permissions
+ok    concurrency
+ok    one job
+ok    no job-level if
+ok    no job-level permissions
+ok    no continue-on-error anywhere
+ok    environment
+ok    last step is the enable call
+ok    every action is pinned to a major
+ok    no ${{ }} inside a run script
+
+===== can this check go red?
+Three changed copies of the workflow, by hand:
+- `||` changed to `&&` in the rebuild condition: 7 cases WRONG, starting with "a push, first of the week".
+- `&&` changed to `||` in the drop step's condition: 6 cases WRONG, starting with "a push, this week is cached".
+- `!cancelled()` changed to `always()`: the check stops with an error, as it knows no always().
