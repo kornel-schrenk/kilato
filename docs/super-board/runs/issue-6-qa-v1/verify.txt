@@ -97,3 +97,9 @@ $ npx playwright test e2e/language.spec.ts   # the spec from a7ab0f3, on the bas
 origin/develop is now 1b74610, ahead of the PR's merge base 91f3b2d. The two new commits change only AGENTS.md:  1 file changed, 1 insertion(+)
 git merge-tree --write-tree HEAD origin/develop: exit 0, so the PR merges without a conflict
 The new AGENTS.md rule, end every page test with an assertion after its last action: all 11 tests in e2e/language.spec.ts follow it
+
+===== repeat runs of the language spec, same tests as a7ab0f3
+$ npx playwright test e2e/language.spec.ts --repeat-each=5
+  55 passed (53.9s)
+$ CHROMIUM_PATH=/usr/bin/chromium npx playwright test e2e/language.spec.ts
+  11 passed (30.8s)
