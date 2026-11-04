@@ -15,7 +15,9 @@
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "verify": "npm run typecheck && npm test && npm run build && npm run test:e2e",
-    "record:wikipedia": "node scripts/data/record-wikipedia.ts"
+    "record:wikipedia": "node scripts/data/record-wikipedia.ts",
+    "data:build": "TZ=Europe/Budapest node scripts/data/build.ts",
+    "data:fixture": "TZ=Europe/Budapest node scripts/data/build-fixture.ts"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

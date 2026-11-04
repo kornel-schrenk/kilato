@@ -1,5 +1,5 @@
 import type { Manifest, Place } from '../../src/core/types'
-import { categorize, tagsFilterExpressions, type Tags } from './categories'
+import { categorize, tagsFilterExpressions, type Tags } from './categories.ts'
 
 /** Budapest: west, south, east, north. */
 export const COVERAGE_BOX: Manifest['box'] = [18.925, 47.35, 19.335, 47.62]
@@ -95,7 +95,8 @@ function inCoverageBox([lon, lat]: Position): boolean {
   return lon >= west && lon <= east && lat >= south && lat <= north
 }
 
-const round5 = (value: number) => Math.round(value * 1e5) / 1e5
+/** Coordinates to 5 decimals, about 1 m. */
+export const round5 = (value: number) => Math.round(value * 1e5) / 1e5
 
 function placeFromFeature({ id, geometry, properties: tags }: Feature): OsmPlace | undefined {
   const { name } = tags

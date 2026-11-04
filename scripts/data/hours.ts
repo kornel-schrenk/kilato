@@ -15,6 +15,13 @@ const BUDAPEST = {
   address: { country_code: 'hu', state: 'Budapest' },
 } as unknown as nominatim_object
 
+/** Local midnight on the day of `now`, where the window starts. It needs the same `TZ` as `hoursInWindow`. */
+export function windowStartOn(now: Date): Date {
+  const midnight = new Date(now)
+  midnight.setHours(0, 0, 0, 0)
+  return midnight
+}
+
 /**
  * The open times of an `opening_hours` value, as `[start, end]` pairs in real minutes since
  * `windowStart`, clipped to the window. An empty list means closed throughout. There are no hours

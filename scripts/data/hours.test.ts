@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { hoursInWindow } from './hours'
+import { hoursInWindow, windowStartOn } from './hours'
 
 /** Monday, local midnight in Budapest, with no clock change in the next 14 days. */
 const NOVEMBER = new Date('2026-11-02T00:00:00+01:00')
@@ -13,6 +13,19 @@ const AUTUMN = new Date('2027-10-25T00:00:00+02:00')
 /** The local time in Budapest that a number of minutes since the window start falls on. */
 const localTime = (windowStart: Date, minutes: number) =>
   new Date(windowStart.getTime() + minutes * 60_000).toLocaleString('sv-SE', { timeZone: 'Europe/Budapest' })
+
+describe('windowStartOn', () => {
+  it.each([
+    ['a winter morning', '2026-11-02T03:17:00Z', '2026-11-01T23:00:00.000Z'],
+    ['a summer morning', '2026-07-01T10:00:00Z', '2026-06-30T22:00:00.000Z'],
+    ['just after midnight, still the UTC day before', '2026-11-01T23:30:00Z', '2026-11-01T23:00:00.000Z'],
+    ['just before midnight', '2026-11-02T22:59:59Z', '2026-11-01T23:00:00.000Z'],
+    ['the day the clocks go forward', '2027-03-28T10:00:00Z', '2027-03-27T23:00:00.000Z'],
+    ['the day the clocks go back', '2027-10-31T10:00:00Z', '2027-10-30T22:00:00.000Z'],
+  ])('finds local midnight in Budapest on %s', (_day, now, start) => {
+    expect(windowStartOn(new Date(now)).toISOString()).toBe(start)
+  })
+})
 
 describe('hoursInWindow', () => {
   it('runs in Budapest time', () => {

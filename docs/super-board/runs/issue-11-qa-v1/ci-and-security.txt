@@ -1,0 +1,26 @@
+Tested code: cc860ff, the builder's head. QA adds one test file's changes and this folder, and changes no app code.
+
+===== CI and merge
+Check `verify` on cc860ff: conclusion success.
+This file can't record CI on its own commit. The PR comment gives the state at handoff.
+Against develop 47c60ae: `git merge-tree --write-tree` finds no conflict. The 7 commits develop has moved on by touch src/i18n/kinds*, skills and docs, none of them this PR's code.
+
+===== project verifier
+None: .agents/skills has no verify-* map, so only the issue's ACs apply.
+
+===== pr-security-review
+Diff of develop...cc860ff, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- build.ts runs osmium with execFileSync and an argument list, with no shell. Its values are the fixed args from osm.ts, a temp folder from mkdtempSync, and --pbf, a command-line flag, which the skill's precedents treat as trusted.
+- write.ts builds paths from --out, also a flag, from fixed names, and from cellKey, whose result is two integers.
+- wiki/<lang>.json takes `lang` from the `lang` field of Wikipedia's langlinks. A value like ../x would write outside --out. Page editors can't set it: it is an interwiki prefix from MediaWiki's own table, over HTTPS from a fixed host. Rejected: no attack path.
+- rmSync removes only `cells` and `wiki` under --out, and the temp folder the build made itself.
+- OpenStreetMap names and wikipedia tags, and Wikipedia titles, are community-edited, so untrusted. In this diff they only go into JSON values. No HTML sink: nothing under src/ or e2e/ imports these modules. A tag's title reaches a Wikipedia URL only in the page, from #14 on, on a host that comes from the language.
+- The error message of a failed call logs the request's URL, which holds only the public box and page ids.
+- No dependency changes: package-lock.json is untouched, and package.json adds two script lines. No workflow changes.
+- The strings the skill names for secrets: none in the diff's code or in the site fixture's manifest and licence.
+
+===== what QA ran outside the test suite
+Live Wikipedia, OpenStreetMap or Geofabrik calls by QA: 0. Each run that could reach one used a stand-in `fetch`, and the final mutation run and the evidence scripts ran under `unshare -rn`, which has no network at all.
+QA's process slip, caught before it did harm: the first mutation run started without that sandbox. Its list holds a mutant that drops the real build's minimums, and the old real-command test would then have gone on to the live API. QA saw this while mutant 8 of 37 was running, before the minimums mutant, stopped the run by PID and started again under `unshare -rn`. The first 8 only touch merge.ts. No result of the stopped run is used.
+osmium-tool 1.18 came from `apt-get download osmium-tool`, unpacked with `dpkg -x` into a temp folder. Nothing was installed on the machine.

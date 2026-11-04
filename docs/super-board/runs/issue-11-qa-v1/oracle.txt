@@ -1,0 +1,9 @@
+articles 233 without q 0
+places in tree 311
+osm places kept 81  with wikidata 2  with wikipedia 3
+notable by oracle 230  notable in tree 230  attached by oracle 3
+places neither from OSM nor notable: []
+differences: 0
+de.json matches True 64
+search ids unique True  fields ok True
+cell key errors 0

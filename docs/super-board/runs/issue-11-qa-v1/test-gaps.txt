@@ -1,0 +1,46 @@
+Test-gap check. Tested code: cc860ff. Range: develop...cc860ff. This change has no page, so the component and e2e rungs are n/a for every AC. The site fixture does reach a page test, at e2e/fixtures.spec.ts:61. The diff touches no auth or money code. It does decide what data the live site gets, so QA checked the merge against a separately worked-out answer (oracle.txt) instead of only reading the builder's tests.
+
+===== ledger, by clause of each AC
+AC1 attaches to every place with the same wikidata: merge.test.ts:30 · on recorded data: build-fixture.test.ts:80, oracle.txt
+AC1 otherwise to the places whose tag names it, hu: or en:, underscores as spaces: merge.test.ts:50, :56, :62 · on recorded data: build-fixture.test.ts:90
+AC1 a place whose tag matched no fetched article keeps the link: merge.test.ts:93, :99
+AC1 an unattached article becomes notable, kind article: merge.test.ts:153 · on recorded data: build-fixture.test.ts:94, oracle.txt, 230 of 230
+AC1 name and names.en, trailing parenthesis cut: merge.test.ts:168, :183, :193, :200, :207
+AC1 id is the Wikidata id, else huwiki:<pageid> or enwiki:<pageid>: merge.test.ts:214
+AC2 manifest.json with every field, hoursWindowStart a UTC instant: write.test.ts:38, build.test.ts:68 · real command: build.test.ts:376, real-osmium.txt
+AC2 one cell file per non-empty cell: write.test.ts:53 · build-fixture.test.ts:61
+AC2 wiki/<lang>.json for every language except hu and en: write.test.ts:61, :75 · build-fixture.test.ts:114 · oracle.txt
+AC2 search.json: write.test.ts:82 · build-fixture.test.ts:73
+AC2 LICENSE.txt with both notices: write.test.ts:94 · build-fixture.test.ts:118
+AC3 fewer than 5,000 places: build.test.ts:115, :235 · real command, exit code: :351 · real osmium: real-osmium.txt
+AC3 fewer than 1,500 articles: build.test.ts:124, :245 · real command, exit code: :360, added by QA · real osmium: real-osmium.txt
+AC3 a Wikipedia call still fails after its retries: build.test.ts:254 · real command, exit code: :368, added by QA · real osmium: real-osmium.txt
+AC4 the osmium steps, in order: build.test.ts:200 · real command: :351, :376 · real osmium: real-osmium.txt
+AC4 the hours, the fetch, the merge and the writer, end to end: build.test.ts:48, :215 · real command with exit 0: :376, added by QA · real osmium: real-osmium.txt
+AC4 TZ=Europe/Budapest: :351 sees it in osmium's environment · :376, added by QA, sees hoursWindowStart at 00:00:00 Budapest time from a parent with TZ=UTC
+AC5 npm run data:fixture makes the committed copy, the clock fixed: build-fixture.test.ts:33, :49 · with TZ=Asia/Tokyo the command leaves git clean, by hand
+AC5 the 5,000 and 1,500 checks are off: build.test.ts:106, and the fixture itself has 311 places
+AC5 a test fails when the copy is out of date: build-fixture.test.ts:33, red by hand on an edited manifest, on a stale extra cell and on a changed source fixture, green again after restoring each
+
+===== edge cases
+boundaries: 4,999 and 5,000 places pinned, build.test.ts:115, :132 · 1,499 and 1,500 articles pinned, :124, :132 · through the real command: :360, :376
+0, null, empty: no articles pinned, build.test.ts:106 · empty replication timestamp pinned, build.test.ts:266 · a timestamp that does not parse fails with exit 1, probe only, edge-probes.txt
+dates: both clock changes, midnight on both sides, pinned, hours.test.ts:17 · TZ pinned, see AC4
+input: non-ASCII titles and underscores pinned, merge.test.ts:62, build-fixture.test.ts:80 · nested and non-final parentheses pinned, merge.test.ts:183 · unknown flag and missing value exit 1, probe only · CSV injection: n/a, no CSV
+volume: 1, 2, 10 and 5,000 places pinned, build.test.ts:106, :48, :351, :132 · real osmium, 5,004 kept of 5,009 candidates: real-osmium.txt · a real Hungary extract: the builder's one hand run, not repeated by QA
+auth: n/a
+error paths: each failure in build.ts pinned, build.test.ts:254, :266, :275, and the minimums · at the real command: see AC3 · a missing extract, with real osmium: real-osmium.txt
+idempotency: a second build into the same folder, stale files gone, pinned, write.test.ts:103 · a failed build keeps the last good data: build.test.ts:115, :124, :254 assert nothing is written, and real-osmium.txt shows an existing folder untouched
+races: n/a, one process
+UI states, accessibility: n/a, no page
+
+===== written by QA
+High: AC3's exit code for the 1,500 check and for a failed Wikipedia call, and AC4's whole success path, had no test at the real command. The builder named this as not done, because going further would call the live API. A preload script through NODE_OPTIONS replaces fetch inside the real command, which closes it with no live call. Added at build.test.ts:360, :368, :376. All three passed on their first run, so they were shown red on mutants: see mutants.txt and the note there.
+
+===== test gaps, not written
+Medium: an article can end up nowhere. Witness in edge-probes.txt: a place tagged wikidata=Q1 and wikipedia=hu:Másik, and fetched articles Q1 and Másik (Q2), with no other place naming Q2. The place shows Q1, and Q2 is on no place and is no notable place. The builder's test merge.test.ts:231 pins this. The spec's Merge section is silent on two articles for one place: by step 2 Q2 "attaches", so step 4 doesn't apply, and the category table says notable means "match no place above". So QA doesn't fail it against the AC. It isn't in the PR's Risk block, so the product owner may not know. The count on real data is not known: QA made no live call.
+Medium: `engines` says node >=24, and `import.meta.main` needs 24.2. On 24.0 or 24.1, `npm run data:build` would do nothing and exit 0, so a deploy would see success. ci.yml's `node-version: 24` gets the newest 24, and this machine has 24.22.2, so nothing runs that today. The builder's note at build.ts:102 says the same, and #12 is where it could bite.
+Low: a tag that differs only in the first letter's case, hu:cikk, doesn't name the article Cikk, though MediaWiki treats them as one title. The place keeps a working link, and the article also becomes a notable place. Probe only.
+Low: a tag with a section, hu:Cikk#Szakasz, doesn't name the article either, with the same result. The builder's Risk block already tells the page's author about the #.
+Low: a tag naming an article that another place holds by wikidata gives a link from the tag, with no q and no en, so that place can't show the article in a third language or in English. The spec names only the case of no fetched article. The builder noted this at merge.ts:74 and pinned it, merge.test.ts:77.
+Low: an article with no Hungarian title builds the lookup key hu:undefined, so it would attach to a place tagged with that literal text. Probe only. It would take a mistyped tag to reach it.
