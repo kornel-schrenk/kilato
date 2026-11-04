@@ -1,0 +1,53 @@
+Test-gap check, round 2. Tested head: 251d5a9. Range: develop...251d5a9. There is no page in this change, so the component and e2e rungs are n/a for every AC.
+
+Since v1's evidence (b12e5b7), only scripts/data/categories.ts (c50733b, R2) and scripts/data/osm.test.ts (c50733b and 251d5a9, R1) changed. osm.ts, cells.ts, types.ts, the sample and tsconfig.json are what v1 tested, so v1's mutants on those files stand. This round's mutants cover what changed, plus the ring choice and the command lines, mutants.txt.
+
+===== R1, from the Reviewer
+Commit 251d5a9 came from the QA lane that the usage limit stopped. It was local and not pushed. QA checked it again here instead of relying on it:
+- The test is the Reviewer's witness: osm.test.ts:150, small ring first, expected 47.515, 19.065. The expected value is a literal, the middle of a 0.01° square, so the code can't supply it.
+- It passes on today's code. With osm.ts:82 changed to outerRings[0].position it is the only failure of 121 (R1-a).
+- Taking the last ring instead fails osm.test.ts:76 only (R1-b), so :76 and :150 pin the choice between them. The smallest ring and the mean of the rings fail both (R1-c, R1-d).
+- The commit says real osmium writes the small ring first on a609. It does, and on all 69 two-ring features in this round's input, real-osmium.txt D and E.
+- The test's note says the first ring would sit about 2 km away. It's 1946 m.
+
+===== AC3, from the Builder's handoff
+Its proof predated c50733b, which replaced the merge by key with one expression per rule.
+- 11 of 12 mutants of the new map go red, and the survivor is F-4 below. 2 of 2 table mutants and 7 of 7 command-line mutants go red. Undoing R2 fails osm.test.ts:242 only (F-11).
+- The Builder's "same 11 places" used an input that reaches 3 of the 4 amenity expressions and 1 of the 3 shop expressions, so it couldn't show osmium ORs them all. This round's input has every table value as a node and a way, and as a two-ring relation: 207 expected places. All 10 expressions reach features, the 207 come out with the right cat, kind and position, and the old 5 expressions give the same 207, real-osmium.txt A and B.
+
+===== ledger, by clause of each AC
+AC1 one place per kept feature: scripts/data/osm.test.ts:35
+AC1 cat and kind, first match wins: osm.test.ts:57, scripts/data/categories.test.ts:29, :44
+AC1 ids, area ids even and odd: osm.test.ts:63, :167
+AC1 centroid of the outer ring, hole ignored: osm.test.ts:70, :76, :145
+AC1 several outer rings, largest wins (the Builder's choice, as the spec doesn't settle it): largest first osm.test.ts:76, largest second :150
+AC1 5 decimals: osm.test.ts:52, :125
+AC2 no name, plaque, stolperstein, shop=vacant, open way, outside the box: osm.test.ts:97 · box edges :129, :141
+AC2 names only when they differ: osm.test.ts:91
+AC2 wikidata, wikipedia, opening_hours kept: osm.test.ts:80
+AC3 filter generated from the table, and a test fails on a missing tag: categories.test.ts:59, :68
+AC3 extract and export flags, linear_tags false: osm.test.ts:234, :242, :251, :260
+AC4 key 4749_1270: src/core/cells.test.ts:4 · floor of both parts: cells.test.ts:8
+AC4 the spec's six types: src/core/types.test.ts:40, checked by tsc
+AC5 fixture covers every rule and shape, within 1 km: osm.test.ts:186, :195, :200, :207, :214
+AC6 scripts in the type check, TS7006: test/typecheck.test.ts:8 · by hand on 251d5a9, an implicit any in scripts/data/ gives TS7006 and exit 1, and with scripts out of include the same file gives exit 0 and the test goes red
+
+===== edge cases, for what changed
+boundaries: a flat ring first or second, beside a real ring, picks the real ring, probe only · three rings with the largest in the middle, probe only · two rings of equal area take the first, probe only
+0, null, empty: an empty table value can't reach the filter, as the table is fixed · empty export pinned, osm.test.ts:176
+volume: 207 places through real osmium · a real extract not run, that is #12
+input: a tag named __proto__ adds no field and pollutes nothing, shop=constructor and shop=__proto__ are plain strings, probe only
+money and dates, auth, UI states, accessibility: n/a, no such code
+idempotency and races: unchanged from v1
+
+===== test the tests
+osm.test.ts:150 has a literal expected value and was seen red. osm.test.ts:242 names one whole expression, so it fails on the merged filter. No test asserts on its own mock or recomputes its expected value.
+
+===== gaps
+High: none. Every AC has a test at the unit rung, and nothing here touches auth, money or security.
+Medium: none. v1's Medium, the first-ring mutant, is now written: osm.test.ts:150.
+Low, not written: mutant F-4, dropping nwr/shop=bakery,pastry or the services shop list from the filter, survives. It is equivalent: nwr/shop already keeps those, and real osmium gives the same 207 places without either. Dropping a list nothing else covers loses 45 places and goes red (F-12).
+Low, not written: mutant R1-f, osm.ts:75 dropping Math.abs, survives. Witness: two clockwise rings, largest second. Real osmium wrote 0 of 208 outer rings clockwise, with 18 tagged ways drawn clockwise in the input, so a real export can't reach it.
+Low, not written: mutant R1-e, osm.ts:82 with >= for >, survives. Witness: two outer rings of equal area. The spec doesn't choose between them, and either way the result is stable for a given export.
+Low, not written: shop=no and historic=no become places of kind `no`, and amenity=cafe;bar matches no rule. This is what the spec's table says. #12's real extract will show how many there are. Carried over from v1.
+Low, for #8, not this PR: shop=constructor and shop=__proto__ come out as kinds. That's only data here, but a label lookup on a plain object would read them off its prototype and not fall back to "Shop".
