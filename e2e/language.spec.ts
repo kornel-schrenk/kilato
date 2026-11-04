@@ -23,6 +23,20 @@ for (const { locale, lang, text } of [
   })
 }
 
+for (const { languages, lang, text } of [
+  { languages: ['de-AT', 'hu-HU'], lang: 'en', text: english },
+  { languages: ['hu-HU', 'de-AT'], lang: 'hu', text: hungarian },
+]) {
+  test(`with the phone languages ${languages.join(', ')}, only the first counts`, async ({ page }) => {
+    await page.addInitScript((list) => {
+      Object.defineProperty(navigator, 'languages', { get: () => list })
+    }, languages)
+    await page.goto('/kilato/')
+    await expect(page.getByText(text)).toBeVisible()
+    await expect(page.locator('html')).toHaveAttribute('lang', lang)
+  })
+}
+
 for (const { locale, press, other, lang, before, after } of [
   { locale: 'hu-HU', press: 'EN', other: 'HU', lang: 'en', before: hungarian, after: english },
   { locale: 'en-GB', press: 'HU', other: 'EN', lang: 'hu', before: english, after: hungarian },
@@ -60,6 +74,30 @@ test.describe('on a phone set to hu-HU', () => {
     await page.goto('/kilato/')
     await expect(page.getByText(hungarian)).toBeVisible()
     expect(await page.evaluate(() => localStorage.length)).toBe(0)
+  })
+
+  test('pressing back to the phone language is kept too', async ({ page }) => {
+    await page.goto('/kilato/')
+
+    await switchButton(page, 'EN').click()
+    await expect(page.getByText(english)).toBeVisible()
+    await switchButton(page, 'HU').click()
+    await expect(page.getByText(hungarian)).toBeVisible()
+    expect(await page.evaluate((key) => localStorage.getItem(key), langChoice)).toBe('hu')
+
+    await page.reload()
+
+    await expect(page.getByText(hungarian)).toBeVisible()
+    await expect(page.locator('html')).toHaveAttribute('lang', 'hu')
+  })
+
+  test('the name of the switch changes with the language', async ({ page }) => {
+    await page.goto('/kilato/')
+    await expect(page.getByRole('group', { name: 'Nyelv' })).toBeVisible()
+
+    await switchButton(page, 'EN').click()
+
+    await expect(page.getByRole('group', { name: 'Language' })).toBeVisible()
   })
 
   test('the page keeps working when the browser blocks localStorage', async ({ page }) => {
