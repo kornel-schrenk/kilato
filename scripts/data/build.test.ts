@@ -299,12 +299,38 @@ while [ $# -gt 1 ]; do
 done
 `
 
-  function run(args: string[]) {
+  // Stands in for the Wikipedia API inside the real command, so no test reaches it, and drops the
+  // 35 s of backoff. npm runs under NODE_OPTIONS as well, so it checks which script it is in.
+  const FAKE_WIKIPEDIA = `
+if (process.argv[1]?.endsWith('build.ts')) {
+  const { FAKE_ARTICLES } = process.env
+  const realSetTimeout = globalThis.setTimeout
+  globalThis.setTimeout = (callback) => realSetTimeout(callback, 0)
+  let nextPage = 1
+  globalThis.fetch = async (input) => {
+    if (FAKE_ARTICLES === 'down') return new Response('down', { status: 503 })
+    const url = new URL(input)
+    if (url.searchParams.get('list') === 'geosearch') {
+      const count = url.hostname.startsWith('hu.') ? Math.min(100, FAKE_ARTICLES - nextPage + 1) : 0
+      const geosearch = Array.from({ length: count }, () => ({ pageid: nextPage, title: 'Cikk ' + nextPage++, lat: 47.5, lon: 19.05 }))
+      return Response.json({ query: { geosearch } })
+    }
+    const pages = url.searchParams.get('pageids').split('|').map((pageid) => ({ pageid: Number(pageid), pageprops: { wikibase_item: 'Q' + pageid } }))
+    return Response.json({ query: { pages } })
+  }
+}
+`
+
+  const OSMIUM_STEPS = ['Europe/Budapest fileinfo', 'Europe/Budapest extract', 'Europe/Budapest tags-filter', 'Europe/Budapest export']
+
+  function run(args: string[], { exported = osmLines(10), articles }: { exported?: string; articles?: number | 'down' } = {}) {
     const log = join(dir, 'osmium.log')
-    writeFileSync(join(dir, 'export.geojsonseq'), osmLines(10))
+    writeFileSync(join(dir, 'export.geojsonseq'), exported)
     const script = join(dir, 'osmium')
     writeFileSync(script, FAKE_OSMIUM)
     chmodSync(script, 0o755)
+    const preload = join(dir, 'fake-wikipedia.mjs')
+    writeFileSync(preload, FAKE_WIKIPEDIA)
     const result = spawnSync('npm', ['run', '--silent', 'data:build', '--', ...args], {
       cwd: root,
       encoding: 'utf8',
@@ -314,18 +340,58 @@ done
         TZ: 'UTC',
         OSMIUM_LOG: log,
         FAKE_EXPORT: join(dir, 'export.geojsonseq'),
+        ...(articles !== undefined && { NODE_OPTIONS: `--import=${preload}`, FAKE_ARTICLES: String(articles) }),
       },
     })
     return { ...result, osmiumLog: existsSync(log) ? readFileSync(log, 'utf8').trim().split('\n') : [] }
   }
 
+  const extractToOut = () => ['--pbf', join(dir, 'hungary.osm.pbf'), '--out', out]
+
   it('exits non-zero below the minimum, having run osmium in Budapest time', { timeout: 60_000 }, () => {
-    const { status, stderr, osmiumLog } = run(['--pbf', join(dir, 'hungary.osm.pbf'), '--out', out])
+    const { status, stderr, osmiumLog } = run(extractToOut())
 
     expect(stderr).toContain('10 places from OpenStreetMap, fewer than 5000')
     expect(status).not.toBe(0)
-    expect(osmiumLog).toEqual(['Europe/Budapest fileinfo', 'Europe/Budapest extract', 'Europe/Budapest tags-filter', 'Europe/Budapest export'])
+    expect(osmiumLog).toEqual(OSMIUM_STEPS)
     expect(existsSync(out)).toBe(false)
+  })
+
+  it('exits non-zero with fewer than 1,500 articles, and writes nothing', { timeout: 60_000 }, () => {
+    const { status, stderr } = run(extractToOut(), { exported: osmLines(5_000), articles: 1_499 })
+
+    expect(stderr).toContain('1499 articles from Wikipedia, fewer than 1500')
+    expect(status).not.toBe(0)
+    expect(existsSync(out)).toBe(false)
+  })
+
+  it('exits non-zero when a Wikipedia call still fails after its retries, and writes nothing', { timeout: 60_000 }, () => {
+    const { status, stderr } = run(extractToOut(), { exported: osmLines(5_000), articles: 'down' })
+
+    expect(stderr).toContain('Wikipedia call failed after 3 retries')
+    expect(status).not.toBe(0)
+    expect(existsSync(out)).toBe(false)
+  })
+
+  it('exits 0 at the minimums, with the osmium steps, the hours, the fetch, the merge and the writer in Budapest time', { timeout: 60_000 }, () => {
+    const exported = `${osmLines(4_999)}\n${osmLine(9_000, { opening_hours: '24/7', wikidata: 'Q1' })}`
+    const startedAt = Date.now()
+
+    const { status, stderr, stdout, osmiumLog } = run(extractToOut(), { exported, articles: 1_500 })
+
+    expect(status, stderr).toBe(0)
+    expect(osmiumLog).toEqual(OSMIUM_STEPS)
+    expect(stdout).toContain(`Wrote 6499 places to ${out}, with 1500 articles read`)
+    const manifest = json('manifest.json')
+    expect(manifest.osmDataAt).toBe('2026-11-01T21:21:02.000Z')
+    expect(Date.parse(manifest.builtAt)).toBeGreaterThanOrEqual(startedAt)
+    expect(new Date(manifest.hoursWindowStart).toLocaleTimeString('sv-SE', { timeZone: 'Europe/Budapest' })).toBe('00:00:00')
+    expect(Date.parse(manifest.builtAt) - Date.parse(manifest.hoursWindowStart)).toBeLessThan(25 * 60 * 60 * 1000)
+    expect(json('cells/4749_1270.json').places.find(({ id }: { id: string }) => id === 'n9000')).toMatchObject({
+      hours: [[0, 20160]],
+      wiki: { q: 'Q1', hu: 'Cikk 1' },
+    })
+    expect(json('search.json').places).toHaveLength(6_499)
   })
 
   it.each([

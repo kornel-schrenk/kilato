@@ -1,0 +1,44 @@
+osmium version 1.18.0
+
+===== at the minimums: 5,004 places, 1,500 articles
+Wrote 6502 places to out, with 1500 articles read
+[stand-in] Wikipedia calls: 102
+exit=0  out folder: written
+manifest: {'version': 1, 'builtAt': '2026-11-04T21:36:04.571Z', 'osmDataAt': '2026-11-01T21:21:02.000Z', 'wikipediaAt': '2026-11-04T21:36:03.963Z', 'hoursWindowStart': '2026-11-03T23:00:00.000Z', 'box': [18.925, 47.35, 19.335, 47.62], 'wikiLangs': ['de']} · cells: 31
+in cells: 6502 · in search.json: 6502 · notable: 1498
+cell files equal manifest.cells: True
+files: ['LICENSE.txt', 'cells', 'manifest.json', 'search.json', 'wiki'] ['de.json']
+  Wikidata hely {'id': 'n6001', 'cat': 'food', 'kind': 'cafe', 'lat': 47.4975, 'lon': 19.0545, 'name': 'Wikidata hely', 'hours': [[0, 20160]], 'wiki': {'q': 'Q1', 'hu': 'Cikk 1'}}
+  Tag hely {'id': 'n6002', 'cat': 'food', 'kind': 'cafe', 'lat': 47.4976, 'lon': 19.0546, 'name': 'Tag hely', 'wiki': {'q': 'Q2', 'hu': 'Cikk 2'}}
+  Nem letöltött {'id': 'n6003', 'cat': 'food', 'kind': 'cafe', 'lat': 47.4977, 'lon': 19.0547, 'name': 'Nem letöltött', 'wiki': {'en': 'Not Fetched Title'}}
+  Múzeum {'id': 'w8001', 'cat': 'sights', 'kind': 'museum', 'lat': 47.5005, 'lon': 19.0505, 'name': 'Múzeum'}
+  left out: {'Nyitott': None, 'Emléktábla': None, 'Kívül': None, 'Iroda': None}
+
+===== 1,499 articles
+[stand-in] Wikipedia calls: 102
+Error: 1499 articles from Wikipedia, fewer than 1500
+exit=1  out folder: not written
+
+===== Wikipedia answers 503 to every call
+[stand-in] Wikipedia calls: 4
+Error: Wikipedia call failed after 3 retries: HTTP 503: https://hu.wikipedia.org/w/api.php?action=query&format=json&form
+exit=1  out folder: not written
+
+===== 4,999 places
+[stand-in] Wikipedia calls: 0
+Error: 4999 places from OpenStreetMap, fewer than 5000
+exit=1  out folder: not written
+
+===== an extract with no replication timestamp
+[stand-in] Wikipedia calls: 0
+Error: nostamp.osm.pbf has no replication timestamp
+exit=1  out folder: not written
+
+===== a missing extract
+Open failed for 'none.osm.pbf': No such file or directory
+[stand-in] Wikipedia calls: 0
+Error: Command failed: osmium fileinfo -g header.option.osmosis_replication_timestamp none.osm.pbf
+exit=1  out folder: not written
+
+===== a failed build keeps the last good data
+exit=1  cells/1_1.json still says: keep
