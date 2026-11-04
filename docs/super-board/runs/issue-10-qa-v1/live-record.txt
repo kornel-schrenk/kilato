@@ -1,0 +1,32 @@
+The live recording QA ran on 3832b14, as the issue's step a says. QA then put the committed file back, so this run changed nothing on the branch.
+
+$ npm run record:wikipedia   (live, 2026-11-04T17:09:51+01:00)
+> node scripts/data/record-wikipedia.ts
+
+Recorded 10 responses with 233 articles in test/fixtures/wikipedia/responses.json
+
+real	0m6.114s
+user	0m2.070s
+sys	0m0.323s
+record exit=0
+ test/fixtures/wikipedia/responses.json | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+responses committed/new: 10 10
+same URLs: False  only committed: 1  only new: 1
+replies that differ on shared URLs: 1
+geosearch pages committed/new: 286 286  added: []  removed: []
+calls with a continuation: 1
+every call has maxlag=5 and formatversion=2: True
+
+$ npx vitest run scripts/data/wikipedia   (against the fresh recording)
+
+ RUN  v5.1.0 <worktree>
+
+
+ Test Files  2 passed (2)
+      Tests  40 passed (40)
+   Start at  17:10:01
+   Duration  1.96s (tests 71%, import 17%, transform 7%, worker 4%)
+
+vitest on fresh recording exit=0
+restored committed fixture; status: []

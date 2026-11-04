@@ -14,7 +14,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
-    "verify": "npm run typecheck && npm test && npm run build && npm run test:e2e"
+    "verify": "npm run typecheck && npm test && npm run build && npm run test:e2e",
+    "record:wikipedia": "node scripts/data/record-wikipedia.ts"
   },
   "dependencies": {
     "preact": "^11.1.1"

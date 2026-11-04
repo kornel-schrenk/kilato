@@ -1,0 +1,82 @@
+QA's own breaks on 3832b14, separate from the Builder's 30. One line of code at a time, then `npx vitest run scripts/data/wikipedia`, then the file restored. Reproduce: python3 mutate.py <worktree>. Nothing here reached a commit, and the scripts folder was clean against the head afterwards.
+
+Result: 39 of 43 fail a test, 3 survive, and 1 ends only when a test worker runs out of memory.
+The unbroken code passes 40 of 40 tests in 8 runs out of 8, so a failure here comes from the break, not from a flaky test.
+
+| AC | Break | Result |
+|---|---|---|
+| AC1 | tile height | caught |
+| AC1 | tile width | caught |
+| AC1 | bbox corners swapped | caught |
+| AC1 | gslimit value | caught |
+| AC1 | gsprimary value | caught |
+| AC1 | gsnamespace value | caught |
+| AC1 | split at 501, not 500 | caught |
+| AC1 | split at 499 | caught |
+| AC1 | tile runs past the east edge | caught |
+| AC1 | split floor raised to about 750 m | SURVIVED |
+| AC1 | split edge not rounded | SURVIVED |
+| AC2 | page ids per call | caught |
+| AC2 | empty details call at a multiple of 50 | caught |
+| AC2 | prop value | caught |
+| AC2 | ppprop value | caught |
+| AC2 | lllimit value | caught |
+| AC2 | continue not followed | caught |
+| AC2 | a later reply wipes the Wikidata id | caught |
+| AC3 | User-Agent text | caught |
+| AC3 | maxlag value | caught |
+| AC3 | formatversion value | caught |
+| AC3 | retries, fewer | caught |
+| AC3 | retries, more | caught |
+| AC3 | first wait | caught |
+| AC3 | backoff does not grow | caught |
+| AC3 | Retry-After ignored | caught |
+| AC3 | a maxlag reply counts as success | caught |
+| AC3 | HTTP status ignored | caught |
+| AC3 | Retry-After from an earlier attempt carries over | SURVIVED |
+| AC3 | the four quarters run at once | NOT PINNED, see below |
+| AC3 | the tiles run at once | caught |
+| AC3 | details calls run at once | caught |
+| AC4 | English position wins | caught |
+| AC4 | no merge by Wikidata id | caught |
+| AC4 | pages with no id merge by title | caught |
+| AC4 | second page id dropped | caught |
+| AC4 | a language link beats a page title | caught |
+| AC4 | merge moves the position | caught |
+| AC5 | records a failed reply | caught |
+| AC5 | language trim | caught |
+| AC5 | recording drops continue | caught |
+| AC5 | replay answers a URL it never recorded (see "how this ran") | caught |
+| AC5 | ignores the fetch parameter (see "how this ran") | caught |
+
+===== the four quarters run at once
+scripts/data/wikipedia.ts:127, with the loop swapped for Promise.all over the quarters.
+- With the tiny-tile test left out, the other 26 tests in wikipedia.test.ts pass: see the output below. Nothing asserts one at a time on a split.
+- The tiny-tile test only stops it because its recursion grows without limit. It reached 2.3 GB on the first run, when QA stopped that worker by PID on this shared machine. With the heap capped at 512 MB, the worker dies after 45 s, with an error and no test result.
+- So QA counts this as a gap in the tests, not as a catch. The real code is right on this path: wire-check.txt A, where a split runs with at most 1 call in flight.
+
+=== every test except the tiny-tile one
+
+ RUN  v5.1.0 <worktree>
+
+·····-·····················
+
+ Test Files  1 passed (1)
+      Tests  26 passed | 1 skipped (27)
+   Start at  17:19:58
+   Duration  986ms (tests 75%, import 14%, transform 7%, worker 4%)
+
+exit=0
+=== the tiny-tile test alone, capped at 512 MB and 120 s
+
+
+ Test Files   (1)
+      Tests  26 skipped (27)
+     Errors  1 error
+   Start at  17:20:02
+   Duration  45.64s (import 56%, transform 28%, worker 15%, environment 1%)
+
+exit=1
+
+===== how this ran
+Two breaks in QA's first list reached the live API, which was QA's mistake. ci-and-security.txt has the account. Both were replaced with offline breaks that prove the same thing, and those are the two results marked in the table. mutate.py is the corrected version: no break reaches the network, the heap is capped, and a timeout kills the whole process group.
