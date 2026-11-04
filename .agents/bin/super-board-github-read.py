@@ -7,8 +7,10 @@ The halt file is shared through the main checkout, including linked worktrees.
 Only an explicit new run clears it with --resume after preserving the old reason.
 Mutations never enter this retry helper. For the agent-facing kinds in FORMS, a
 payload that fails its shape on every attempt is the caller's malformed read, not
-an outage: that call exits 64 with the valid form and the run keeps going. Scripts
-whose commands are fixed set SB_GITHUB_READ_STRICT=1 to keep halting on it.
+an outage: that call exits 64 with the valid form and the run keeps going. So does
+a gh flag error or an HTTP 404 on a command-line read of those kinds (local patch,
+see docs/super-board/local-patches.md). Scripts whose commands are fixed set
+SB_GITHUB_READ_STRICT=1 to keep halting on both.
 """
 from __future__ import annotations
 
@@ -117,6 +119,12 @@ def read_only(args):
         if arg in ('-f', '-F', '--field', '--raw-field', '--input') or arg.startswith(('--field=', '--raw-field=', '--input=')):
             return False
     return True
+
+
+# gh refused the read's flags, or GitHub says the path isn't there. The read is wrong, or
+# the answer is "no such thing". GitHub is fine, so only this call should fail.
+CALLER_ERROR = re.compile(r'option is not supported|unknown (?:shorthand )?flag:|Unknown JSON field:|'
+                          r'invalid argument "|required flag|accepts \d+ arg|HTTP 404')
 
 
 def permanent_error(text):
@@ -309,7 +317,7 @@ def validate(text, kind, meta=None):
     return value
 
 
-def read(args, kind='json', meta=None, recovering=False):
+def read(args, kind='json', meta=None, recovering=False, command_line=False):
     if not read_only(args):
         raise ValueError('retry helper accepts read-only GitHub commands only')
     # A diff read with no meta is the caller's malformed read, not missing evidence:
@@ -340,6 +348,12 @@ def read(args, kind='json', meta=None, recovering=False):
                     diagnostic += json.dumps([p.get('errors', []) for p in (payload if isinstance(payload, list) else [payload]) if isinstance(p, dict)])
                 except ValueError:
                     pass
+            # Imported callers (human-approval checks), the recovery read and strict
+            # scripts never take this path, so they still halt.
+            if (result.returncode and command_line and not recovering and kind in FORMS
+                    and not os.environ.get('SB_GITHUB_READ_STRICT') and CALLER_ERROR.search(result.stderr)):
+                reason = result.stderr.strip().splitlines()[0]
+                raise ValueError(f'{reason}; this call failed, the run continues. Valid form: --kind {kind} -- {FORMS[kind]}')
             if permanent_error(diagnostic):
                 halt('GitHub rejected a required read (query, authentication, or permission error); fix it before restarting', attempt, operation)
             if result.returncode:
@@ -410,7 +424,7 @@ def main():
             print(json.dumps([n for page in pages for n in page['data']['repository']['issues']['nodes']]))
             return 0
         meta = json.loads(Path(args.meta).read_text()) if args.meta else None
-        output, _ = read(command, args.kind or 'json', meta)
+        output, _ = read(command, args.kind or 'json', meta, command_line=True)
         sys.stdout.write(output)
         return 0
     except ReadHalted as error:

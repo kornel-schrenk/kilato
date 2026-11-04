@@ -51,6 +51,7 @@ const READ_SHAPES = [
   `- PR metadata: --kind metadata -- pr view <N> --json files,labels,body,additions,deletions,changedFiles`,
   `- issue state: --kind state -- issue view <N> --json state --jq .state`,
   `A read whose output misses its shape exits 64 for that call only and prints the valid form: fix the read, do not halt.`,
+  `A gh flag error or an HTTP 404 also exits 64 for that call only. A 404 is an answer: that thing is not there. Fix the read, or carry on if it was optional.`,
 ].join('\n')
 const READ_FAILURE = READ_SHAPES + '\n' + `Verification-readiness exit 9 means missing/unusable config.verify_commands: preserve card/worktree/approval/claims, report status=halted (preflight verdict=halted), stop dispatch, repair project configuration before explicit restart; no Build bounce or automatic retries. ` + `Required GitHub reads use .claude/bin/super-board-github-read.py: three total attempts, exit 79 means run halted. Check --check before any GitHub write, migration, or merge. On exit 79 preserve worktree/card/approval/claims, make no more GitHub calls, and report status=halted (preflight verdict=halted). Never retry a mutation. Config: ${input.configPath}.`
 
@@ -153,7 +154,10 @@ const lanePrompt = (lane, card) => [
   BOARD_IO(),
   `Commits, PR title, PR body blocks, comments: .claude/skills/super-board/references/writing-standard.md. Rewrite only your own PR body blocks, with .claude/bin/super-board-pr-body.sh.`,
   ...(lane === 'review' ? REVIEW_MEMORY : []),
-  ...(lane === 'qa' && card.status === 'Ready'
+  `Temp files: first create a folder of your own with mktemp -d inside your scratchpad, and keep every temp file there. Other lanes and earlier waves use the same scratchpad, so never read, glob or post a file you did not create.`,
+  `Processes: stop only what you started, by PID. Never use a broad pkill or killall: other cards' servers and tests may be running on this machine.`,
+  // Local patch: card.status stays 'Ready' after Build, so a built card needs the label check too.
+  ...(lane === 'qa' && card.status === 'Ready' && readyLane(card) === 'qa'
     ? [`This card is labelled qa: it skips Building. Move it Ready → QA yourself, create the issue branch from the base branch, and test what is already there (run.md → "qa cards").`]
     : []),
   ``,
