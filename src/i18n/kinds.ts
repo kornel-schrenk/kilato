@@ -5,7 +5,7 @@ type Label = Record<Lang, string>
 
 const l = (en: string, hu: string): Label => ({ en, hu })
 
-/** A label for every kind value the spec lists. The value alone identifies the label. */
+/** A label for every kind value the spec lists. `kindLabel` looks one up only among the values of the place's category. */
 export const kindLabels: Record<string, Label> = {
   // tourism
   attraction: l('Attraction', 'Látnivaló'),
@@ -125,12 +125,36 @@ export const kindLabels: Record<string, Label> = {
   article: l('Wikipedia article', 'Wikipédia-szócikk'),
 }
 
+const split = (kinds: string) => new Set(kinds.split(' '))
+
+/** The kind values each category can hold, as the spec's category table lists them. A label is found only among these. */
+const kindsByCat: Partial<Record<CategoryId, ReadonlySet<string>>> = {
+  sights: split(
+    'attraction museum gallery viewpoint artwork zoo aquarium theme_park place_of_worship fountain ' +
+      'monument memorial castle ruins building archaeological_site city_gate citywalls fort manor tomb wayside_cross',
+  ),
+  notable: split('article'),
+  food: split('cafe restaurant fast_food bar pub biergarten ice_cream food_court bakery pastry'),
+  leisure: split(
+    'theatre cinema arts_centre library community_centre events_venue nightclub music_venue planetarium ' +
+      'park garden playground sports_centre fitness_centre swimming_pool water_park escape_game bowling_alley',
+  ),
+  services: split(
+    'pharmacy bank bureau_de_change post_office clinic doctors dentist veterinary hospital police townhall fuel car_wash car_rental driving_school ' +
+      'hairdresser beauty massage tattoo laundry dry_cleaning travel_agency copyshop optician tailor shoe_repair photo',
+  ),
+  shops: split(
+    'supermarket convenience clothes shoes books florist butcher greengrocer kiosk tobacco alcohol wine chemist cosmetics mobile_phone electronics computer jewelry gift furniture hardware doityourself pet toys sports bicycle department_store mall variety_store second_hand stationery newsagent',
+  ),
+}
+
 const fallbacks: Partial<Record<CategoryId, Label>> = {
   sights: l('Historic site', 'Történelmi hely'),
   shops: l('Shop', 'Üzlet'),
 }
 
-/** The label of a place's kind in the UI language. An unlisted kind gets its category's fallback. */
+/** The label of a place's kind in the UI language. A kind its category does not list gets the category's fallback. */
 export function kindLabel(cat: CategoryId, kind: string, lang: Lang): string {
-  return (kindLabels[kind] ?? fallbacks[cat])?.[lang] ?? kind
+  const label = kindsByCat[cat]?.has(kind) ? kindLabels[kind] : fallbacks[cat]
+  return label?.[lang] ?? kind
 }
