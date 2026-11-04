@@ -147,6 +147,12 @@ describe('placesFromExport, on single lines', () => {
     expect(placesFromExport(areaLine('a2', [[ring.toReversed()]]))[0]).toMatchObject({ lat: 47.4961, lon: 19.0511 })
   })
 
+  it('uses the largest outer ring when a smaller one comes first', () => {
+    // osmium can write the small ring first. A place at the first ring would sit about 2 km from this one.
+    const place = placesFromExport(areaLine('a3', [[rect(19.05, 47.5, 19.051, 47.501)], [rect(19.06, 47.51, 19.07, 47.52)]]))[0]
+    expect(place).toMatchObject({ lat: 47.515, lon: 19.065 })
+  })
+
   it('keeps its accuracy on a small building', () => {
     // A building about 7 m square. The products of whole coordinates would swamp an area this small.
     const place = placesFromExport(areaLine('a2', [[rect(19.0545, 47.4975, 19.0546, 47.49756)]]))[0]
