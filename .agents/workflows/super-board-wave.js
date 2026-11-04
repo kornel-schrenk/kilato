@@ -51,7 +51,8 @@ const READ_SHAPES = [
   `- PR metadata: --kind metadata -- pr view <N> --json files,labels,body,additions,deletions,changedFiles`,
   `- issue state: --kind state -- issue view <N> --json state --jq .state`,
   `A read whose output misses its shape exits 64 for that call only and prints the valid form: fix the read, do not halt.`,
-  `A gh flag error or an HTTP 404 also exits 64 for that call only. A 404 is an answer: that thing is not there. Fix the read, or carry on if it was optional.`,
+  `Any other read gh or GitHub rejects also exits 64 for that call only: bad flags, a bad --jq, an invalid query, or something that isn't there. That read failed, not the run: fix it, or carry on if it was optional. Only access failures and outages halt (exit 79).`,
+  `Use this helper only for evidence the lifecycle requires. For anything exploratory or optional use plain gh, and never probe with made-up ids.`,
 ].join('\n')
 const READ_FAILURE = READ_SHAPES + '\n' + `Verification-readiness exit 9 means missing/unusable config.verify_commands: preserve card/worktree/approval/claims, report status=halted (preflight verdict=halted), stop dispatch, repair project configuration before explicit restart; no Build bounce or automatic retries. ` + `Required GitHub reads use .claude/bin/super-board-github-read.py: three total attempts, exit 79 means run halted. Check --check before any GitHub write, migration, or merge. On exit 79 preserve worktree/card/approval/claims, make no more GitHub calls, and report status=halted (preflight verdict=halted). Never retry a mutation. Config: ${input.configPath}.`
 
