@@ -31,6 +31,7 @@ interface Props {
 export function MapView({ state, onEvent, t }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map>(null)
+  const zooming = useRef(false)
   const { point, mode, accuracy, view } = state
 
   useEffect(() => {
@@ -48,6 +49,12 @@ export function MapView({ state, onEvent, t }: Props) {
       map.once('moveend', () => onEvent({ type: 'dragEnd', center: fromLeaflet(map.getCenter()) }))
     })
     map.on('click', ({ latlng }) => onEvent({ type: 'tap', at: fromLeaflet(latlng) }))
+    map.on('zoomstart', () => {
+      zooming.current = true
+    })
+    map.on('zoomend', () => {
+      zooming.current = false
+    })
 
     return () => {
       map.remove()
@@ -62,7 +69,15 @@ export function MapView({ state, onEvent, t }: Props) {
   }, [t])
 
   useEffect(() => {
-    if (view) mapRef.current!.setView(toLeaflet(view.center), view.zoom ?? mapRef.current!.getZoom())
+    if (!view) return
+    const map = mapRef.current!
+    const go = () => map.setView(toLeaflet(view.center), view.zoom ?? map.getZoom())
+    // Leaflet silently drops a new zoom asked for during a zoom animation, so this waits that one out.
+    if (zooming.current) map.once('zoomend', go)
+    else go()
+    return () => {
+      map.off('zoomend', go)
+    }
   }, [view])
 
   useEffect(() => {

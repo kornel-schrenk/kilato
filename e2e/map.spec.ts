@@ -114,6 +114,17 @@ async function flick(page: Page, dx: number) {
 }
 
 /**
+ * Presses a zoom button and waits for the zoom to finish. The new level's tiles appear as the
+ * 250 ms animation starts, and Leaflet ignores another press or a drag until it ends.
+ */
+async function zoomTo(page: Page, zoom: number) {
+  const current = (await geography(page)).zoom
+  await page.locator(`.leaflet-control-zoom-${zoom > current ? 'in' : 'out'}`).click()
+  await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
+  await expect(page.locator('.leaflet-zoom-anim')).toHaveCount(0)
+}
+
+/**
  * Replaces the browser's location with one the test feeds by hand, through sendFix. Chromium's
  * setGeolocation delivers a location error just before each new fix, and in exploring mode
  * that error alone ends a watch. So a test of "the drag stopped the watch" needs this one.
@@ -260,14 +271,13 @@ test.describe('tiles', () => {
   test('stop at zoom 19', async ({ page }) => {
     const requests = tileRequests(page)
     await page.goto('/kilato/')
-    const zoomIn = page.locator('.leaflet-control-zoom-in')
+    await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
 
     for (let zoom = 16; zoom <= 19; zoom++) {
-      await zoomIn.click()
-      await expect(page.locator(`img[src*="/${zoom}/"]`).first()).toBeAttached()
+      await zoomTo(page, zoom)
     }
 
-    await expect(zoomIn).toHaveClass(/leaflet-disabled/)
+    await expect(page.locator('.leaflet-control-zoom-in')).toHaveClass(/leaflet-disabled/)
     const zooms = requests.map((request) => Number(new URL(request.url()).pathname.split('/')[1]))
     expect(Math.max(...zooms)).toBe(19)
   })
@@ -389,11 +399,39 @@ test.describe('without a granted permission', () => {
   test('Explore the map goes back there after the map was moved during the intro', async ({ page }) => {
     await page.goto('/kilato/')
     await expect(page.getByText(intro)).toBeVisible()
-    await page.locator('.leaflet-control-zoom-in').click()
+    await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+    await zoomTo(page, 16)
     await drag(page, 300, 100)
-    await expect(page.locator('img[src*="/16/"]').first()).toBeAttached()
+    await expect.poll(async () => distanceMetres(await mapCentre(page), deakTer)).toBeGreaterThan(100)
 
     await button(page, 'Explore the map').click()
+
+    await startsExploring(page)
+  })
+
+  test('Explore the map still gets to zoom 15 when pressed while the map zooms', async ({ page }) => {
+    await page.goto('/kilato/')
+    await expect(page.getByText(intro)).toBeVisible()
+    await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+
+    // Both presses from inside the page: the zoom is a real 250 ms CSS transition, which a
+    // faked clock can't hold open, and a press from the test could land after it has ended.
+    await page.evaluate(
+      (name) =>
+        new Promise<void>((pressed) => {
+          const pressOnceZooming = () => {
+            if (!document.querySelector('.leaflet-zoom-anim')) {
+              requestAnimationFrame(pressOnceZooming)
+              return
+            }
+            ;[...document.querySelectorAll('button')].find((found) => found.textContent === name)!.click()
+            pressed()
+          }
+          document.querySelector<HTMLElement>('.leaflet-control-zoom-in')!.click()
+          pressOnceZooming()
+        }),
+      'Explore the map',
+    )
 
     await startsExploring(page)
   })
@@ -568,8 +606,7 @@ test.describe('with the permission granted', () => {
     await expect(dot(page)).toBeVisible()
     await expectNear(() => mapCentre(page), home)
     for (let zoom = 16; zoom <= 19; zoom++) {
-      await page.locator('.leaflet-control-zoom-in').click()
-      await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
+      await zoomTo(page, zoom)
     }
     return mapCentre(page)
   }
@@ -752,8 +789,7 @@ test.describe('exploring', () => {
 
   test('the 1 km circle is 1 km at any zoom', async ({ page }) => {
     await explore(page)
-    await page.locator('.leaflet-control-zoom-out').click()
-    await expect.poll(async () => (await geography(page)).zoom).toBe(14)
+    await zoomTo(page, 14)
 
     const radius = await circleRadius(page, '.km-circle')
     expect(radius).toBeGreaterThan(990)
@@ -763,9 +799,8 @@ test.describe('exploring', () => {
   test('a press on a zoom button does not count as a tap', async ({ page }) => {
     await explore(page)
 
-    await page.locator('.leaflet-control-zoom-in').click()
+    await zoomTo(page, 16)
 
-    await expect.poll(async () => (await geography(page)).zoom).toBe(16)
     await expectNear(() => pinPlace(page), deakTer, 2)
   })
 
