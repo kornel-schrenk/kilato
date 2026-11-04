@@ -1,0 +1,49 @@
+Page probe, driving the real preview build in Chromium, on 6b82b61. a7ab0f3 adds only tests:  e2e/language.spec.ts | 38 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+locale hu-HU                                   {"languages":["hu-HU"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":null}
+  problems                                     []
+locale hu                                      {"languages":["hu"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":null}
+  problems                                     []
+locale de-AT                                   {"languages":["de-AT"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":null}
+  problems                                     []
+locale en-GB                                   {"languages":["en-GB"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":null}
+  problems                                     []
+locale en-US                                   {"languages":["en-US"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":null}
+  problems                                     []
+locale zh-Hant-TW                              {"languages":["zh-Hant-TW"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":null}
+  problems                                     []
+languages ["de-AT","hu-HU"]                    {"languages":["de-AT","hu-HU"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":null}
+  problems                                     []
+languages ["hu-HU","de-AT"]                    {"languages":["hu-HU","de-AT"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":null}
+  problems                                     []
+languages ["HU-hu"]                            {"languages":["HU-hu"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":null}
+  problems                                     []
+languages []                                   {"languages":[],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":null}
+  problems                                     []
+hu-HU, saved "en"                              {"languages":["hu-HU"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":"en"}
+  problems                                     []
+hu-HU, saved "hu"                              {"languages":["hu-HU"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":"hu"}
+  problems                                     []
+hu-HU, saved "de"                              {"languages":["hu-HU"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":"de"}
+  problems                                     []
+hu-HU, saved ""                                {"languages":["hu-HU"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":""}
+  problems                                     []
+hu-HU, saved "<img src=x onerror=alert(1)>"    {"languages":["hu-HU"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":"<img src=x onerror=alert(1)>"}
+  problems                                     []
+setItem throws, press EN                       {"languages":["hu-HU"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":null}
+  problems                                     []
+keyboard Enter on EN                           {"languages":["hu-HU"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":"en"}
+  focus stays on EN                            true
+keyboard Space on HU                           {"languages":["hu-HU"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":"hu"}
+  after reload                                 {"languages":["hu-HU"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":"hu"}
+  problems                                     []
+press HU while already HU                      {"languages":["hu-HU"],"htmlLang":"hu","text":"A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.","group":"Nyelv","pressed":"HU=true EN=false","saved":"hu"}
+double press EN                                {"languages":["hu-HU"],"htmlLang":"en","text":"Kilátó shows what's interesting within 1 km of you. Your location stays on your phone.","group":"Language","pressed":"HU=false EN=true","saved":"en"}
+  problems                                     []
+375x667 button sizes                           [{"t":"HU","w":44,"h":44,"right":312},{"t":"EN","w":44,"h":44,"right":367}]
+  horizontal overflow px                       0
+  problems                                     []
+320x568 button sizes                           [{"t":"HU","w":44,"h":44,"right":257},{"t":"EN","w":44,"h":44,"right":312}]
+  horizontal overflow px                       0
+  problems                                     []

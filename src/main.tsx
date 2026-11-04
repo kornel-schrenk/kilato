@@ -1,3 +1,4 @@
 import { render } from 'preact'
+import { App } from './ui/App'
 
-render(<main />, document.getElementById('app')!)
+render(<App />, document.getElementById('app')!)
