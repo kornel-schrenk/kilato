@@ -2,7 +2,7 @@
 
 super-board is installed at commit `d0b7d5a` (3.3.0). These changes are ours, and an upgrade overwrites them. After an upgrade, check each one and reapply it if the problem is still there.
 
-The full diffs are on the PRs: [#25](https://github.com/kornel-schrenk/kilato/pull/25), [#26](https://github.com/kornel-schrenk/kilato/pull/26) and [#37](https://github.com/kornel-schrenk/kilato/pull/37). The last column refers to [findings.md](findings.md), the list to send the super-board author.
+The full diffs are on the PRs: [#25](https://github.com/kornel-schrenk/kilato/pull/25), [#26](https://github.com/kornel-schrenk/kilato/pull/26) and [#37](https://github.com/kornel-schrenk/kilato/pull/37). The last column refers to [findings.md](findings.md), the list to send the super-board author. The skills we added are in [helper-skills.md](helper-skills.md).
 
 | File | Change | Problem it fixes | PR | Finding |
 |---|---|---|---|---|
@@ -22,6 +22,6 @@ The full diffs are on the PRs: [#25](https://github.com/kornel-schrenk/kilato/pu
 - Kinds outside `FORMS`, such as `approval` and `permission`.
 - Authentication and permission errors (HTTP 401 and 403), on any read. An agent probing an endpoint it has no permission for still halts the run.
 - Rate limits and outages that last all three attempts, on any read.
-- A lane running `--require` for a helper that is neither installed nor given a fallback. Here that means `vitest` and `playwright-best-practices` (finding 21).
+- A lane running `--require` for a helper that is neither installed nor given a fallback. Every skill in the registry resolves on `develop` now, but a worktree on a branch cut earlier reads that branch's copy (finding 26).
 
 An outage whose error text matches nothing in `ACCESS_OR_OUTAGE` fails only that call. The next strict script then halts the run.
