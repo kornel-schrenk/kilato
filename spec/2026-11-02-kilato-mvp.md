@@ -230,7 +230,9 @@ On load:
 
 1. If the location permission is already granted, the page starts following.
 2. Otherwise it shows a short intro with two buttons, Use my location and Explore the map, and a link to "What is sent where".
-3. Explore the map, a refused permission or a location error starts exploring at Deák Ferenc tér (47.4975, 19.0545) at zoom 15. A one-line note says the user can tap or drag the map, or search.
+3. Explore the map, a refused permission or a location error starts exploring at Deák Ferenc tér (47.4975, 19.0545). A one-line note says the user can tap or drag the map, or search.
+
+**Start zoom.** The map goes to zoom 14 on screens narrower than 900 px, and zoom 15 on wider ones, whenever following starts, including with My location, and whenever exploring starts at Deák Ferenc tér. In Budapest the 1 km circle has a radius of 310 px at zoom 15, which doesn't fit on a phone, and 155 px at zoom 14. Otherwise the map keeps the user's zoom, including when a walk moves the point.
 
 Intro text: "Kilátó shows what's interesting within 1 km of you. Your location stays on your phone." / "A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad."
 
