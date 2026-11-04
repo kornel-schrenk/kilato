@@ -42,6 +42,7 @@ Read the stage from the artifacts. The newest accepted artifact in the table abo
 | `npm run dev` | starts the Vite dev server |
 
 - Page tests import `test` from `e2e/fixtures.ts`. Its fixture passes files in `dist/`, stubs tile and data requests, and fails the test on any other request.
+- End every page test with an assertion that follows its last action. The fixture checks for unknown requests the moment the test ends, so a request that action starts can arrive too late, and the test still passes. With `goto` as a test's last line, a stray request at page load went unnoticed in 18 of 30 runs.
 - With `CHROMIUM_PATH=/usr/bin/chromium` set, page tests launch that browser instead of Playwright's own Chromium.
 
 <!-- super-board:begin v3.3.0 (managed; edits inside are overwritten on upgrade) -->
