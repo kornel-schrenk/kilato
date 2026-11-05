@@ -1,12 +1,16 @@
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useRef } from 'preact/hooks'
-import type { LatLon } from '../core/geo'
+import { listRadius, type LatLon } from '../core/geo'
 import { deakTer, startZoom, type PointEvent, type PointState } from '../core/point'
+import type { Place } from '../core/types'
 import type { en } from '../i18n/en'
+import { categoryColors } from './categoryColors'
+import type { Row, Selection } from './usePlaces'
 
 const pointColor = '#1a56c4'
-const kmRadius = 1000
+const markerStyle: L.CircleMarkerOptions = { radius: 5, color: '#fff', weight: 1 }
+const highlightStyle: L.CircleMarkerOptions = { radius: 8, color: '#000', weight: 3 }
 
 // The spec's Start zoom. 900 px is also where the layout switches, in index.html.
 const zoomForScreen = () => (matchMedia('(min-width: 900px)').matches ? 15 : 14)
@@ -28,18 +32,27 @@ const fromLeaflet = ({ lat, lng }: L.LatLng): LatLon => ({ lat, lon: lng })
 interface Props {
   state: PointState
   onEvent: (event: PointEvent) => void
+  rows: Row[]
+  selection: Selection | null
+  onSelect: (place: Place, source: Selection['source']) => void
   t: typeof en
 }
 
-export function MapView({ state, onEvent, t }: Props) {
+export function MapView({ state, onEvent, rows, selection, onSelect, t }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map>(null)
   const zooming = useRef(false)
+  const canvas = useRef<L.Canvas>(null)
+  const markers = useRef(new Map<string, L.CircleMarker>())
   const { point, mode, accuracy, view } = state
 
   useEffect(() => {
     const map = L.map(container.current!, { zoomControl: false }).setView(toLeaflet(deakTer), startZoom)
     mapRef.current = map
+
+    // Under the overlay pane, so the point draws on top. Leaflet's SVG root lets taps through to the canvas.
+    map.createPane('places').style.zIndex = '350'
+    canvas.current = L.canvas({ pane: 'places' })
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -90,7 +103,7 @@ export function MapView({ state, onEvent, t }: Props) {
     // None of these is interactive: a tap on them has to reach the map.
     const shared = { interactive: false, color: pointColor }
     const layers: L.Layer[] = [
-      L.circle(at, { ...shared, radius: kmRadius, fill: false, weight: 2, className: 'km-circle' }),
+      L.circle(at, { ...shared, radius: listRadius, fill: false, weight: 2, className: 'km-circle' }),
     ]
     if (mode === 'following') {
       layers.push(
@@ -119,6 +132,52 @@ export function MapView({ state, onEvent, t }: Props) {
       group.remove()
     }
   }, [point, mode, accuracy])
+
+  useEffect(() => {
+    const group = L.layerGroup().addTo(mapRef.current!)
+    markers.current = new Map(
+      rows.map(({ place }) => [
+        place.id,
+        L.circleMarker(toLeaflet(place), {
+          ...markerStyle,
+          renderer: canvas.current!,
+          fillColor: categoryColors[place.cat],
+          fillOpacity: 1,
+          // A tap on a marker picks the place. Reaching the map, it would also move the point.
+          bubblingMouseEvents: false,
+        })
+          .on('click', () => onSelect(place, 'marker'))
+          .addTo(group),
+      ]),
+    )
+    return () => {
+      group.remove()
+    }
+  }, [rows])
+
+  useEffect(() => {
+    const marker = selection && markers.current.get(selection.place.id)
+    if (!marker) return
+    marker.setStyle(highlightStyle).bringToFront()
+    return () => {
+      marker.setStyle(markerStyle)
+    }
+  }, [rows, selection])
+
+  useEffect(() => {
+    if (selection?.source !== 'row') return
+    const map = mapRef.current!
+    const at = toLeaflet(selection.place)
+    // An element, because Leaflet renders a string as HTML, and the name comes from OpenStreetMap.
+    const name = document.createElement('span')
+    name.textContent = selection.place.name
+    // No autoPan: Leaflet would pan for a popup that doesn't fit, with the marker on screen.
+    const popup = L.popup({ autoPan: false }).setLatLng(at).setContent(name).openOn(map)
+    if (!map.getBounds().contains(at)) map.panTo(at)
+    return () => {
+      popup.remove()
+    }
+  }, [selection])
 
   return (
     <div class="map-area">

@@ -18,6 +18,11 @@ export function formatNumber(value: number, lang: Lang): string {
   return new Intl.NumberFormat(locales[lang]).format(value)
 }
 
+/** A distance rounded to 10 m: "120 m". */
+export function formatDistance(metres: number, lang: Lang): string {
+  return `${formatNumber(Math.round(metres / 10) * 10, lang)} m`
+}
+
 export function formatDate(date: Date, lang: Lang): string {
   return new Intl.DateTimeFormat(locales[lang], { dateStyle: 'medium' }).format(date)
 }

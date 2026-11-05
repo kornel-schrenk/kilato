@@ -3,6 +3,8 @@ import { phoneLanguage, uiLanguage, type Lang } from '../core/lang'
 import { en } from '../i18n/en'
 import { hu } from '../i18n/hu'
 import { MapView } from './MapView'
+import { PlaceList } from './PlaceList'
+import { usePlaces } from './usePlaces'
 import { usePoint } from './usePoint'
 
 const messages = { hu, en }
@@ -32,6 +34,7 @@ export function App() {
   const [lang, setLang] = useState(() => uiLanguage(savedLang(), phoneLanguage(navigator.languages)))
   const t = messages[lang]
   const [point, dispatch] = usePoint()
+  const places = usePlaces(point.point)
 
   useLayoutEffect(() => {
     document.documentElement.lang = lang
@@ -56,7 +59,14 @@ export function App() {
           </button>
         </div>
       </header>
-      <MapView state={point} onEvent={dispatch} t={t} />
+      <MapView
+        state={point}
+        onEvent={dispatch}
+        rows={places.rows}
+        selection={places.selection}
+        onSelect={places.select}
+        t={t}
+      />
       <main>
         {point.mode === 'intro' && (
           <>
@@ -72,6 +82,23 @@ export function App() {
           </>
         )}
         {point.mode === 'exploring' && <p>{t.exploreNote}</p>}
+        {places.failed && (
+          <p role="alert" class="load-error">
+            {t.placesFailed}{' '}
+            <button type="button" onClick={places.retry}>
+              {t.retry}
+            </button>
+          </p>
+        )}
+        <PlaceList
+          rows={places.rows}
+          shown={places.shown}
+          selection={places.selection}
+          onSelect={places.select}
+          onShowMore={places.showMore}
+          lang={lang}
+          t={t}
+        />
       </main>
     </>
   )

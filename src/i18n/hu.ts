@@ -8,4 +8,7 @@ export const hu = {
   map: 'Térkép',
   zoomIn: 'Nagyítás',
   zoomOut: 'Kicsinyítés',
+  placesFailed: 'Nem sikerült betölteni a helyeket',
+  retry: 'Újrapróbálás',
+  showMore: 'Továbbiak megjelenítése',
 }

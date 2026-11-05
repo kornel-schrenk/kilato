@@ -8,4 +8,7 @@ export const en = {
   map: 'Map',
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
+  placesFailed: "Couldn't load places",
+  retry: 'Retry',
+  showMore: 'Show more',
 }
