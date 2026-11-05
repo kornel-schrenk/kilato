@@ -930,9 +930,9 @@ test.describe('the category chips', () => {
 
       await expect(page.getByText(allOff)).toBeVisible()
       await expect(page.locator('.place')).toHaveCount(0)
-      await expect.poll(() => markerColor(page, coffee)).toBeNull()
-      expect(await markerColor(page, books)).toBeNull()
-      expect(await markerColor(page, museum)).toBeNull()
+      // The canvas redraws a frame or two after the page, so each marker gets its own wait. A wait on
+      // Coffee alone passes at once, as its chip went three taps before the last one.
+      for (const place of [coffee, books, museum]) await expect.poll(() => markerColor(page, place)).toBeNull()
 
       await button(page, turnAllOn).click()
 
