@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'preact/hooks'
 import { formatDistance, type Lang } from '../core/lang'
 import { secondName } from '../core/names'
 import type { Place } from '../core/types'
+import type { WikiLink } from '../core/wiki'
 import type { en } from '../i18n/en'
 import { kindLabel } from '../i18n/kinds'
 import type { Row, Selection } from './usePlaces'
@@ -12,15 +13,18 @@ interface Props {
   selection: Selection | null
   onSelect: (place: Place, source: Selection['source']) => void
   onShowMore: () => void
+  wikiLink: (place: Place) => WikiLink | undefined
   lang: Lang
   t: typeof en
 }
 
-export function PlaceList({ rows, shown, selection, onSelect, onShowMore, lang, t }: Props) {
+export function PlaceList({ rows, shown, selection, onSelect, onShowMore, wikiLink, lang, t }: Props) {
   const list = useRef<HTMLUListElement>(null)
 
   useEffect(() => {
-    if (selection?.source === 'marker') list.current?.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' })
+    if (selection?.source === 'marker') {
+      list.current?.querySelector('[aria-current]')?.closest('li')?.scrollIntoView({ block: 'nearest' })
+    }
   }, [selection])
 
   return (
@@ -28,6 +32,7 @@ export function PlaceList({ rows, shown, selection, onSelect, onShowMore, lang, 
       <ul ref={list} class="places">
         {rows.slice(0, shown).map(({ place, metres }) => {
           const other = secondName(place, lang)
+          const article = wikiLink(place)
           return (
             <li key={place.id}>
               <button
@@ -42,6 +47,12 @@ export function PlaceList({ rows, shown, selection, onSelect, onShowMore, lang, 
                   {kindLabel(place.cat, place.kind, lang)} · {formatDistance(metres, lang)}
                 </span>
               </button>
+              {/* Beside the button, because a link can't sit inside one. */}
+              {article && (
+                <a class="place-wiki" href={article.url} target="_blank" rel="noreferrer">
+                  {article.text}
+                </a>
+              )}
             </li>
           )
         })}

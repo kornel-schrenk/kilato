@@ -31,10 +31,12 @@ function saveLang(lang: Lang) {
 }
 
 export function App() {
-  const [lang, setLang] = useState(() => uiLanguage(savedLang(), phoneLanguage(navigator.languages)))
+  // Read once, because the titles the page loads are in this language.
+  const [phone] = useState(() => phoneLanguage(navigator.languages))
+  const [lang, setLang] = useState(() => uiLanguage(savedLang(), phone))
   const t = messages[lang]
   const [point, dispatch] = usePoint()
-  const places = usePlaces(point.point)
+  const places = usePlaces(point.point, phone)
 
   useLayoutEffect(() => {
     document.documentElement.lang = lang
@@ -96,6 +98,7 @@ export function App() {
           selection={places.selection}
           onSelect={places.select}
           onShowMore={places.showMore}
+          wikiLink={places.wikiLink}
           lang={lang}
           t={t}
         />

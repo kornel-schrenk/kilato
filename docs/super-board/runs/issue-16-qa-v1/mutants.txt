@@ -1,0 +1,47 @@
+QA's mutants. Each one landed (the script checks the file changed), ran and was restored. None is committed.
+Unit mutants ran vitest on src/core and src/data. Page mutants ran the build, then playwright test e2e/list.spec.ts --max-failures=1 -g "the Wikipedia link", so each names only its first red test.
+
+===== round 1, on builder head a28755c: 35 mutants, 31 red, 4 past the tests
+AC1 phoneLanguage takes the last language: unit killed by 1: src/core/lang.test.ts > phoneLanguage > is the primary subtag of the first language
+AC1 phoneLanguage keeps the region: unit killed by 1: src/core/lang.test.ts > phoneLanguage > is the primary subtag of the first language
+AC1 the page passes the whole tag: page killed by e2e/list.spec.ts:276:5 › the Wikipedia link › with the locale de-AT › goes to the German article in a new tab, whatever the UI language
+AC1 the link follows the UI language: page killed by e2e/list.spec.ts:276:5 › the Wikipedia link › with the locale de-AT › goes to the German article in a new tab, whatever the UI language
+AC1 the loader gets the UI language: page killed by e2e/list.spec.ts:276:5 › the Wikipedia link › with the locale de-AT › goes to the German article in a new tab, whatever the UI language
+AC1 a saved UI language replaces the phone language: SURVIVED page tests -g "the Wikipedia link": 9 passed
+AC2 the phone language article skipped: unit killed by 1: src/core/wiki.test.ts > wikiLink > is the article in the phone language, when that edition has one
+AC2 English before Hungarian: unit killed by 3: src/core/wiki.test.ts > wikiLink > is the Hungarian article when the phone language has none · src/core/wiki.test.ts > wikiLink > is the Hungarian article while the phone language has no titles to look in
+AC2 Hungarian before English on an English phone: unit killed by 1: src/core/wiki.test.ts > wikiLink > is the article in the phone language, when that edition has one
+AC2 no English fallback: unit killed by 1: src/core/wiki.test.ts > wikiLink > is the English article when there is nothing before it
+AC2 looks up by Hungarian title, not Wikidata id: unit killed by 1: src/core/wiki.test.ts > wikiLink > is the article in the phone language, when that edition has one
+AC2 the phone title under the Hungarian host: unit killed by 1: src/core/wiki.test.ts > wikiLink > is the article in the phone language, when that edition has one
+AC2 the phone article only when there is a Hungarian or English one: SURVIVED unit tests
+AC2 titles asked for on every move: unit killed by 1: src/data/places.test.ts > placeLoader > the article titles in the phone language > asks for them once, when there is a point and the manifest lists the language
+AC2 titles asked for when the manifest does not list them: unit killed by 1: src/data/places.test.ts > placeLoader > the article titles in the phone language > asks for nothing when the manifest does not list the language
+AC2 a request on its way asked for again: unit killed by 2: src/data/places.test.ts > placeLoader > the article titles in the phone language > does not ask again while they are on their way · src/data/places.test.ts > placeLoader > waits for a manifest still on its way, then loads the cells for the latest point
+AC2 the title file dropped: unit killed by 4: src/data/places.test.ts > placeLoader > the article titles in the phone language > asks for them once, when there is a point and the manifest lists the language · src/data/places.test.ts > placeLoader > the article titles in the phone language > does not ask again while they are on their way
+AC2 always de.json: SURVIVED unit tests
+AC2 titles asked for before there is a point: unit killed by 1: src/data/places.test.ts > placeLoader > the article titles in the phone language > asks for them once, when there is a point and the manifest lists the language
+AC2 the phone language never reaches the loader: page killed by e2e/list.spec.ts:276:5 › the Wikipedia link › with the locale de-AT › goes to the German article in a new tab, whatever the UI language
+AC2 the titles never reach the row: page killed by e2e/list.spec.ts:276:5 › the Wikipedia link › with the locale de-AT › goes to the German article in a new tab, whatever the UI language
+AC3 the code in lower case: unit killed by 6: src/core/wiki.test.ts > wikiLink > is the English article when there is nothing before it · src/core/wiki.test.ts > wikiLink > is the Hungarian article on an English phone, when there is no English one
+AC3 another separator: unit killed by 6: src/core/wiki.test.ts > wikiLink > is the English article when there is nothing before it · src/core/wiki.test.ts > wikiLink > is the Hungarian article on an English phone, when there is no English one
+AC3 http: unit killed by 7: src/core/wiki.test.ts > wikiLink > is the English article when there is nothing before it · src/core/wiki.test.ts > wikiLink > is the Hungarian article when the phone language has none
+AC3 spaces kept: unit killed by 3: src/core/wiki.test.ts > wikiLink > is the article in the phone language, when that edition has one · src/core/wiki.test.ts > wikiLink > writes the title into the URL > so that a question mark and a percent sign stay in the title
+AC3 ? left in: unit killed by 1: src/core/wiki.test.ts > wikiLink > writes the title into the URL > so that a question mark and a percent sign stay in the title
+AC3 encodeURIComponent: unit killed by 2: src/core/wiki.test.ts > wikiLink > writes the title into the URL > leaving a slash as it is, as Wikipedia writes it · src/core/wiki.test.ts > wikiLink > writes the title into the URL > leaving the section an OpenStreetMap tag names
+AC3 same tab: page killed by e2e/list.spec.ts:276:5 › the Wikipedia link › with the locale de-AT › goes to the German article in a new tab, whatever the UI language
+AC3 rel dropped: SURVIVED page tests -g "the Wikipedia link": 9 passed
+AC3 the row shows the place name as the link: page killed by e2e/list.spec.ts:276:5 › the Wikipedia link › with the locale de-AT › goes to the German article in a new tab, whatever the UI language
+AC3 a tap on the link also taps the row: page killed by e2e/list.spec.ts:344:3 › the Wikipedia link › opens the article in a new tab, and leaves the row untapped
+AC3 a link on the first row only: page killed by e2e/list.spec.ts:276:5 › the Wikipedia link › with the locale de-AT › goes to the German article in a new tab, whatever the UI language
+row the marker scroll stops at the button: page killed by e2e/list.spec.ts:356:3 › the Wikipedia link › comes into view with its row when a marker is tapped
+AC4 fr-FR asks for fr.json: page killed by e2e/list.spec.ts:307:5 › the Wikipedia link › with the locale fr-FR, which the manifest does not list › fetches no wiki/fr.json, and goes to the Hungarian article
+AC4 English before Hungarian on a French phone: page killed by e2e/list.spec.ts:307:5 › the Wikipedia link › with the locale fr-FR, which the manifest does not list › fetches no wiki/fr.json, and goes to the Hungarian article
+
+===== round 2, on the 3 tests QA added, later committed as aed58ae: the 3 mutants they target, all red
+AC1 a saved UI language replaces the phone language: page killed by e2e/list.spec.ts:303:5 › the Wikipedia link › with the locale de-AT › stays German when the page opens again in the saved UI language
+AC2 always de.json: unit killed by 1: src/data/places.test.ts > placeLoader > the article titles in the phone language > asks for the file of the phone language, whichever the manifest lists
+AC3 rel dropped: page killed by e2e/list.spec.ts:366:3 › the Wikipedia link › sends Wikipedia no Referer when the article opens
+
+===== left past the tests: 1, a place with a Wikidata id and neither a Hungarian nor an English title. The build can't write one: test-gaps.txt
+The other 31 did not run again. Round 2 only adds tests, and changes no test or source line they ran against.
