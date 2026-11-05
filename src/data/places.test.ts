@@ -9,7 +9,7 @@ const walkedCell = '4751_1270'
 const walkedNorth = { lat: 47.509, lon: 19.0545 }
 
 const place = (id: string) => ({ id })
-const manifest = { cells: ['4749_1270', '4750_1270', walkedCell, farKey] }
+const manifest = { cells: ['4749_1270', '4750_1270', walkedCell, farKey], wikiLangs: ['de'] }
 const cellFiles = {
   'cells/4749_1270.json': { places: [place('a'), place('b')] },
   'cells/4750_1270.json': { places: [place('c')] },
@@ -149,6 +149,108 @@ describe('placeLoader', () => {
     expect(loader.places).not.toBe(before)
   })
 
+  describe('the article titles in the phone language', () => {
+    const germanTitles = { Q1: 'Deutscher Titel' }
+    const withTitles = { 'manifest.json': manifest, ...cellFiles, 'wiki/de.json': germanTitles }
+    const titleRequests = (asked: string[]) => asked.filter((path) => path.startsWith('wiki/'))
+
+    it('asks for them once, when there is a point and the manifest lists the language', async () => {
+      const { asked, fetchData } = fakeSite(withTitles)
+      const loader = placeLoader(fetchData, () => {}, 'de')
+
+      loader.moveTo(null)
+      await settle()
+      expect(titleRequests(asked)).toEqual([])
+      expect(loader.wikiTitles).toBeNull()
+
+      loader.moveTo(deak)
+      await settle()
+      expect(loader.wikiTitles).toEqual(germanTitles)
+
+      loader.moveTo(walkedNorth)
+      await settle()
+      loader.retry()
+      await settle()
+      expect(titleRequests(asked)).toEqual(['wiki/de.json'])
+    })
+
+    /** A site whose titles don't arrive until `arrive` is called. */
+    function siteWithLateTitles() {
+      const site = fakeSite(withTitles)
+      let arrive = () => {}
+      const late = new Promise<void>((resolve) => {
+        arrive = resolve
+      })
+      const fetchData = async (url: string) => {
+        if (url.includes('wiki/')) await late
+        return site.fetchData(url)
+      }
+      return { asked: site.asked, fetchData, arrive }
+    }
+
+    it('does not ask again while they are on their way', async () => {
+      const { asked, fetchData, arrive } = siteWithLateTitles()
+      const loader = placeLoader(fetchData, () => {}, 'de')
+      loader.moveTo(deak)
+      await settle()
+      expect(loader.wikiTitles).toBeNull()
+
+      loader.moveTo(walkedNorth)
+      loader.retry()
+      arrive()
+      await settle()
+
+      expect(titleRequests(asked)).toEqual(['wiki/de.json'])
+      expect(loader.wikiTitles).toEqual(germanTitles)
+    })
+
+    it('says when they arrive', async () => {
+      const onChange = vi.fn()
+      const { fetchData, arrive } = siteWithLateTitles()
+      const loader = placeLoader(fetchData, onChange, 'de')
+      loader.moveTo(deak)
+      await settle()
+      expect(loader.wikiTitles).toBeNull()
+      onChange.mockClear()
+
+      arrive()
+      await settle()
+
+      expect(loader.wikiTitles).toEqual(germanTitles)
+      expect(onChange).toHaveBeenCalled()
+    })
+
+    it('asks for nothing when the manifest does not list the language', async () => {
+      const { asked, fetchData } = fakeSite(withTitles)
+      const loader = placeLoader(fetchData, () => {}, 'fr')
+
+      loader.moveTo(deak)
+      await settle()
+
+      expect(titleRequests(asked)).toEqual([])
+      expect(loader.wikiTitles).toBeNull()
+      expect(loader.failed).toBe(false)
+    })
+
+    it('reports a failed fetch, and Retry asks again', async () => {
+      const { 'wiki/de.json': missing, ...withoutTitles } = withTitles
+      const site = fakeSite(withoutTitles)
+      const loader = placeLoader(site.fetchData, () => {}, 'de')
+      loader.moveTo(deak)
+      await settle()
+      expect(loader.failed).toBe(true)
+      expect(ids(loader)).toEqual(['a', 'b', 'c'])
+
+      site.files['wiki/de.json'] = missing
+      loader.retry()
+      await settle()
+
+      expect(loader.failed).toBe(false)
+      expect(loader.wikiTitles).toEqual(germanTitles)
+      expect(titleRequests(site.asked)).toEqual(['wiki/de.json', 'wiki/de.json'])
+    })
+  })
+
   describe('when a fetch fails', () => {
     const { 'cells/4749_1270.json': missing, ...withoutCell } = { 'manifest.json': manifest, ...cellFiles }
 
@@ -233,7 +335,7 @@ describe('placeLoader', () => {
     it('tells the page when the failure clears because the point left the failed cell behind', async () => {
       const onChange = vi.fn()
       // Only the cell far north of Deák Ferenc tér exists, and it fails while the point is there.
-      const site = fakeSite({ 'manifest.json': { cells: [farKey] } })
+      const site = fakeSite({ 'manifest.json': { cells: [farKey], wikiLangs: [] } })
       const loader = placeLoader(site.fetchData, onChange)
       loader.moveTo({ lat: 47.525, lon: 19.0545 })
       await settle()
