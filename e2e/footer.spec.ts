@@ -222,7 +222,7 @@ for (const { locale, about, sentences, linkName } of [
     linkName: 'The code is on GitHub.',
     sentences: [
       /open source.*MIT licence/,
-      /© OpenStreetMap contributors.*Open Database License/,
+      /Map and place data.*© OpenStreetMap contributors.*Open Database License/,
       /titles and positions.*Wikipedia.*CC BY-SA 4\.0/,
       /drawn with Leaflet/,
     ],
@@ -233,7 +233,7 @@ for (const { locale, about, sentences, linkName } of [
     linkName: 'A kód a GitHubon van.',
     sentences: [
       /nyílt forráskódú.*MIT-licenc/,
-      /© az OpenStreetMap közreműködői.*Open Database License/,
+      /térkép és a helyek adatai.*© az OpenStreetMap közreműködői.*Open Database License/,
       /címei és helyzete.*Wikipédiából.*CC BY-SA 4\.0/,
       /Leaflet rajzolja/,
     ],
