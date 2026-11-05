@@ -1,0 +1,6 @@
+de-AT: 308 rows, 0 wrong, 0 rows share a name with another place, links {'Wikipedia · DE': 62, 'Wikipedia · EN': 8, 'Wikipedia · HU': 160}
+fr-FR: 308 rows, 0 wrong, 0 rows share a name with another place, links {'Wikipedia · EN': 9, 'Wikipedia · HU': 221}
+es-ES: 308 rows, 0 wrong, 0 rows share a name with another place, links {'Wikipedia · EN': 9, 'Wikipedia · HU': 221}
+zh-Hant-TW: 308 rows, 0 wrong, 0 rows share a name with another place, links {'Wikipedia · EN': 9, 'Wikipedia · HU': 221}
+hu-HU: 308 rows, 0 wrong, 0 rows share a name with another place, links {'Wikipedia · EN': 9, 'Wikipedia · HU': 221}
+en-GB: 308 rows, 0 wrong, 0 rows share a name with another place, links {'Wikipedia · EN': 83, 'Wikipedia · HU': 147}

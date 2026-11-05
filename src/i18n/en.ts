@@ -22,4 +22,6 @@ export const en = {
   placesFailed: "Couldn't load places",
   retry: 'Retry',
   showMore: 'Show more',
+  openNow: 'Open now',
+  closedNow: 'Closed now',
 }

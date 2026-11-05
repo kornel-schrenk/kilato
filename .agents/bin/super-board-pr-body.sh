@@ -22,8 +22,12 @@
 #
 # Same content twice is a no-op ("unchanged"), so a retried lane exit is safe.
 #
+# A failed PATCH often never reached GitHub, so the script waits, reads the body back
+# and, if it is untouched, tries once more (local patch: docs/super-board/local-patches.md).
+#
 # Exits: 0 ok (stdout: updated | unchanged | the body on --dry-run)
 #        6 PR head moved · 64 usage · 66 unreadable file · 70 gh failure
+#        79 halted: the edit failed twice, or the read-back can't account for it
 set -uo pipefail
 
 BLOCKS="redcheck status problem solution ac history visual risk"
@@ -79,20 +83,24 @@ GITHUB_READ="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/super-board-github-re
 # card, and the REST core bucket is separate from the GraphQL one the board
 # lives on. GH_REPO fills {owner}/{repo}; unset, gh uses the current checkout.
 export GH_REPO="${REPO:-${GH_REPO:-}}"; [ -n "$GH_REPO" ] || unset GH_REPO
-META=$(python3 "$GITHUB_READ" --kind body -- api "repos/{owner}/{repo}/pulls/$PR" --jq '{headRefOid: .head.sha, body: (.body // "")}' ) || exit $?
-NOW=$(printf '%s' "$META" | jq -r '.headRefOid // empty')
-if [ -n "$HEAD" ]; then
+read_meta() { python3 "$GITHUB_READ" --kind body -- api "repos/{owner}/{repo}/pulls/$PR" --jq '{headRefOid: .head.sha, body: (.body // "")}'; }
+check_head() {
+  [ -n "$HEAD" ] || return 0
   # Short or full sha both work: the PR head must start with what you passed.
-  case "$NOW" in
+  local now
+  now=$(printf '%s' "$META" | jq -r '.headRefOid // empty')
+  case "$now" in
     "") die "cannot read the head of PR #$PR" 70 ;;
     "$HEAD"*) ;;
-    *) echo "pr-body: PR #$PR head is $NOW, not $HEAD — re-read the PR and redo the edit" >&2
+    *) echo "pr-body: PR #$PR head is $now, not $HEAD — re-read the PR and redo the edit" >&2
        exit 6 ;;
   esac
-fi
+}
+META=$(read_meta) || exit $?
+check_head
 
-OLD_TMP=$(mktemp); NEW_TMP=$(mktemp)
-trap 'rm -f "$OLD_TMP" "$NEW_TMP"' EXIT
+OLD_TMP=$(mktemp); NEW_TMP=$(mktemp); BACK_TMP=$(mktemp); ERR_TMP=$(mktemp)
+trap 'rm -f "$OLD_TMP" "$NEW_TMP" "$BACK_TMP" "$ERR_TMP"' EXIT
 printf '%s' "$META" | jq -r '.body // ""' > "$OLD_TMP"
 
 MODE_FLAG=replace; [ -n "$APPEND_FILE" ] && MODE_FLAG=append
@@ -160,5 +168,25 @@ if [ "$DRY" -eq 1 ]; then cat "$NEW_TMP"; exit 0; fi
 # $(…) drops trailing newlines, which GitHub does not keep either.
 if [ "$(cat "$OLD_TMP")" = "$(cat "$NEW_TMP")" ]; then echo unchanged; exit 0; fi
 python3 "$GITHUB_READ" --check || exit $?
-jq -n --rawfile b "$NEW_TMP" '{body: $b}' | gh api -X PATCH "repos/{owner}/{repo}/pulls/$PR" --input - >/dev/null 2>&1 || { python3 "$GITHUB_READ" --halt "PR body update outcome unknown for #$PR; read the body before retrying"; exit 79; }
-echo updated
+
+patch_body() {
+  jq -n --rawfile b "$NEW_TMP" '{body: $b}' | gh api -X PATCH "repos/{owner}/{repo}/pulls/$PR" --input - >/dev/null 2>"$ERR_TMP"
+}
+halt_body() {
+  python3 "$GITHUB_READ" --halt "$1; gh said: $(head -n 1 "$ERR_TMP" | cut -c1-200)"
+  exit 79
+}
+same_body() { [ "$(cat "$1")" = "$(cat "$2")" ]; }
+
+for attempt in 1 2; do
+  patch_body && { echo updated; exit 0; }
+  # Wait out the blip first: a read-back that fails during it would halt the run by itself.
+  sleep 5
+  META=$(read_meta) || halt_body "PR body update outcome unknown for #$PR, and the read-back failed"
+  printf '%s' "$META" | jq -r '.body // ""' > "$BACK_TMP"
+  same_body "$BACK_TMP" "$NEW_TMP" && { echo updated; exit 0; }
+  same_body "$BACK_TMP" "$OLD_TMP" || halt_body "PR #$PR body changed while updating it; read the body before retrying"
+  check_head
+  echo "pr-body: PATCH of #$PR failed, body unchanged (attempt $attempt of 2): $(head -n 1 "$ERR_TMP" | cut -c1-200)" >&2
+done
+halt_body "PR body update failed twice for #$PR, and the body is unchanged"

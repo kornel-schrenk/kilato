@@ -22,4 +22,6 @@ export const hu = {
   placesFailed: 'Nem sikerült betölteni a helyeket',
   retry: 'Újrapróbálás',
   showMore: 'Továbbiak megjelenítése',
+  openNow: 'Most nyitva',
+  closedNow: 'Most zárva',
 }

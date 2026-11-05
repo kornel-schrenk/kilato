@@ -26,6 +26,8 @@ This is the status as of wave 9, on 2026-11-04. The numbers stay fixed, so PRs a
 
 **19. A halted wave reports the wrong column.** `super-board-wave.js:193` returns the stale `card.status`, so the wave's result gave #8 and #11 as `Ready` when they were in Review and QA. It's the same class of bug as finding 1. *Open.*
 
+**32. A failed status-block update halts the whole run.** `super-board-pr-body.sh` halted on any PATCH failure and sent `gh`'s error to `/dev/null`, so no cause was recorded. In wave 13, #47's status block failed this way, as the fourth of seven rapid writes. Reading the body back showed the write had never landed, and the comments posted just before and after it succeeded. One GET settles the outcome, so a halt is more than this write needs. *Patched in PR #50, which reads the body back and retries once. `--resume` still refuses a halt record with no saved operation, and the docs give no command for archiving one.*
+
 ## Lanes sharing a machine
 
 **4. Lanes share the session scratchpad.** A QA lane's `notes/*.json` glob picked up 20 drafts left by an earlier lane and posted them as duplicate author notes on PR #24. With parallel cards, one card's drafts could land on another card's PR. *Patched in the prompts only, in PR #25, which gives each lane its own temp folder. A lane in wave 9 still wrote one file directly in the shared folder, so a per-lane `TMPDIR` would be stronger.*

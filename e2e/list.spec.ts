@@ -35,7 +35,9 @@ async function serve(page: Page, places: Place[]) {
     const key = cellKey(place.lat, place.lon)
     cells.set(key, [...(cells.get(key) ?? []), place])
   }
-  await page.route('**/kilato/data/manifest.json', (route) => route.fulfill({ json: { cells: [...cells.keys()] } }))
+  await page.route('**/kilato/data/manifest.json', (route) =>
+    route.fulfill({ json: { cells: [...cells.keys()], wikiLangs: [] } }),
+  )
   await page.route('**/kilato/data/cells/*.json', (route) =>
     route.fulfill({ json: { places: cells.get(keyOfCellRequest(route.request().url())) ?? [] } }),
   )
@@ -181,6 +183,139 @@ test.describe('a row', () => {
   })
 })
 
+test.describe('the open status', () => {
+  // The fixture's hours window starts at local midnight on 2 November, 23:00 UTC the day before.
+  // That day Minta Kávézó is open 07:00–22:00 and Minta Pékség 06:00–18:00, both local time.
+  const kavezo = (page: Page) => row(page, 'Minta Kávézó').locator('.place-status')
+  const pekseg = (page: Page) => row(page, 'Minta Pékség').locator('.place-status')
+  const beforeClosing = '2026-11-02T20:50:00Z'
+
+  test('shows Open now or Closed now as soon as the list is built', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+
+    await expect(kavezo(page)).toHaveText('Open now')
+    await expect(pekseg(page)).toHaveText('Closed now')
+  })
+
+  test.describe('on a Hungarian phone', () => {
+    test.use({ locale: 'hu-HU' })
+
+    test('is in Hungarian, and switching the language changes it', async ({ page }) => {
+      await page.clock.install({ time: beforeClosing })
+      await explore(page, 'A térkép felfedezése')
+
+      await expect(kavezo(page)).toHaveText('Most nyitva')
+      await expect(pekseg(page)).toHaveText('Most zárva')
+
+      await button(page, 'EN').click()
+
+      await expect(kavezo(page)).toHaveText('Open now')
+      await expect(pekseg(page)).toHaveText('Closed now')
+    })
+  })
+
+  test('shows nothing for a place with no hours', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+
+    await expect(kavezo(page)).toHaveText('Open now')
+    await expect(row(page, 'Deák Ferenc tér')).toBeVisible()
+    await expect(row(page, 'Deák Ferenc tér').locator('.place-status')).toHaveCount(0)
+  })
+
+  test('shows nothing for any place once the 14-day window has passed', async ({ page }) => {
+    await page.clock.install({ time: '2026-11-16T12:00:00Z' })
+    await explore(page)
+
+    await expect(row(page, 'Minta Kávézó')).toBeVisible()
+    await expect(page.locator('.place-status')).toHaveCount(0)
+  })
+
+  test('changes from Open now to Closed now within a minute of the closing time', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    await page.clock.pauseAt('2026-11-02T20:59:59Z')
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    // One second to the closing time, and then the longest a minute's timer can take.
+    await page.clock.runFor(61_000)
+    await expect(kavezo(page)).toHaveText('Closed now')
+  })
+
+  test('is worked out again when the list is rebuilt, ahead of the next minute', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    // The jump fires the minute's timer once, so the next one is due at 21:00:59. Two seconds on,
+    // the place has closed and no timer has said so.
+    await page.clock.pauseAt('2026-11-02T20:59:59Z')
+    await page.clock.runFor(2000)
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    const { x, y } = centre(await box(page, '.leaflet-container'))
+    await page.mouse.click(x + 20, y)
+
+    await expect(kavezo(page)).toHaveText('Closed now')
+  })
+
+  test('is worked out again no later than 60 seconds after the last time', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    // The jump fires the minute's timer once, so the next one is due at 21:00:59.
+    await page.clock.pauseAt('2026-11-02T20:59:59Z')
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    await page.clock.runFor(60_000)
+    await expect(kavezo(page)).toHaveText('Closed now')
+  })
+
+  test('leaves the markers alone as the minutes pass', async ({ page }) => {
+    // Leaflet draws each marker with one arc on the canvas, so new rows would add hundreds.
+    await page.addInitScript(() => {
+      const drawn = { arcs: 0 }
+      const arc = CanvasRenderingContext2D.prototype.arc
+      CanvasRenderingContext2D.prototype.arc = function (...args) {
+        drawn.arcs++
+        return arc.apply(this, args)
+      }
+      Object.assign(window, { drawn })
+    })
+    const arcs = () => page.evaluate(() => (window as unknown as { drawn: { arcs: number } }).drawn.arcs)
+
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+    await expect(kavezo(page)).toHaveText('Open now')
+    await page.clock.pauseAt('2026-11-02T20:59:00Z')
+    // Lets anything still due from the first draw happen now, so that it doesn't count below.
+    await page.clock.runFor(1000)
+    await expect.poll(arcs).toBeGreaterThan(0)
+    const before = await arcs()
+
+    await page.clock.runFor(120_000)
+
+    await expect(kavezo(page)).toHaveText('Closed now')
+    expect(await arcs()).toBe(before)
+  })
+
+  test.describe('on a phone in another time zone', () => {
+    test.use({ timezoneId: 'America/Los_Angeles' })
+
+    test('reads the same, because the window start and the clock are both instants', async ({ page }) => {
+      await page.clock.install({ time: beforeClosing })
+      await explore(page)
+
+      await expect(kavezo(page)).toHaveText('Open now')
+      await expect(pekseg(page)).toHaveText('Closed now')
+    })
+  })
+})
+
 test.describe('the list', () => {
   test('holds the places within 1,000 m of the point, nearest first', async ({ page }) => {
     await serve(page, [
@@ -248,6 +383,146 @@ test.describe('the list', () => {
 
       await expect(firstMeta(page)).toHaveText('Café · 20 m')
     })
+  })
+})
+
+test.describe('the Wikipedia link', () => {
+  // In the fixture, this place has a Hungarian, an English and a German article.
+  const museum = 'Földalatti Vasúti Múzeum'
+  const german = 'https://de.wikipedia.org/wiki/U-Bahn-Museum_Budapest'
+  const hungarian = 'https://hu.wikipedia.org/wiki/F%C3%B6ldalatti_Vas%C3%BAti_M%C3%BAzeum'
+  const english = 'https://en.wikipedia.org/wiki/Underground_Railway_Museum_(Budapest)'
+  // And this one has only a Hungarian article.
+  const busStation = 'Erzsébet tér autóbusz-pályaudvar'
+
+  const articleLink = (page: Page, name: string) => page.locator('li', { has: row(page, name) }).getByRole('link')
+  const titleFiles = (paths: string[]) => paths.filter((path) => path.includes('/wiki/'))
+
+  async function expectLink(page: Page, name: string, text: string, href: string) {
+    await expect(articleLink(page, name)).toHaveText(text)
+    await expect(articleLink(page, name)).toHaveAttribute('href', href)
+  }
+
+  test.describe('with the locale de-AT', () => {
+    test.use({ locale: 'de-AT' })
+
+    test('goes to the German article in a new tab, whatever the UI language', async ({ page }) => {
+      await explore(page)
+
+      await expectLink(page, museum, 'Wikipedia · DE', german)
+      await expect(articleLink(page, museum)).toHaveAttribute('target', '_blank')
+
+      await button(page, 'HU').click()
+
+      await expect(page.locator('html')).toHaveAttribute('lang', 'hu')
+      await expectLink(page, museum, 'Wikipedia · DE', german)
+    })
+
+    test('fetches wiki/de.json once', async ({ page }) => {
+      const paths = dataRequests(page)
+      await explore(page)
+
+      await expectLink(page, museum, 'Wikipedia · DE', german)
+      expect(titleFiles(paths)).toEqual(['/kilato/data/wiki/de.json'])
+    })
+
+    test('goes to the Hungarian article of a place with no German one', async ({ page }) => {
+      await explore(page)
+      // Every link is Hungarian until the titles arrive, so this waits for them.
+      await expectLink(page, museum, 'Wikipedia · DE', german)
+      await expect(articleLink(page, busStation)).toHaveText('Wikipedia · HU')
+    })
+
+    test('stays German when the page opens again in the saved UI language', async ({ page }) => {
+      await page.goto('/kilato/')
+      await button(page, 'HU').click()
+      await expect(page.locator('html')).toHaveAttribute('lang', 'hu')
+
+      await explore(page, 'A térkép felfedezése')
+
+      await expectLink(page, museum, 'Wikipedia · DE', german)
+    })
+  })
+
+  test.describe('with the locale fr-FR, which the manifest does not list', () => {
+    test.use({ locale: 'fr-FR' })
+
+    test('fetches no wiki/fr.json, and goes to the Hungarian article', async ({ page }) => {
+      const paths = dataRequests(page)
+      await explore(page)
+
+      await expectLink(page, museum, 'Wikipedia · HU', hungarian)
+      expect(titleFiles(paths)).toEqual([])
+    })
+  })
+
+  test.describe('with the locale hu-HU', () => {
+    test.use({ locale: 'hu-HU' })
+
+    test('goes to the Hungarian article, and fetches no titles', async ({ page }) => {
+      const paths = dataRequests(page)
+      await explore(page, 'A térkép felfedezése')
+
+      await expectLink(page, museum, 'Wikipedia · HU', hungarian)
+      expect(titleFiles(paths)).toEqual([])
+    })
+  })
+
+  test('goes to the English article on an English phone, and fetches no titles', async ({ page }) => {
+    const paths = dataRequests(page)
+    await explore(page)
+
+    await expectLink(page, museum, 'Wikipedia · EN', english)
+    expect(titleFiles(paths)).toEqual([])
+  })
+
+  test('is not there for a place with no article', async ({ page }) => {
+    await serve(page, [cafe('No article', 120), cafe('Has one', 240, { wiki: { hu: 'Cikk' } })])
+    await explore(page)
+
+    await expect(articleLink(page, 'Has one')).toBeVisible()
+    await expect(articleLink(page, 'No article')).toHaveCount(0)
+  })
+
+  test('opens the article in a new tab, and leaves the row untapped', async ({ page, context }) => {
+    await serve(page, [cafe('Has one', 240, { wiki: { hu: 'Cikk' } })])
+    await explore(page)
+    await context.route('https://hu.wikipedia.org/**', (route) => route.fulfill({ body: '' }))
+    const newTab = context.waitForEvent('page')
+
+    await articleLink(page, 'Has one').click()
+
+    expect((await newTab).url()).toBe('https://hu.wikipedia.org/wiki/Cikk')
+    await expect(page.locator('[aria-current]')).toHaveCount(0)
+  })
+
+  test('sends Wikipedia no Referer when the article opens', async ({ page, context }) => {
+    await serve(page, [cafe('Has one', 240, { wiki: { hu: 'Cikk' } })])
+    await explore(page)
+    let referer: string | undefined = 'the article was not asked for'
+    await context.route('https://hu.wikipedia.org/**', (route) => {
+      referer = route.request().headers().referer
+      return route.fulfill({ body: '' })
+    })
+    const newTab = context.waitForEvent('page')
+
+    await articleLink(page, 'Has one').click()
+    await (await newTab).waitForLoadState()
+
+    expect(referer).toBeUndefined()
+  })
+
+  test('comes into view with its row when a marker is tapped', async ({ page }) => {
+    const places = grid(100).map((place) => ({ ...place, wiki: { hu: place.name } }))
+    await serve(page, places)
+    await explore(page)
+    await expect(page.locator('.place')).toHaveCount(100)
+    const target = nearby(places, deakTer, 1000)[90].place
+    await expect(articleLink(page, target.name)).not.toBeInViewport()
+
+    await tapMarker(page, target)
+
+    await expect(articleLink(page, target.name)).toBeInViewport()
   })
 })
 
