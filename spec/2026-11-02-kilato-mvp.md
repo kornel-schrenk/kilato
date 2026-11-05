@@ -15,7 +15,7 @@ Kilátó has two halves, and they meet in static files.
 
 In these places the spec chooses between real options. Each one is easy to change in review and harder to change once the issues exist.
 
-1. **Data by area, not one file for the city.** The page loads the places in squares about 1.1 km wide, at most nine at a time. We skipped measuring the whole city. Planning counted about 500 places within 1 km of Újpest centre, and central Budapest has several times more. One city file would likely be 1–2 MB compressed on every first visit, while nine squares should be tens of KB. The cost is that GitHub Pages sees which squares you load, which the intent already allows.
+1. **Data by area, not one file for the city.** The page loads the places in squares about 1.1 km wide, at most nine at a time. On the extract of 2026-11-03, the nine squares around Deák Ferenc tér in the city centre hold 6,515 places and come to 287 KB compressed. One file with all 29,969 places would be about 1.3 MB at that rate, on every first visit. `search.json` is 681 KB compressed, and loads only when the search box first gets focus. The cost is that GitHub Pages sees which squares you load, which the intent already allows.
 2. **Opening hours are worked out in the build.** The phone gets ready-made open times for the next 14 days instead of a parser for the full `opening_hours` syntax. The cost: if the build stalls for two weeks, open status disappears, by which time the data age warning has been showing for four days.
 3. **One Wikipedia link per place:** the phone's language, then Hungarian, then English.
 4. **What is left out:** places without a name, memorial plaques and stolpersteine, and offices.
