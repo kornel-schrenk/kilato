@@ -1,0 +1,9 @@
+search places 311 cell places 311 manifest cells 5
+in search but in no cell: []
+in a cell but not in search: []
+field or cell mismatches: []
+kave -> 6 ['Kávézó Pékség', 'Minta Kávézó', 'Centrál kávéház', 'Múzeumkávézó', 'Balaton kávéház', 'Abbázia kávéház']
+KÁVÉ -> 6 ['Kávézó Pékség', 'Minta Kávézó', 'Centrál kávéház', 'Múzeumkávézó', 'Balaton kávéház', 'Abbázia kávéház']
+muz -> 11 ['Muzsikáló ház', 'Múzeumkávézó', 'Múzeumkert', 'Földalatti Vasúti Múzeum', 'Minta Múzeum', 'Magyar Zsidó Múzeum és Levéltár', 'Ady Endre Emlékmúzeum', 'Petőfi Irodalmi Múzeum', 'Ernst Múzeum', 'Magyar Nemzeti Múzeum Központi Könyvtár', 'Magyar Nemzeti Múzeum']
+Lanc -> 0 []
+ka -> 30 ['Katona József Színház', 'Kalazantinum', 'Kárpátia', 'Kazinczy utcai zsinagóga', 'Kazinczy utca', 'Károlyi utca', 'Károlyi-kert', 'Károlyi-palota', 'Kávézó Pékség', 'Kádár étkezde', 'Minta Kávézó', 'Grill Károly Könyvkiadóvállalata', 'ELTE BTK Angol–Amerikai Intézet', 'Rényi Alfréd Matematikai Kutatóintézet', 'Centrál kávéház', 'ELTE BTK Romanisztikai Intézet', 'ELTE Bölcsészettudományi Kar', 'Minta Optika', 'Muzsikáló ház', 'Magyar Tudományos Akadémia']

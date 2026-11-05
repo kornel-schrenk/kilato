@@ -1,0 +1,73 @@
+Mutants for #19, each applied to a scratch copy of the code, never to this branch.
+A line reads: the mutant | its verdict | how many tests failed | which.
+"red, only on QA tests" means it passed every test the builder wrote in that run, and only a test QA added catches it.
+
+UNIT: src/core/search.test.ts and src/core/point.test.ts
+U1 shortest query is 3 | red | 3 failing | reads the characters of a regular expression as plain text; finds places with two; counts neither the spaces around a query nor nothing at all
+U2 at most 21 | red | 2 failing | keeps the 20 of the first group when the second group is nearer; stops at 20, and keeps the first 20 in order
+U3 accents stay | red | 14 failing | ignores accents, so kave finds Kávé; ignores accents in the query too; knows the Hungarian long accents; finds the query anywhere in a name
+U4 case stays | red | 16 failing | ignores accents, so kave finds Kávé; ignores accents in the query too; knows the Hungarian long accents; ignores case
+U5 name only | red | 2 failing | looks in names.hu and names.en; counts a place as beginning with the query when any of its names does
+U6 no names.en | red | 2 failing | looks in names.hu and names.en; counts a place as beginning with the query when any of its names does
+U7 no names.hu | red | 1 failing | looks in names.hu and names.en
+U8 prefix only | red | 5 failing | finds the query anywhere in a name; reads the characters of a regular expression as plain text; puts names that begin with the query first, even when they are further away; counts a place as beginning with the query when any of its names does
+U9 only the first name can begin | red | 1 failing | counts a place as beginning with the query when any of its names does
+U10 no nearest first | red | 4 failing | puts the nearest first among names that begin with the query; puts the nearest first among the rest; stops at 20, and keeps the first 20 in order; answers each query from the same places, at the point of that query
+U11 prefix matches last | red | 3 failing | puts names that begin with the query first, even when they are further away; counts a place as beginning with the query when any of its names does; keeps the 20 of the first group when the second group is nearer
+U12 no trim | red | 1 failing | counts neither the spaces around a query nor nothing at all
+U13 distance from a fixed point | red | 1 failing | answers each query from the same places, at the point of that query
+U14 only the first accent goes | red | 3 failing | ignores accents in the query too; knows the Hungarian long accents; finds the query anywhere in a name
+U15 a table of Hungarian letters | red, only on QA tests | 1 failing | matches an accent typed as a separate mark, in the query or in the name
+U16 the query as a regular expression | red, only on QA tests | 1 failing | reads the characters of a regular expression as plain text
+U17 the 20 nearest, then grouped | red, only on QA tests | 1 failing | keeps the 20 of the first group when the second group is nearer
+P1 a pick keeps the mode | red | 6 failing | before the page knows the permission, starts exploring with the point at the place, and the map goes there at its own zoom; at the intro, starts exploring with the point at the place, and the map goes there at its own zoom; while following, starts exploring with the point at the place, and the map goes there at its own zoom; cancels a request for the location, so a late fix does not move the point
+P2 a pick keeps the watch | red | 3 failing | while following, starts exploring with the point at the place, and the map goes there at its own zoom; cancels a request for the location, so a late fix does not move the point; stops following, so the next fix does not move the point
+P3 a pick sets the zoom | red | 4 failing | before the page knows the permission, starts exploring with the point at the place, and the map goes there at its own zoom; at the intro, starts exploring with the point at the place, and the map goes there at its own zoom; while following, starts exploring with the point at the place, and the map goes there at its own zoom; while exploring, starts exploring with the point at the place, and the map goes there at its own zoom
+P4 a pick keeps the coast | red | 1 failing | keeps the point at the place when a map still coasting stops
+
+PAGE: all of e2e/search.spec.ts. N mutants ran to the end. E mutants stopped at the first red.
+N1 the English second name in every language | red, only on QA tests | 1 failing | shows the Hungarian name under the name of a result | 77 s
+N2 14 px text in the box | red, only on QA tests | 1 failing | has 16 px text, below which Safari zooms the page when the box gets focus | 81 s
+N3 a result does not wrap | red, only on QA tests | 1 failing | wraps a long name in a result, so the results do not scroll sideways | 94 s
+N4 no check of the status | red, only on QA tests | 1 failing | a 404 with valid JSON in it counts as failing too | 89 s
+N5 a file that is not JSON counts as empty | red, only on QA tests | 1 failing | a page of HTML in its place counts as failing too, as a Wi-Fi login page would send | 82 s
+N6 results ignore a moved point | red, only on QA tests | 1 failing | reorder when the point moves with the query still in the box | 65 s
+N7 results ignore the file arriving | harness error Command '['npx', 'playwright', 'test', 'e2e/search.spec.ts', '--reporter=json']' timed out after 600 seconds
+N8 a result name as HTML | red, only on QA tests | 1 failing | show a name with HTML in it as plain text | 65 s
+N9 search.json names a place differently from its cell | red, only on QA tests | 1 failing | highlights the row of a place from the real files, whose search.json and cell name it alike | 71 s
+N10 the first pick wins | red, only on QA tests | 1 failing | highlights only the second of two picks made while their cells were on the way | 64 s
+E1 loads on mount | red | 1 failing before the run stopped | sits in the header, and search.json loads only when it first gets focus | 9 s
+E2 asks on every focus | red | 1 failing before the run stopped | asks for search.json once, however often it gets focus | 12 s
+E3 never asks again after a failure | red | 1 failing before the run stopped | shows the message, and Retry loads it | 24 s
+E4 Retry does nothing | red | 1 failing before the run stopped | shows the message, and Retry loads it | 25 s
+E5 the query stays after a pick | red | 1 failing before the run stopped | closes the results, empties the box and takes the focus out of it | 50 s
+E6 the focus stays after a pick | SURVIVED | 0 failing |  | 57 s
+E7 loads on click, not focus | red | 1 failing before the run stopped | sits in the header, and search.json loads only when it first gets focus | 14 s
+E8 results always from Deak ter | red | 1 failing before the run stopped | start from where the point has moved to | 37 s
+E9 highlights after the point moved on | SURVIVED | 0 failing |  | 60 s
+E10 no scroll to a picked row | red | 1 failing before the run stopped | shows and scrolls to its row, even past the rows showing among places at one spot | 56 s
+E11 a picked row may not show | red | 1 failing before the run stopped | shows and scrolls to its row, even past the rows showing among places at one spot | 55 s
+E12 a pick opens a popup | red | 1 failing before the run stopped | moves the highlight off the row tapped before, with its popup | 93 s
+E13 a pick does not reach the places | red | 1 failing before the run stopped | fits, and its results are over the map, where a tap reaches them | 37 s
+E14 a pick does not reach the point | red | 1 failing before the run stopped | fits, and its results are over the map, where a tap reaches them | 38 s
+E15 results push the map down | red | 1 failing before the run stopped | fits, and its results are over the map, where a tap reaches them | 30 s
+E16 no cap on the height of the results | SURVIVED | 0 failing |  | 81 s
+E17 results under My location | red | 1 failing before the run stopped | fits, and its results are over the map, where a tap reaches them | 50 s
+E18 a moved point keeps waiting | SURVIVED | 0 failing |  | 69 s
+
+N7 results ignore the file arriving, QA test only | red | 1 failing | show up for a query typed while search.json was on its way
+N7 results ignore the file arriving, builder tests, stopping at the first red | red | 1 failing | shows the Hungarian name under the name of a result
+E6 the focus stays after a pick, QA test only | red | 1 failing | takes the focus out of the box when the tap itself leaves it there, as Safari on a phone does
+E19 both point checks gone | red | 1 failing | leaves the row alone when the point moves on before the cell arrives
+
+EXTRA RUNS, after the above
+N7 hit my 600 s limit in the full run, because many tests wait out their timeouts. So I don't count it as past the builder's tests, and ran it again narrowly.
+E6 survived the full run. The builder's test at e2e/search.spec.ts:435 clicks with a mouse, and a mouse click moves the focus to the button by itself, so that test can't see the blur. QA added :446.
+E9 and E18 survive because each of the two point checks in src/ui/usePlaces.ts covers for the other. E19 removes both, and :540 goes red.
+
+WHAT IS LEFT
+50 mutants: 21 unit, 29 page. 47 are red now. 13 of those passed all the builder's tests that ran against them, and QA's tests catch them: U15 U16 U17 N1 N2 N3 N4 N5 N6 N8 N9 N10 E6.
+3 survive:
+E9  only differs if a cell arrives in the same render as the point moves off. Not worth a test
+E18 changes nothing a visitor can see, as a waiting pick only ever ends with no highlight
+E16 no cap on the height of the results: 20 results are 899 px tall, probe.txt, on a 667 px phone. Low, and the spec doesn't set a height
