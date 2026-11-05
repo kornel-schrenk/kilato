@@ -1,0 +1,14 @@
+CI. GitHub check verify: success on builder head 7b28645, run 42114855619. QA's commit only adds this evidence folder and starts its own run on push.
+
+pr-security-review, diff of develop...7b28645, base 413a833, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- src/core/rank.ts: a pure sort. place.wiki is only tested for being there. place.cat, from the data files, only picks a number from the table. Neither reaches HTML, a URL or a style. Names only go to localeCompare.
+- src/ui/App.tsx: the group's name and the two buttons are Preact text from en.ts and hu.ts.
+- src/ui/usePlaces.ts: the order stays in memory. After six presses, localStorage is as it was, sessionStorage and cookies are empty, the URL and the history are the same, and 0 requests are sent, probe.txt P4.
+- src/ui/MapView.tsx: a ref holds the current onSelect. The rows, the popup and the marker styles are untouched.
+- src/ui/PlaceList.tsx: only an import moved.
+- index.html: styles only. The colours are constants, and the --chip-color fallback is a constant.
+- Added lines in src and index.html: 0 matches for innerHTML, dangerouslySetInnerHTML, eval, new Function, document.write, XMLHttpRequest, sendBeacon, localStorage, sessionStorage, cookie, postMessage, window.open, location.href, bindPopup, bindTooltip, setContent, fetch, and 0 URLs.
+- No new package: package.json and package-lock.json are not in the diff.
+- Secret scan of the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.
+- e2e and unit test files are out of scope for the skill.

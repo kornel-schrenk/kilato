@@ -28,15 +28,15 @@ const cafe = (id: string, metresNorth: number, more: Partial<Place> = {}): Place
 
 const keyOfCellRequest = (url: string) => new URL(url).pathname.split('/').pop()!.replace('.json', '')
 
-/** Makes the site hold just these places, in place of the fixture's. */
-async function serve(page: Page, places: Place[]) {
+/** Makes the site hold just these places, in place of the fixture's. Their hours count from `hoursWindowStart`. */
+async function serve(page: Page, places: Place[], hoursWindowStart?: string) {
   const cells = new Map<string, Place[]>()
   for (const place of places) {
     const key = cellKey(place.lat, place.lon)
     cells.set(key, [...(cells.get(key) ?? []), place])
   }
   await page.route('**/kilato/data/manifest.json', (route) =>
-    route.fulfill({ json: { cells: [...cells.keys()], wikiLangs: [] } }),
+    route.fulfill({ json: { cells: [...cells.keys()], wikiLangs: [], hoursWindowStart } }),
   )
   await page.route('**/kilato/data/cells/*.json', (route) =>
     route.fulfill({ json: { places: cells.get(keyOfCellRequest(route.request().url())) ?? [] } }),
@@ -108,6 +108,23 @@ async function tapMarker(page: Page, place: LatLon) {
   await expect.poll(() => markerColor(page, place)).not.toBeNull()
   const { x, y } = (await geography(page)).screen(place)
   await page.mouse.click(x, y)
+}
+
+/**
+ * How many markers Leaflet has drawn since the page opened, as it draws each with one arc on the
+ * canvas. Call this before the page opens.
+ */
+async function countArcs(page: Page) {
+  await page.addInitScript(() => {
+    const drawn = { arcs: 0 }
+    const arc = CanvasRenderingContext2D.prototype.arc
+    CanvasRenderingContext2D.prototype.arc = function (...args) {
+      drawn.arcs++
+      return arc.apply(this, args)
+    }
+    Object.assign(window, { drawn })
+  })
+  return () => page.evaluate(() => (window as unknown as { drawn: { arcs: number } }).drawn.arcs)
 }
 
 const fixturePlaces = (): Place[] => {
@@ -276,17 +293,8 @@ test.describe('the open status', () => {
   })
 
   test('leaves the markers alone as the minutes pass', async ({ page }) => {
-    // Leaflet draws each marker with one arc on the canvas, so new rows would add hundreds.
-    await page.addInitScript(() => {
-      const drawn = { arcs: 0 }
-      const arc = CanvasRenderingContext2D.prototype.arc
-      CanvasRenderingContext2D.prototype.arc = function (...args) {
-        drawn.arcs++
-        return arc.apply(this, args)
-      }
-      Object.assign(window, { drawn })
-    })
-    const arcs = () => page.evaluate(() => (window as unknown as { drawn: { arcs: number } }).drawn.arcs)
+    // New rows would redraw every marker, and add hundreds of arcs.
+    const arcs = await countArcs(page)
 
     await page.clock.install({ time: beforeClosing })
     await explore(page)
@@ -1312,6 +1320,175 @@ test.describe('the category chips', () => {
         await expect.poll(() => rowNames(page)).toEqual(['Coffee'])
       })
     })
+  })
+})
+
+test.describe('the order', () => {
+  const toggle = (page: Page, name: string) => page.getByRole('group', { name }).getByRole('button')
+  // The fixture's hours window starts at local midnight on 2 November. 1,320 minutes on is 22:00 local time.
+  const windowStart = '2026-11-01T23:00:00.000Z'
+  const beforeClosing = '2026-11-02T20:50:00Z'
+
+  const coffee = cafe('Coffee', 100)
+  const books = cafe('Books', 200, { cat: 'shops', kind: 'books' })
+  const museum = cafe('Museum', 300, { cat: 'sights', kind: 'museum', wiki: { hu: 'Múzeum' } })
+  const nearest = ['Coffee', 'Books', 'Museum']
+  const relevant = ['Museum', 'Coffee', 'Books']
+
+  /** Opens the page with the three places above, in Nearest. */
+  async function exploreThree(page: Page) {
+    await serve(page, [coffee, books, museum])
+    await explore(page)
+    await expect.poll(() => rowNames(page)).toEqual(nearest)
+  }
+
+  test('reads Nearest and Most relevant, with Nearest on', async ({ page }) => {
+    await page.goto('/kilato/')
+
+    await expect(toggle(page, 'Order')).toHaveText(['Nearest', 'Most relevant'])
+    await expect(button(page, 'Nearest')).toHaveAttribute('aria-pressed', 'true')
+    await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  test.describe('on a Hungarian phone', () => {
+    test.use({ locale: 'hu-HU' })
+
+    test('reads Legközelebbi and Legérdekesebb, and switching the language changes them', async ({ page }) => {
+      await page.goto('/kilato/')
+
+      await expect(toggle(page, 'Sorrend')).toHaveText(['Legközelebbi', 'Legérdekesebb'])
+
+      await button(page, 'EN').click()
+
+      await expect(toggle(page, 'Order')).toHaveText(['Nearest', 'Most relevant'])
+    })
+  })
+
+  test('sits above the chips, and both fit a phone in Hungarian', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
+    await serve(page, [coffee])
+    await explore(page)
+    await button(page, 'HU').click()
+
+    await expect(page.getByRole('group', { name: 'Sorrend' })).toBeVisible()
+    const mapBottom = await page.locator('.map').evaluate((map) => map.getBoundingClientRect().bottom)
+    const { y, height } = await box(page, '.order')
+    expect(y).toBeGreaterThanOrEqual(mapBottom)
+    expect(y + height).toBeLessThanOrEqual((await box(page, '.chips')).y)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375)
+    for (const name of ['Legközelebbi', 'Legérdekesebb']) {
+      expect((await button(page, name).boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    }
+  })
+
+  test('sorts the list by relevance, and back by distance', async ({ page }) => {
+    await exploreThree(page)
+
+    await button(page, 'Most relevant').click()
+
+    await expect.poll(() => rowNames(page)).toEqual(relevant)
+    await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'true')
+    await expect(button(page, 'Nearest')).toHaveAttribute('aria-pressed', 'false')
+
+    await button(page, 'Nearest').click()
+
+    await expect.poll(() => rowNames(page)).toEqual(nearest)
+    await expect(button(page, 'Nearest')).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('works with the category filter, in both orders', async ({ page }) => {
+    await exploreThree(page)
+
+    await button(page, 'Most relevant').click()
+    await button(page, 'Food & drink').click()
+    await expect.poll(() => rowNames(page)).toEqual(['Museum', 'Books'])
+
+    await button(page, 'Nearest').click()
+    await expect.poll(() => rowNames(page)).toEqual(['Books', 'Museum'])
+
+    await button(page, 'Sights').click()
+    await expect.poll(() => rowNames(page)).toEqual(['Books'])
+
+    await button(page, 'Sights').click()
+    await button(page, 'Food & drink').click()
+    await button(page, 'Most relevant').click()
+
+    await expect.poll(() => rowNames(page)).toEqual(relevant)
+  })
+
+  test('is Nearest again at the next visit', async ({ page }) => {
+    await exploreThree(page)
+    await button(page, 'Most relevant').click()
+    await expect.poll(() => rowNames(page)).toEqual(relevant)
+
+    await page.reload()
+    await button(page, 'Explore the map').click()
+
+    await expect(button(page, 'Nearest')).toHaveAttribute('aria-pressed', 'true')
+    await expect.poll(() => rowNames(page)).toEqual(nearest)
+  })
+
+  test('stays as it is when the point moves and when the language switches', async ({ page }) => {
+    await exploreThree(page)
+    await button(page, 'Most relevant').click()
+    await expect.poll(() => rowNames(page)).toEqual(relevant)
+
+    const { x, y } = centre(await box(page, '.leaflet-container'))
+    await page.mouse.click(x + 20, y)
+    await button(page, 'HU').click()
+
+    await expect(button(page, 'Legérdekesebb')).toHaveAttribute('aria-pressed', 'true')
+    await expect.poll(() => rowNames(page)).toEqual(relevant)
+  })
+
+  test('moves a place down the list within a minute of its closing', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await serve(page, [cafe('Closing', 100, { hours: [[0, 1320]] }), cafe('No hours', 150)], windowStart)
+    await explore(page)
+    await button(page, 'Most relevant').click()
+    await expect.poll(() => rowNames(page)).toEqual(['Closing', 'No hours'])
+
+    await page.clock.pauseAt('2026-11-02T20:59:59Z')
+    await page.clock.runFor(61_000)
+
+    await expect.poll(() => rowNames(page)).toEqual(['No hours', 'Closing'])
+  })
+
+  test('counts the rows showing in the order it is in, for a tapped marker', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    // Nearest of all, and behind all but a few of the sights once it counts as closed.
+    const closed = cafe('Closed', 10, { hours: [] })
+    await serve(page, [closed, ...grid(120).map((place) => ({ ...place, cat: 'sights' as const }))], windowStart)
+    await explore(page)
+    await expect(page.locator('.place-name').first()).toHaveText('Closed')
+
+    await button(page, 'Most relevant').click()
+    await expect(page.locator('.place-name').first()).not.toHaveText('Closed')
+    await expect(page.locator('.place')).toHaveCount(100)
+    await expect(row(page, 'Closed')).toHaveCount(0)
+
+    await tapMarker(page, closed)
+
+    await expect(page.locator('.place')).toHaveCount(121)
+    await expect(row(page, 'Closed')).toHaveAttribute('aria-current', 'true')
+    await expect(row(page, 'Closed')).toBeInViewport()
+  })
+
+  test('leaves the markers alone', async ({ page }) => {
+    const arcs = await countArcs(page)
+    await page.clock.install({ time: beforeClosing })
+    await exploreThree(page)
+    await page.clock.pauseAt('2026-11-02T20:59:00Z')
+    // Lets anything still due from the first draw happen now, so that it doesn't count below.
+    await page.clock.runFor(1000)
+    await expect.poll(arcs).toBeGreaterThan(0)
+    const before = await arcs()
+
+    await button(page, 'Most relevant').click()
+    await page.clock.runFor(1000)
+
+    await expect.poll(() => rowNames(page)).toEqual(relevant)
+    expect(await arcs()).toBe(before)
   })
 })
 

@@ -85,6 +85,14 @@ export function App() {
           </>
         )}
         {point.mode === 'exploring' && <p>{t.exploreNote}</p>}
+        <div class="order" role="group" aria-label={t.order}>
+          <button type="button" aria-pressed={places.order === 'nearest'} onClick={() => places.setOrder('nearest')}>
+            {t.nearest}
+          </button>
+          <button type="button" aria-pressed={places.order === 'relevant'} onClick={() => places.setOrder('relevant')}>
+            {t.mostRelevant}
+          </button>
+        </div>
         <CategoryChips off={places.categoriesOff} onToggle={places.toggleCategory} t={t} />
         {places.failed && (
           <p role="alert" class="load-error">
@@ -103,7 +111,7 @@ export function App() {
           </p>
         )}
         <PlaceList
-          rows={places.rows}
+          rows={places.listRows}
           shown={places.shown}
           selection={places.selection}
           onSelect={places.select}

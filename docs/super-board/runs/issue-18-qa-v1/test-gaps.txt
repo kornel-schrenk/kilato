@@ -1,0 +1,41 @@
+Test-gap check. Tested head: 7b28645, the Builder's. Range: develop...7b28645, base 413a833. Written from this round's own runs.
+Component column: n/a for every AC. The repo has no component test harness, and the page tests drive src/ui/.
+No project verifier: .agents/skills/verify-* doesn't exist. target.url is null, so there is no health check.
+
+===== ledger
+AC1 unit n/a: the labels and the default live in App and a hook, driven through the page · e2e e2e/list.spec.ts:1345 labels and Nearest on, :1356 Hungarian labels and the switch, :1367 above the chips, on a phone in Hungarian, :1384 both directions, :1399 the filter in both orders, :1419 Nearest at the next visit, :1431 stays when the point moves and when the language switches
+AC2 unit src/core/rank.test.ts:39 :47 :55 outcomes, :80 each signal in the table, 1 m either side, :89 a tie goes to the nearer, with every signal added up, :97 a tie at the same distance goes by name · e2e :1384 the three-place order, :1444 a place that closes moves down
+AC3 unit src/core/rank.test.ts:39 sight and closed bakery, :47 open and closed café, :55 shop with and without an article, :60 the nearer of two with the same signals, :23 Nearest ignores everything but distance · e2e n/a: the AC asks for unit tests
+
+===== edge cases
+boundaries: pinned. 1 m either side of each adjustment :80, an exact score tie :89, 0 m apart with the same score :97.
+dates: pinned for the minute a place closes :1444. Past the 14-day window every status is unknown and the score ignores hours: probe.txt P1, no committed test at this rung. The status comes from one instant and the window, as before.
+input: pinned for Á, Cs, Cu at :97. Ö and Ő, in a real browser on English, Hungarian and German phones: probe.txt P10. Name length only affects the row, which is older than this PR.
+volume: 0 rows probe.txt P3 and P7. 3 rows :1384. 121 rows :1457. 241 rows with Show more probe.txt P9. 308 rows probe.txt P1. 2,000 places within 1 km: a press takes 31 to 79 ms on this Raspberry Pi, probe.txt P6, no committed test.
+error paths: no new catch or promise. A failed load, then Most relevant, then Retry: every row in order, probe.txt P7, no committed test.
+idempotency and races: the same button twice, six presses, probe.txt P4. Pressed before there is a point, probe.txt P3. A marker drawn before the press counts rows in the new order :1457.
+UI states: no rows before a point, probe.txt P3. Every chip off, the toggle still answers and the order holds when they come back, probe.txt P7. There is no loading or disabled state on the toggle.
+accessibility: the group's name and aria-pressed are pinned :1345. Tab, Space and Enter work and keep the focus, with the focus ring there, probe.txt P5. 44 px :1367. White on #555 and #555 on white both read 7.46:1, probe.txt P12. 320 px in Hungarian fits with no sideways scroll, probe.txt P12.
+privacy: nothing stored and 0 requests sent, probe.txt P4. The next visit :1419.
+auth, money: n/a.
+
+===== test the tests
+QA's mutants: mutants.txt. 40 mutants, 38 red, 2 past the tests. 4 tunings of the weights stay green at both rungs, so the weights can be tuned as the spec asks.
+The tests at :80 read their distances from the table under test. That's deliberate, and they can still fail: each mutant that drops a signal goes red there. They can't catch a wrong number in the table, and the spec asks for that. spec-table.txt reads the spec's table from the file: all 8 rows and the labels match.
+Independent oracle, probe.txt P1: an own haversine and an own open status, with the spec's numbers typed in by hand. All 308 fixture rows match in both orders, at three times of day, with each chip off. 304 of the 308 rows change position in Most relevant, so the check can fail.
+Every order test ends with an assertion after its last action, as AGENTS.md asks, and imports test from e2e/fixtures.ts: checked by reading all 11.
+The article signal: every fixture place with wiki has a Hungarian or English title, and a row shows a link exactly where the place has wiki, on English, Hungarian and German phones, probe.txt P11. The Builder's claim holds.
+
+===== rank
+High: none. Every AC has tests, and a mutant of each behaviour in the ACs goes red. The diff touches no auth, money, security or data-loss path.
+
+Medium, not written:
+- the chosen button's look has no test. Witness: remove the .order button[aria-pressed='true'] rule from index.html, and all 11 order tests pass, with nothing on screen saying which order is on. aria-pressed is pinned at :1345. The screenshots and probe.txt P12 show the fill today
+
+Low, not written:
+- a weight typo that keeps every outcome gets past the tests. Witness: food 0 in place of -50. The spec asks for outcome tests, and spec-table.txt shows the numbers are right today
+- e2e/list.spec.ts:1457 only holds while Closed stays high. Witness: closed +200 turns it red, as the place then stays in the first 100 rows. Tuning that number means moving this test's places too. The outcome tests stay green
+- the Builder's known limit, confirmed: a tapped row that falls past the rows showing when the order changes leaves no row highlighted. Its popup stays, and Show more brings the row back, highlighted, probe.txt P9. The spec only asks for this at the tap
+- a new order isn't announced to a screen reader. The pressed state is, and the list has no live region
+- walking, a failed load, a press before there is a point, and 2,000 places rest on the probe, with no committed test
+- not run on a real phone, or in any browser but Chromium

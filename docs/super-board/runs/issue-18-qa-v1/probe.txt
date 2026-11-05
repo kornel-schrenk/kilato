@@ -1,0 +1,26 @@
+P1 Tue 11:00 local, most places open: 308 rows · 304 at a different position in Most relevant · open 10 closed 1 unknown 297 · with an article 230 · both orders match, row by row
+P1 Tue 11:00 local, most places open: each of the 6 chips off, in both orders, matches, and turning it on brings the rows back
+P1 Tue 23:30 local, most places closed: 308 rows · 304 at a different position in Most relevant · open 2 closed 9 unknown 297 · with an article 230 · both orders match, row by row
+P1 Tue 23:30 local, most places closed: each of the 6 chips off, in both orders, matches, and turning it on brings the rows back
+P1 past the hours window, all unknown: 308 rows · 304 at a different position in Most relevant · open 0 closed 0 unknown 308 · with an article 230 · both orders match, row by row
+P1 past the hours window, all unknown: each of the 6 chips off, in both orders, matches, and turning it on brings the rows back
+P2 Most relevant, Food off, then reload: the page is on Nearest with all chips on, and every row is in distance order
+P3 Most relevant pressed on the intro: 0 rows, then every row in relevance order after Explore the map
+P4 six presses: localStorage [] (was keys []), sessionStorage empty, no cookie, URL and history unchanged, 0 requests
+P5 Tab goes Nearest, Most relevant, first chip. Space and Enter switch and keep the focus. Focus ring: auto 1px
+P6 2,000 places within 1 km, 100 rows: Most relevant 80 ms · Nearest 67 ms · Most relevant 80 ms · Nearest 39 ms · Most relevant 78 ms · first 100 rows match the hand-typed table
+P7 failed load, then Most relevant, then Retry: every row in relevance order
+P7 every chip off: the toggle still answers, 0 rows, and turning them back on keeps Most relevant
+P8 walking 170 m: stays on Most relevant, and every row matches the hand-typed table from the new point
+P9 the tapped row falls to position 241 of 241 when the order changes: 0 rows highlighted, its popup stays. The limit the Builder noted, confirmed
+P9 Show more twice brings the highlighted row back. All 241 rows are in order
+P9 Nearest keeps the 241 rows showing and the highlight
+P10 en-GB: Ábel, Alma, Cukrászda, Csarnok, Öv, Őz, Zebra
+P11 en-GB: 230 of 308 rows show a link, each one exactly where the place has wiki · 233 fixture places have wiki, 0 lack a Hungarian or English title
+P10 hu-HU: Ábel, Alma, Cukrászda, Csarnok, Öv, Őz, Zebra
+P11 hu-HU: 230 of 308 rows show a link, each one exactly where the place has wiki · 233 fixture places have wiki, 0 lack a Hungarian or English title
+P10 de-DE: Ábel, Alma, Cukrászda, Csarnok, Öv, Őz, Zebra
+P11 de-DE: 230 of 308 rows show a link, each one exactly where the place has wiki · 233 fixture places have wiki, 0 lack a Hungarian or English title
+P12 320 px in Hungarian: no sideways scroll (320), buttons 132×44 and 150×44, right edges 140 and 294, on one line
+P12 contrast: chosen rgb(255, 255, 255) on rgb(85, 85, 85) = 7.46:1 · other rgb(85, 85, 85) on the page rgb(255, 255, 255) = 7.46:1 · border rgb(85, 85, 85) on the page = 7.46:1
+P12 900 px: the toggle sits right of the map (left 548, map ends 540), above the chips, y 185

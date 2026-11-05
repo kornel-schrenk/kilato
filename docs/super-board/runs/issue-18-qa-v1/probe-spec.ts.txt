@@ -1,0 +1,455 @@
+// QA's probes for #18. Copied into e2e/ to run, never committed there.
+// The expected orders come from the spec's table, typed in here by hand, an own haversine and an own open status.
+import { appendFileSync, readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { cellKey } from '../src/core/cells'
+import type { CategoryId, CellFile, Place } from '../src/core/types'
+import { expect, test } from './fixtures'
+import { box, button, expectNear, mapCentre } from './map-helpers'
+
+const log = (line: string) => appendFileSync(process.env.QA_PROBE_OUT!, `${line}\n`)
+const deakTer = { lat: 47.4975, lon: 19.0545 }
+const windowStart = '2026-11-01T23:00:00.000Z'
+
+const fixturePlaces = (): Place[] => {
+  const folder = join(import.meta.dirname, '../test/fixtures/site-data/cells')
+  return readdirSync(folder).flatMap(
+    (file) => (JSON.parse(readFileSync(join(folder, file), 'utf8')) as CellFile).places,
+  )
+}
+
+const rad = (deg: number) => (deg * Math.PI) / 180
+function metresBetween(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
+  const x = Math.sin(rad(b.lat - a.lat) / 2) ** 2
+  const y = Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(rad(b.lon - a.lon) / 2) ** 2
+  return 2 * 6371000 * Math.asin(Math.sqrt(x + y))
+}
+
+const specCategory: Record<CategoryId, number> = { sights: -200, notable: -100, leisure: -100, food: -50, services: 0, shops: 0 }
+
+function statusAt(place: Place, at: number): 'open' | 'closed' | 'unknown' {
+  if (!place.hours) return 'unknown'
+  const minutes = (at - Date.parse(windowStart)) / 60000
+  if (minutes < 0 || minutes >= 20160) return 'unknown'
+  for (const [from, to] of place.hours) if (from <= minutes && minutes < to) return 'open'
+  return 'closed'
+}
+const specStatus = { open: -100, closed: 300, unknown: 0 }
+const collator = new Intl.Collator('hu')
+
+/** Every expected row, from the spec by hand. */
+function oracle(places: Place[], from: { lat: number; lon: number }, at: number, order: 'nearest' | 'relevant', off: CategoryId[] = []) {
+  const rows = places
+    .filter((place) => !off.includes(place.cat))
+    .map((place) => ({ place, metres: metresBetween(from, place) }))
+    .filter((row) => row.metres <= 1000)
+    .map((row) => ({
+      ...row,
+      score: row.metres + (row.place.wiki ? -300 : 0) + specCategory[row.place.cat] + specStatus[statusAt(row.place, at)],
+    }))
+  if (order === 'nearest') rows.sort((a, b) => a.metres - b.metres)
+  else rows.sort((a, b) => a.score - b.score || a.metres - b.metres || collator.compare(a.place.name, b.place.name))
+  return rows.map((row) => row.place.name)
+}
+
+const rowNames = (page: Page) => page.locator('.place-name').allTextContents()
+
+async function showAll(page: Page) {
+  // Cells arrive one by one: with fewer than 100 rows, the button can still be on its way.
+  await expect.poll(() => page.locator('.place').count()).toBeGreaterThanOrEqual(100)
+  while (await button(page, 'Show more').count()) await button(page, 'Show more').click()
+}
+
+async function serve(page: Page, places: Place[], hoursWindowStart?: string) {
+  const cells = new Map<string, Place[]>()
+  for (const place of places) {
+    const key = cellKey(place.lat, place.lon)
+    cells.set(key, [...(cells.get(key) ?? []), place])
+  }
+  await page.route('**/kilato/data/manifest.json', (route) =>
+    route.fulfill({ json: { cells: [...cells.keys()], wikiLangs: [], hoursWindowStart } }),
+  )
+  await page.route('**/kilato/data/cells/*.json', (route) =>
+    route.fulfill({
+      json: { places: cells.get(new URL(route.request().url()).pathname.split('/').pop()!.replace('.json', '')) ?? [] },
+    }),
+  )
+}
+
+const atOffset = (north: number, east = 0) => ({
+  lat: deakTer.lat + (north / 111.19) * 0.001,
+  lon: deakTer.lon + (east / 75.13) * 0.001,
+})
+const place = (id: string, north: number, more: Partial<Place> = {}): Place => ({
+  id,
+  cat: 'food',
+  kind: 'cafe',
+  name: id,
+  ...atOffset(north),
+  ...more,
+})
+
+const explore = async (page: Page) => {
+  await page.goto('/kilato/')
+  await button(page, 'Explore the map').click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expectNear(() => mapCentre(page), deakTer)
+}
+
+const times: [string, string][] = [
+  ['Tue 11:00 local, most places open', '2026-11-03T10:00:00Z'],
+  ['Tue 23:30 local, most places closed', '2026-11-03T22:30:00Z'],
+  ['past the hours window, all unknown', '2026-12-01T10:00:00Z'],
+]
+
+for (const [label, time] of times) {
+  test(`P1 fixture, ${label}: every row against the hand-typed table, each chip off, both orders`, async ({ page }) => {
+    test.setTimeout(240_000)
+    const at = Date.parse(time)
+    const places = fixturePlaces()
+    await page.clock.install({ time })
+    await explore(page)
+    await expect(page.locator('.place').first()).toBeVisible()
+    await showAll(page)
+
+    const nearest = oracle(places, deakTer, at, 'nearest')
+    const relevant = oracle(places, deakTer, at, 'relevant')
+    await expect.poll(() => rowNames(page)).toEqual(nearest)
+    await button(page, 'Most relevant').click()
+    await expect.poll(() => rowNames(page)).toEqual(relevant)
+    const moved = relevant.filter((name, index) => nearest[index] !== name).length
+    const statuses = { open: 0, closed: 0, unknown: 0 }
+    for (const p of places) if (metresBetween(deakTer, p) <= 1000) statuses[statusAt(p, at)]++
+    const wiki = places.filter((p) => p.wiki && metresBetween(deakTer, p) <= 1000).length
+    log(`P1 ${label}: ${relevant.length} rows · ${moved} at a different position in Most relevant · open ${statuses.open} closed ${statuses.closed} unknown ${statuses.unknown} · with an article ${wiki} · both orders match, row by row`)
+
+    const chips: [string, CategoryId][] = [
+      ['Sights', 'sights'],
+      ['Notable places', 'notable'],
+      ['Food & drink', 'food'],
+      ['Culture & leisure', 'leisure'],
+      ['Services', 'services'],
+      ['Shops', 'shops'],
+    ]
+    for (const [chip, id] of chips) {
+      await button(page, chip).click()
+      await expect.poll(() => rowNames(page)).toEqual(oracle(places, deakTer, at, 'relevant', [id]))
+      await button(page, 'Nearest').click()
+      await expect.poll(() => rowNames(page)).toEqual(oracle(places, deakTer, at, 'nearest', [id]))
+      await button(page, 'Most relevant').click()
+      await button(page, chip).click()
+      await expect.poll(() => rowNames(page)).toEqual(relevant)
+    }
+    log(`P1 ${label}: each of the 6 chips off, in both orders, matches, and turning it on brings the rows back`)
+  })
+}
+
+test('P2 the issue path: press Most relevant, turn a chip off, reload', async ({ page }) => {
+  const at = Date.parse('2026-11-03T10:00:00Z')
+  const places = fixturePlaces()
+  await page.clock.install({ time: at })
+  await explore(page)
+  await expect(page.locator('.place').first()).toBeVisible()
+  await showAll(page)
+  await button(page, 'Most relevant').click()
+  await button(page, 'Food & drink').click()
+  await expect.poll(() => rowNames(page)).toEqual(oracle(places, deakTer, at, 'relevant', ['food']))
+
+  await page.reload()
+  await button(page, 'Explore the map').click()
+  await expect(page.locator('.place').first()).toBeVisible()
+  await showAll(page)
+  await expect(button(page, 'Nearest')).toHaveAttribute('aria-pressed', 'true')
+  await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'false')
+  await expect(button(page, 'Food & drink')).toHaveAttribute('aria-pressed', 'true')
+  await expect.poll(() => rowNames(page)).toEqual(oracle(places, deakTer, at, 'nearest'))
+  log('P2 Most relevant, Food off, then reload: the page is on Nearest with all chips on, and every row is in distance order')
+})
+
+test('P3 pressed before there is a point: the first rows come in that order', async ({ page }) => {
+  const at = Date.parse('2026-11-03T10:00:00Z')
+  const places = fixturePlaces()
+  await page.clock.install({ time: at })
+  await page.goto('/kilato/')
+  await button(page, 'Most relevant').click()
+  await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('.place')).toHaveCount(0)
+  await button(page, 'Explore the map').click()
+  await expect(page.locator('.place').first()).toBeVisible()
+  await showAll(page)
+  await expect.poll(() => rowNames(page)).toEqual(oracle(places, deakTer, at, 'relevant'))
+  log('P3 Most relevant pressed on the intro: 0 rows, then every row in relevance order after Explore the map')
+})
+
+test('P4 nothing stored, nothing sent, same URL', async ({ page }) => {
+  await explore(page)
+  await expect(page.locator('.place').first()).toBeVisible()
+  const url = page.url()
+  const before = await page.evaluate(() => ({ history: history.length, keys: Object.keys(localStorage) }))
+  const sent: string[] = []
+  page.on('request', (request) => sent.push(request.url()))
+  for (const name of ['Most relevant', 'Nearest', 'Most relevant', 'Most relevant', 'Nearest', 'Most relevant']) {
+    await button(page, name).click()
+  }
+  await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'true')
+  const after = await page.evaluate(() => ({
+    local: Object.entries(localStorage),
+    session: Object.entries(sessionStorage),
+    cookie: document.cookie,
+    history: history.length,
+  }))
+  expect(after.session).toEqual([])
+  expect(after.cookie).toBe('')
+  expect(after.history).toBe(before.history)
+  expect(page.url()).toBe(url)
+  expect(sent.filter((s) => !s.includes('tile.openstreetmap.org'))).toEqual([])
+  log(`P4 six presses: localStorage ${JSON.stringify(after.local)} (was keys ${JSON.stringify(before.keys)}), sessionStorage empty, no cookie, URL and history unchanged, ${sent.length} requests`)
+})
+
+test('P5 keyboard: Tab order, Space and Enter, and the focus stays', async ({ page }) => {
+  await serve(page, [place('Coffee', 100), place('Museum', 300, { cat: 'sights', wiki: { hu: 'M' } })])
+  await explore(page)
+  await button(page, 'Nearest').focus()
+  await page.keyboard.press('Tab')
+  await expect(button(page, 'Most relevant')).toBeFocused()
+  await page.keyboard.press('Space')
+  await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'true')
+  await expect(button(page, 'Most relevant')).toBeFocused()
+  await expect.poll(() => rowNames(page)).toEqual(['Museum', 'Coffee'])
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Enter')
+  await expect(button(page, 'Nearest')).toHaveAttribute('aria-pressed', 'true')
+  await expect(button(page, 'Nearest')).toBeFocused()
+  await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Museum'])
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
+  await expect(button(page, 'Sights')).toBeFocused()
+  await page.keyboard.press('Shift+Tab')
+  const outline = await button(page, 'Most relevant').evaluate((el) => {
+    const s = getComputedStyle(el)
+    return `${s.outlineStyle} ${s.outlineWidth}`
+  })
+  expect(outline).not.toContain('none')
+  log(`P5 Tab goes Nearest, Most relevant, first chip. Space and Enter switch and keep the focus. Focus ring: ${outline}`)
+})
+
+test('P6 2,000 places on this Raspberry Pi: how long a press takes', async ({ page }) => {
+  test.setTimeout(120_000)
+  const many = Array.from({ length: 2000 }, (_, i) => {
+    const row = Math.floor(i / 50)
+    const col = i % 50
+    return place(`Place ${i}`, 0, {
+      ...atOffset((row - 20) * 24, (col - 25) * 24),
+      cat: (['food', 'shops', 'sights', 'services', 'notable', 'leisure'] as const)[i % 6],
+      ...(i % 5 === 0 ? { wiki: { hu: `W${i}` } } : {}),
+      ...(i % 3 === 0 ? { hours: i % 2 ? [] : [[0, 20160]] } : {}),
+    } as Partial<Place>)
+  })
+  await page.clock.install({ time: '2026-11-03T10:00:00Z' })
+  await serve(page, many, windowStart)
+  await explore(page)
+  await expect(page.locator('.place')).toHaveCount(100)
+  const expected = oracle(many, deakTer, Date.parse('2026-11-03T10:00:00Z'), 'relevant').slice(0, 100)
+  const press = (name: string) =>
+    page.evaluate(async (label) => {
+      const target = [...document.querySelectorAll('.order button')].find((b) => b.textContent === label) as HTMLButtonElement
+      const start = performance.now()
+      target.click()
+      await new Promise((done) => queueMicrotask(() => done(null)))
+      await new Promise((done) => setTimeout(done, 0))
+      return performance.now() - start
+    }, name)
+  const timings: string[] = []
+  for (const name of ['Most relevant', 'Nearest', 'Most relevant', 'Nearest', 'Most relevant']) {
+    timings.push(`${name} ${(await press(name)).toFixed(0)} ms`)
+  }
+  await expect.poll(() => rowNames(page)).toEqual(expected)
+  log(`P6 2,000 places within 1 km, 100 rows: ${timings.join(' · ')} · first 100 rows match the hand-typed table`)
+})
+
+test('P7 with every chip off, and after a failed load', async ({ page }) => {
+  const at = Date.parse('2026-11-03T10:00:00Z')
+  const places = fixturePlaces()
+  await page.clock.install({ time: at })
+  let broken = true
+  await page.route('**/kilato/data/cells/*.json', (route) => (broken ? route.abort() : route.fallback()))
+  await page.goto('/kilato/')
+  await button(page, 'Explore the map').click()
+  await expect(page.getByRole('alert')).toBeVisible()
+  await button(page, 'Most relevant').click()
+  await expect(page.locator('.place')).toHaveCount(0)
+  broken = false
+  await page.getByRole('alert').getByRole('button').click()
+  await expect(page.locator('.place').first()).toBeVisible()
+  await showAll(page)
+  await expect.poll(() => rowNames(page)).toEqual(oracle(places, deakTer, at, 'relevant'))
+  log('P7 failed load, then Most relevant, then Retry: every row in relevance order')
+
+  for (const chip of ['Sights', 'Notable places', 'Food & drink', 'Culture & leisure', 'Services', 'Shops']) {
+    await button(page, chip).click()
+  }
+  await expect(page.getByText('All categories are off.')).toBeVisible()
+  await expect(page.locator('.place')).toHaveCount(0)
+  await button(page, 'Nearest').click()
+  await button(page, 'Most relevant').click()
+  await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Turn them all back on' }).click()
+  await expect(page.locator('.place').first()).toBeVisible()
+  await showAll(page)
+  await expect.poll(() => rowNames(page)).toEqual(oracle(places, deakTer, at, 'relevant'))
+  log('P7 every chip off: the toggle still answers, 0 rows, and turning them back on keeps Most relevant')
+})
+
+test.describe('P8 on a walk', () => {
+  test.use({
+    geolocation: { latitude: deakTer.lat, longitude: deakTer.lon, accuracy: 10 },
+    permissions: ['geolocation'],
+  })
+
+  test('the order holds, and the score follows the new distances', async ({ page, context }) => {
+    const at = Date.parse('2026-11-03T10:00:00Z')
+    const places = fixturePlaces()
+    await page.clock.install({ time: at })
+    await page.goto('/kilato/')
+    await expect(page.locator('.location-dot')).toBeVisible()
+    await expect(page.locator('.place').first()).toBeVisible()
+    await showAll(page)
+    await button(page, 'Most relevant').click()
+    await expect.poll(() => rowNames(page)).toEqual(oracle(places, deakTer, at, 'relevant'))
+
+    const walked = atOffset(150, 80)
+    await context.setGeolocation({ latitude: walked.lat, longitude: walked.lon, accuracy: 10 })
+    await expectNear(() => mapCentre(page), walked, 3)
+    await showAll(page)
+    await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'true')
+    await expect.poll(() => rowNames(page)).toEqual(oracle(places, walked, at, 'relevant'))
+    log('P8 walking 170 m: stays on Most relevant, and every row matches the hand-typed table from the new point')
+  })
+})
+
+test('P9 Show more, a tapped row and the limit the Builder noted', async ({ page }) => {
+  const at = Date.parse('2026-11-03T10:00:00Z')
+  // 240 sights with articles, and one closed bakery nearer than all of them.
+  const sights = Array.from({ length: 240 }, (_, i) =>
+    place(`S${String(i).padStart(3, '0')}`, 0, {
+      ...atOffset(30 + Math.floor(i / 20) * 40, -380 + (i % 20) * 40),
+      cat: 'sights',
+      wiki: { hu: `S${i}` },
+    }),
+  )
+  const bakery = place('Closed bakery', 5, { hours: [] })
+  const all = [bakery, ...sights]
+  await page.clock.install({ time: at })
+  await serve(page, all, windowStart)
+  await explore(page)
+  await expect(page.locator('.place')).toHaveCount(100)
+  await expect(page.locator('.place-name').first()).toHaveText('Closed bakery')
+
+  await page.locator('.place').first().click()
+  await expect(page.locator('.place').first()).toHaveAttribute('aria-current', 'true')
+
+  await button(page, 'Most relevant').click()
+  await expect(page.locator('.place')).toHaveCount(100)
+  const relevant = oracle(all, deakTer, at, 'relevant')
+  await expect.poll(() => rowNames(page)).toEqual(relevant.slice(0, 100))
+  await expect(page.locator('[aria-current]')).toHaveCount(0)
+  await expect(page.locator('.leaflet-popup-content')).toHaveText('Closed bakery')
+  log(`P9 the tapped row falls to position ${relevant.indexOf('Closed bakery') + 1} of ${relevant.length} when the order changes: 0 rows highlighted, its popup stays. The limit the Builder noted, confirmed`)
+
+  await button(page, 'Show more').click()
+  await expect(page.locator('.place')).toHaveCount(200)
+  await button(page, 'Show more').click()
+  await expect(page.locator('.place')).toHaveCount(241)
+  await expect.poll(() => rowNames(page)).toEqual(relevant)
+  await expect(page.locator('[aria-current]')).toHaveText(/Closed bakery/)
+  log('P9 Show more twice brings the highlighted row back. All 241 rows are in order')
+
+  await button(page, 'Nearest').click()
+  await expect(page.locator('.place')).toHaveCount(241)
+  await expect(page.locator('.place-name').first()).toHaveText('Closed bakery')
+  await expect(page.locator('.place').first()).toHaveAttribute('aria-current', 'true')
+  log('P9 Nearest keeps the 241 rows showing and the highlight')
+})
+
+for (const locale of ['en-GB', 'hu-HU', 'de-DE']) {
+  test.describe(`P10 ${locale} phone`, () => {
+    test.use({ locale })
+
+    test('ties by name use the Hungarian alphabet', async ({ page }) => {
+      const names = ['Zebra', 'Csarnok', 'Cukrászda', 'Ábel', 'Alma', 'Őz', 'Öv']
+      await serve(page, names.map((name) => place(name, 100)))
+      await page.goto('/kilato/')
+      await button(page, locale === 'hu-HU' ? 'A térkép felfedezése' : 'Explore the map').click()
+      await expect(page.locator('.place').first()).toBeVisible()
+      await page.getByRole('group', { name: locale === 'hu-HU' ? 'Sorrend' : 'Order' }).getByRole('button').nth(1).click()
+      const expected = ['Ábel', 'Alma', 'Cukrászda', 'Csarnok', 'Öv', 'Őz', 'Zebra']
+      await expect.poll(() => rowNames(page)).toEqual(expected)
+      log(`P10 ${locale}: ${expected.join(', ')}`)
+    })
+
+    test('a place with wiki shows its link, and one without shows none', async ({ page }) => {
+      const places = fixturePlaces()
+      await page.goto('/kilato/')
+      await button(page, locale === 'hu-HU' ? 'A térkép felfedezése' : 'Explore the map').click()
+      await expect(page.locator('.place').first()).toBeVisible()
+      const more = locale === 'hu-HU' ? 'Továbbiak megjelenítése' : 'Show more'
+      await expect.poll(() => page.locator('.place').count()).toBeGreaterThanOrEqual(100)
+      while (await button(page, more).count()) await button(page, more).click()
+      const shown = await page.locator('.places > li').evaluateAll((items) =>
+        items.map((li) => ({ name: li.querySelector('.place-name')!.textContent!, link: !!li.querySelector('.place-wiki') })),
+      )
+      const near = places.filter((p) => metresBetween(deakTer, p) <= 1000)
+      const wrong = shown.filter(({ name, link }) => near.filter((p) => p.name === name).some((p) => !!p.wiki !== link))
+      expect(wrong).toEqual([])
+      const titleless = places.filter((p) => p.wiki && !p.wiki.hu && !p.wiki.en)
+      expect(titleless).toEqual([])
+      log(`P11 ${locale}: ${shown.filter((r) => r.link).length} of ${shown.length} rows show a link, each one exactly where the place has wiki · ${places.filter((p) => p.wiki).length} fixture places have wiki, 0 lack a Hungarian or English title`)
+    })
+  })
+}
+
+test('P12 the toggle: sizes, contrast, narrow phone, wide screen', async ({ page }) => {
+  const luminance = (rgb: string) => {
+    const [r, g, b] = rgb.match(/\d+(\.\d+)?/g)!.slice(0, 3).map(Number).map((v) => {
+      const c = v / 255
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+    })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  const ratio = (a: string, b: string) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+    return (hi + 0.05) / (lo + 0.05)
+  }
+  await page.setViewportSize({ width: 320, height: 568 })
+  await page.goto('/kilato/')
+  await button(page, 'HU').click()
+  const narrow = await page.evaluate(() => {
+    const on = document.querySelector('.order button[aria-pressed="true"]')!
+    const off = document.querySelector('.order button[aria-pressed="false"]')!
+    const read = (el: Element) => {
+      const s = getComputedStyle(el)
+      const r = el.getBoundingClientRect()
+      return { color: s.color, background: s.backgroundColor, height: r.height, width: r.width, right: r.right, top: r.top, border: s.borderTopColor }
+    }
+    return { on: read(on), off: read(off), page: getComputedStyle(document.body).backgroundColor, scroll: document.documentElement.scrollWidth }
+  })
+  const pageBackground = narrow.page === 'rgba(0, 0, 0, 0)' ? 'rgb(255, 255, 255)' : narrow.page
+  expect(narrow.scroll).toBe(320)
+  expect(narrow.on.height).toBeGreaterThanOrEqual(44)
+  expect(narrow.off.height).toBeGreaterThanOrEqual(44)
+  log(`P12 320 px in Hungarian: no sideways scroll (${narrow.scroll}), buttons ${narrow.on.width.toFixed(0)}×${narrow.on.height.toFixed(0)} and ${narrow.off.width.toFixed(0)}×${narrow.off.height.toFixed(0)}, right edges ${narrow.on.right.toFixed(0)} and ${narrow.off.right.toFixed(0)}, ${narrow.on.top === narrow.off.top ? 'on one line' : 'on two lines'}`)
+  log(`P12 contrast: chosen ${narrow.on.color} on ${narrow.on.background} = ${ratio(narrow.on.color, narrow.on.background).toFixed(2)}:1 · other ${narrow.off.color} on the page ${pageBackground} = ${ratio(narrow.off.color, pageBackground).toFixed(2)}:1 · border ${narrow.off.border} on the page = ${ratio(narrow.off.border, pageBackground).toFixed(2)}:1`)
+
+  await page.setViewportSize({ width: 900, height: 700 })
+  const wide = await page.evaluate(() => {
+    const order = document.querySelector('.order')!.getBoundingClientRect()
+    const map = document.querySelector('.map')!.getBoundingClientRect()
+    const chips = document.querySelector('.chips')!.getBoundingClientRect()
+    return { orderLeft: order.left, orderBottom: order.bottom, mapRight: map.right, chipsTop: chips.top }
+  })
+  expect(wide.orderLeft).toBeGreaterThanOrEqual(wide.mapRight)
+  expect(wide.orderBottom).toBeLessThanOrEqual(wide.chipsTop)
+  const { y } = await box(page, '.order')
+  log(`P12 900 px: the toggle sits right of the map (left ${wide.orderLeft.toFixed(0)}, map ends ${wide.mapRight.toFixed(0)}), above the chips, y ${y.toFixed(0)}`)
+})
