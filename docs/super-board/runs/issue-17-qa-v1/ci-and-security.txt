@@ -1,0 +1,12 @@
+CI. GitHub check verify: failure on builder head 1c04268, run 41984947564, 1 failed and 153 passed. The cause is a test that read the canvas too early, and QA fixed it in 13ecb2e: see ci-race.txt. The QA commits start their own run on push.
+
+pr-security-review, diff of develop...1c04268, base 7cc1db7, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- src/ui/CategoryChips.tsx: the chip's name renders as Preact text, from our own en.ts and hu.ts. The style values come from our own tables, keyed by the fixed list of six ids, so no place data reaches them.
+- src/ui/usePlaces.ts: place.cat, which comes from the data files, is only asked about with categoriesOff.has. It reaches no HTML, URL or style. The line that colours a marker from place.cat is older than this PR and unchanged.
+- src/ui/App.tsx: the all-off message and its button are Preact text from en.ts and hu.ts.
+- The filter stays in memory. After two chips off, localStorage, sessionStorage and cookies are empty and the URL is the same, and six taps on a chip send 0 requests, probe.txt P2 and P6.
+- Added lines in src and index.html: 0 matches for innerHTML, dangerouslySetInnerHTML, eval, new Function, document.write, XMLHttpRequest, sendBeacon, localStorage, sessionStorage, cookie, postMessage, window.open, location.href, bindPopup, bindTooltip, setContent, fetch, and 0 URLs.
+- No new package: package.json and package-lock.json are not in the diff.
+- Secret scan of the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.
+- e2e and unit test files are out of scope for the skill, and so are the docs and the screenshots.

@@ -1,0 +1,38 @@
+QA's mutants on builder head 1c04268 plus QA's test fix. Each one landed (the script checks the file changed), ran and was restored. None is committed.
+The unit mutant ran vitest on src/ui. Page mutants ran vite build, then playwright test e2e/list.spec.ts --max-failures=1 -g "the category chips", so each names only its first red test.
+
+===== 28 mutants: 25 red, 3 past the tests
+AC1 two chips swapped: page killed by e2e/list.spec.ts:778:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 an English name differs: page killed by e2e/list.spec.ts:778:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 a Hungarian name differs: page killed by e2e/list.spec.ts:806:5 › the category chips › on a Hungarian phone › have the Hungarian names, and switching the language changes them
+AC1 the chips stay in English: page killed by e2e/list.spec.ts:788:3 › the category chips › sit between the map and the list, and fit a phone in Hungarian
+AC1 every chip in one colour: page killed by e2e/list.spec.ts:778:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 an on chip is not filled: page killed by e2e/list.spec.ts:778:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 an off chip loses its colour: page killed by e2e/list.spec.ts:859:3 › the category chips › still show an off chip in its colour
+AC1 a chip off at the start: page killed by e2e/list.spec.ts:778:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 the filter saved in sessionStorage: page killed by e2e/list.spec.ts:868:3 › the category chips › are all on again at the next visit
+AC1 the filter saved in localStorage: page killed by e2e/list.spec.ts:868:3 › the category chips › are all on again at the next visit
+AC1 black name on the grey Shops chip: unit killed by src/ui/categoryColors.test.ts > keeps the name on the shops chip readable
+AC2 a chip never comes back on: page killed by e2e/list.spec.ts:829:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 off shows only what it should hide: page killed by e2e/list.spec.ts:829:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 the list ignores the filter: page killed by e2e/list.spec.ts:829:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 the map ignores the filter: page killed by e2e/list.spec.ts:829:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 the filter waits for the next move of the point: page killed by e2e/list.spec.ts:829:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 the selection stays when its category goes off: page killed by e2e/list.spec.ts:880:3 › the category chips › close the popup and the highlight of a tapped place whose category goes off
+AC2 any chip clears the selection: page killed by e2e/list.spec.ts:896:3 › the category chips › keep the popup and the highlight of a tapped place whose category stays on
+AC2 the filter resets when the point moves: SURVIVED page tests -g "the category chips": 13 passed
+AC3 the message shows with five off: page killed by e2e/list.spec.ts:946:5 › the category chips › with every chip off › turning one chip back on leaves the message and shows its places
+AC3 no message: page killed by e2e/list.spec.ts:924:5 › the category chips › with every chip off › the list says so, and its button turns them all back on
+AC3 the button does nothing: page killed by e2e/list.spec.ts:924:5 › the category chips › with every chip off › the list says so, and its button turns them all back on
+AC3 the button turns on only one: page killed by e2e/list.spec.ts:924:5 › the category chips › with every chip off › the list says so, and its button turns them all back on
+AC3 the Hungarian message in English: page killed by e2e/list.spec.ts:960:7 › the category chips › with every chip off › on a Hungarian phone › the message and the button are in Hungarian
+AC3 the Hungarian button in English: page killed by e2e/list.spec.ts:960:7 › the category chips › with every chip off › on a Hungarian phone › the message and the button are in Hungarian
+layout: the chips do not wrap on a phone: page killed by e2e/list.spec.ts:788:3 › the category chips › sit between the map and the list, and fit a phone in Hungarian
+layout: a chip under 44 px: SURVIVED page tests -g "the category chips": 13 passed
+layout: the turn-all-on button under 44 px: SURVIVED page tests -g "the category chips": 13 passed
+
+===== the changed assertion, on its own
+With "AC2 the map ignores the filter" applied, playwright test e2e/list.spec.ts -g "the list says so": red at the new poll, so the wait doesn't hide a marker that stays:
+    Received: "#e69f00"
+    > 935 |       for (const place of [coffee, books, museum]) await expect.poll(() => markerColor(page, place)).toBeNull()
+  1 failed
