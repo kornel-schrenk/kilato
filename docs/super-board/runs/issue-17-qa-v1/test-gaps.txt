@@ -1,0 +1,40 @@
+Test-gap check. Tested head: 13ecb2e, on builder head 1c04268. Range: develop...1c04268, base 7cc1db7. Written from this round's own runs.
+Component column: n/a for every AC. The repo has no component test harness, and the page tests drive src/ui/.
+No project verifier: .agents/skills/verify-* doesn't exist. target.url is null, so there is no health check.
+
+===== ledger
+AC1 unit src/ui/categoryColors.test.ts:5 six colours, :21 each name at 4.5:1 · e2e e2e/list.spec.ts:778 six, order, colour, on, :788 between the map and the list, on a phone in Hungarian, :806 Hungarian names and the switch, :859 an off chip keeps its colour, :868 all on at the next visit
+AC2 unit n/a: the filter lives in a hook, driven through the page · e2e :829 off and on, in the list and on the canvas, :847 two chips, :880 a tapped place whose category goes off, :896 one whose category stays on, :909 Show more counts only what is on
+AC3 unit n/a: a condition in App, driven through the page · e2e :924 the message and the button, :946 one chip back on, :960 Hungarian
+
+===== edge cases
+boundaries: pinned. 0 chips off, every test's start. 1 :829, 2 :847, 5 :946, 6 :924. Show more with the row count falling below 100 :909.
+input: n/a. There is no text input, and the chips' colours and names are our own tables.
+volume: pinned for 1 place :960, 3 places :829. 308 places: probe.txt P3 matches an own haversine for each chip off and each chip alone on. 2,000 markers: about 130 ms from a tap to two frames later on this Raspberry Pi, probe.txt P16, no committed test.
+error paths: no new catch or promise. A failed load with every chip off shows both messages and Retry works, probe.txt P9, no committed test.
+idempotency and races: 21 clicks in one task land right, probe.txt P13. Places that arrive after a chip went off stay filtered, probe.txt P6, no committed test. The canvas redraws after the page: that race is what failed in CI, see ci-race.txt.
+UI states: every chip off is pinned :924. With a chip on and none of its places within 1 km, the list is empty with no words, by reading: the spec asks for words only when every chip is off.
+accessibility: the group's name and aria-pressed are pinned :778. Space and Enter toggle and keep the focus, probe.txt P10. Names reach 5.43:1 or more on an on chip, and 7.46:1 on an off chip, probe.txt P12.
+privacy: nothing is stored, the URL and the history stay as they were, and six taps on a chip send 0 requests, probe.txt P2 and P6.
+auth, money, dates: n/a.
+
+===== test the tests
+QA's mutants: mutants.txt. 28 mutants, 25 red, 3 past the tests.
+One test could fail with nothing wrong: e2e/list.spec.ts:934 on builder head 1c04268 read a marker with no wait, and that is the CI failure. Fixed in 13ecb2e, see ci-race.txt. Held-back redraw: red before, green after. A map that ignores the filter: red at the new line 935.
+Holding the redraw back 300 ms over all 13 chip tests found no other early read.
+Tautology check: :778 takes its expected colours from categoryColors, the table the markers also draw from. That is the AC: a chip in its marker's colour. probe.txt P1 and P4 repeat it with colours typed in by hand, on the chip and on the canvas.
+Every chip test ends with an assertion after its last action, as AGENTS.md asks: checked by reading all 13.
+The Builder's tests read names from the spec by hand. probe.txt P1 reads the spec's table from the file, and all six match in both languages.
+
+===== rank
+High: none. Every AC has tests, and a mutant of each behaviour in the ACs goes red. The diff touches no auth, money, security or data-loss path.
+
+Medium, not written:
+- the filter resetting when the point moves gets past the tests. Witness: add useEffect(() => { setCategoriesOff(new Set()) }, [point]) to src/ui/usePlaces.ts, and 13 chip tests pass. No chip test moves the point with a chip off. The page is right today, probe.txt P6: Shops stays off after a map tap moves the point, and places in the new cells stay filtered. While following, a walk moves the point every 15 m, so this mutant would turn a chip back on mid-walk with no test failing
+
+Low, not written:
+- a chip's 44 px height and the turn-all-on button's 44 px have no page test: mutants at 20 px and with the rule removed both pass. Measured at 44 px on every chip, probe.txt P1 and P11. The spec sets no size, and the page's other buttons use the same 44 px
+- pressing Turn them all back on removes the button, so focus falls back to the page, probe.txt P10. #14's QA noted the same for Retry
+- the all-off message has no role, so a screen reader doesn't announce it when it appears, probe.txt P10. The chip's own pressed state is announced, and the button comes straight after in the page. The load error has role="alert"
+- the off border of Food & drink reads 2.25:1 on the page, and Services 2.31:1, under the 3:1 WCAG asks of a control's edge unless its text identifies it. The text does, at 7.46:1, probe.txt P12
+- not run on a real phone or in any browser but Chromium

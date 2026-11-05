@@ -1,0 +1,44 @@
+Test-gap check, round 2. Range: develop 2ca9b0b...head, with builder head ad236dc and QA's one test commit. Written from this round's own runs.
+Component column: n/a for every AC. The repo has no component test harness, and the page tests drive src/ui/.
+No project verifier: .agents/skills/verify-* doesn't exist. target.url is null, so there is no health check.
+Source since round 1: `git diff develop...head -- src index.html` is the same 8 files as on 6764fb4. src/ui/usePlaces.ts keeps the filter beside develop's phone, statusOf and wikiLink.
+
+===== ledger
+AC1 unit src/ui/categoryColors.test.ts:5 six colours, :21 each name at 4.5:1 · e2e e2e/list.spec.ts:1053 six, order, fill, name colour, on, :1065 between the map and the list, on a phone in Hungarian, :1083 Hungarian names and the switch, :1186 an off chip keeps its colour and its name reads, :1197 all on at the next visit
+AC2 unit n/a: the filter lives in a hook, driven through the page · e2e :1106 off and on, in the list and on the canvas, :1124 two chips, :1144 stays off across a move of the point and a language switch, :1169 stays off on a walk, :1209 a tapped place whose category goes off, :1225 one whose category stays on, :1238 Show more
+AC3 unit n/a: a condition in App, driven through the page · e2e :1253 the message and the button, :1275 before there is a point, :1290 one chip back on, :1304 Hungarian
+
+===== R1, R2 and R3, the Reviewer's findings on round 1
+R1 written: :1144 and :1169. The reset on [point] goes red on each, 3 of 3. The language switch that turns every chip on goes red on :1144, 3 of 3.
+R2 written: :1053 and :1186. An on chip with no name colour goes red on :1053, 3 of 3. An off chip with a transparent name goes red on :1186, 3 of 3.
+R3 written: :1275. The all-off message that waits for a point goes red, 3 of 3.
+Details: mutants.txt.
+
+===== edge cases on this head
+boundaries: pinned. 0 chips off, every test's start. 1 :1106, 2 :1124, 5 :1290, 6 :1253. Show more with the row count falling below 100 :1238.
+input: n/a. There is no text input, and the chips' colours and names are our own tables.
+volume: pinned for 1 place :1304, 3 places :1106. 308 places: probe.txt P3 matches an own haversine for each chip off and each chip alone on. 2,000 markers: 123 to 148 ms from a tap to two frames later on this Raspberry Pi, probe.txt P16, no committed test.
+the merge with #15 and #16: a filter moved outside the memo redraws every marker each minute, and :278 'leaves the markers alone as the minutes pass' goes red on it, 3 of 3. A row's status and link draw from the same row as its name, so they go with its chip: seen in ac2-notable-off-mobile.png, no committed test of its own.
+error paths: no new catch or promise. A failed load with every chip off shows both messages and Retry works, probe.txt P9, no committed test.
+idempotency and races: 21 clicks in one task land right, probe.txt P13. Places that arrive after a chip went off stay filtered, probe.txt P6, no committed test.
+UI states: every chip off is pinned at :1253 and :1275. With a chip on and none of its places within 1 km, the list is empty with no words, by reading: the spec asks for words only when every chip is off.
+accessibility: the group's name and aria-pressed are pinned at :1053. Space and Enter toggle and keep the focus, probe.txt P10. Names reach 5.43:1 or more on an on chip, and 7.46:1 on an off chip, probe.txt P12, and :1053 and :1186 now hold the page to those colours.
+privacy: nothing is stored, the URL and the history stay as they were, and six taps on a chip send 0 requests, probe.txt P2 and P6.
+auth, money, dates: n/a.
+
+===== test the tests
+mutants.txt: all 7 mutants named for this round go red, and 26 of round 1's 28. The 2 left are the 44 px rules below.
+Each new test ends with an assertion after its last action, as AGENTS.md asks. expectShopsOff reads the chip last: a reset would run in an effect a frame after the rows, so the chip is read after the rows and the markers have had their waits. The reset mutant still went red 6 of 6, on the exploring and the walking test.
+Tautology check: :1053 takes the name colour from categoryTextColors, as it does the fill from categoryColors. The unit test holds those pairs to 4.5:1, and probe.txt P1 and P12 read the same colours off the page with typed-in values. :1186 uses a typed-in rgb(85, 85, 85).
+
+===== rank
+High: none. Every AC has tests, a mutant of each behaviour in the ACs goes red, and the diff touches no auth, money, security or data-loss path.
+Medium: none. Round 1's one Medium, the reset on the point, is R1 and is written.
+
+Low, not written:
+- a chip's 44 px height and the turn-all-on button's 44 px have no page test: a 20 px chip and the rule removed from the button both pass. Chips measure 44 px, probe.txt P1 and P11. The spec sets no size, and the page's other buttons use the same 44 px
+- the off border of Food & drink reads 2.25:1 on the page, and Services 2.31:1, under the 3:1 WCAG asks of a control's edge unless its text identifies it. The text does, at 7.46:1, probe.txt P12
+- a failed load beside all-off, places arriving late, and 2,000 markers rest on the probe, with no committed test
+- not run on a real phone or in any browser but Chromium
+
+Carried for Kornel as the Reviewer's R4, not re-raised here: focus falls to the page when the button goes, probe.txt P10, and the message has no role.

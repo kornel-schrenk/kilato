@@ -1,0 +1,72 @@
+QA's probe on 4a01b5f, run by copying ../issue-17-qa-v1/probe-spec.ts.txt to e2e/qa-probe.spec.ts and adding wikiLangs: [] to its manifest stub, which develop now reads: 20 tests, 20 passed. Removed again after the run. Own oracles: the spec's table read from the spec file, colours typed in by hand, an own haversine over the fixture.
+
+P1 EN chips == spec table: ["Sights","Notable places","Food & drink","Culture & leisure","Services","Shops"]
+P1 HU chips == spec table: ["Látnivalók","Nevezetes helyek","Étel és ital","Kultúra és szabadidő","Szolgáltatások","Üzletek"]
+P1 {"text":"Sights","pressed":"true","background":"rgb(213, 94, 0)","color":"rgb(0, 0, 0)","height":44}
+P1 {"text":"Notable places","pressed":"true","background":"rgb(204, 121, 167)","color":"rgb(0, 0, 0)","height":44}
+P1 {"text":"Food & drink","pressed":"true","background":"rgb(230, 159, 0)","color":"rgb(0, 0, 0)","height":44}
+P1 {"text":"Culture & leisure","pressed":"true","background":"rgb(0, 158, 115)","color":"rgb(0, 0, 0)","height":44}
+P1 {"text":"Services","pressed":"true","background":"rgb(86, 180, 233)","color":"rgb(0, 0, 0)","height":44}
+P1 {"text":"Shops","pressed":"true","background":"rgb(102, 102, 102)","color":"rgb(255, 255, 255)","height":44}
+P2 after two chips off: {"local":{},"session":{},"cookie":""} url unchanged=true history +0
+P2 a second tab in the same browser: 6 on
+P2 reload: 6 on
+P3 fixture: 308 places within 1 km, all listed
+P3 sights off: 291 rows, 17 hidden, matches the oracle
+P3 notable off: 81 rows, 227 hidden, matches the oracle
+P3 food off: 295 rows, 13 hidden, matches the oracle
+P3 leisure off: 287 rows, 21 hidden, matches the oracle
+P3 services off: 281 rows, 27 hidden, matches the oracle
+P3 shops off: 305 rows, 3 hidden, matches the oracle
+P3 only sights on: 17 rows, matches the oracle
+P3 only notable on: 227 rows, matches the oracle
+P3 only food on: 13 rows, matches the oracle
+P3 only leisure on: 21 rows, matches the oracle
+P3 only services on: 27 rows, matches the oracle
+P3 only shops on: 3 rows, matches the oracle
+P4 all six markers show their typed-in colour
+P4 sights: off clears its pixel, the other five stay, on brings it back
+P4 notable: off clears its pixel, the other five stay, on brings it back
+P4 food: off clears its pixel, the other five stay, on brings it back
+P4 leisure: off clears its pixel, the other five stay, on brings it back
+P4 services: off clears its pixel, the other five stay, on brings it back
+P4 shops: off clears its pixel, the other five stay, on brings it back
+P5 tap on the hidden marker: no row highlighted, the pin moved
+P6 chip off before the point and the data: the places that arrive stay filtered
+P6 after the point moved: ["far cafe","food place"]; Shops stays off
+P6 Shops back on: the far shop shows, with no reload
+P6 six taps on a chip sent 0 requests
+P7 HU: Üzletek stays off, 5 rows
+P7 all off, then EN: the message and the button change language
+P8 intro, no point yet: the message, the button and all on again work
+P8 following: 0 rows with all off, 6 with all on again
+P9 the error and the all-off message show together
+P9 Retry, then all on: 6 rows
+P10 Space and Enter toggle, and focus stays on the chip
+P10 Tab goes to: Notable places
+P10 after the turn-all-on button is gone, focus is on: BODY
+P10 all-off element after closing: gone
+P10 role and aria-live on the all-off message: [null,null]
+P10 the group's name: Categories
+P11 320x568: 4 rows of chips, min height 44, widest right edge 292.28125, page scrollWidth 320
+P11 375x667: 3 rows of chips, min height 44, widest right edge 318.484375, page scrollWidth 375
+P11 1024x768: 3 rows of chips, min height 44, widest right edge 932.875, page scrollWidth 1024
+P11 1920x1080: 2 rows of chips, min height 44, widest right edge 1907.515625, page scrollWidth 1920
+P12 sights: on 5.43:1 · off name on the page 7.46:1 · off border on the page 3.87:1
+P12 notable: on 6.86:1 · off name on the page 7.46:1 · off border on the page 3.06:1
+P12 food: on 9.32:1 · off name on the page 7.46:1 · off border on the page 2.25:1
+P12 leisure: on 6.14:1 · off name on the page 7.46:1 · off border on the page 3.42:1
+P12 services: on 9.10:1 · off name on the page 7.46:1 · off border on the page 2.31:1
+P12 shops: on 5.74:1 · off name on the page 7.46:1 · off border on the page 5.74:1
+P13 21 clicks in one task: off, 5 rows
+P13 all six clicked in one task: only the one that was off is on
+P14 a marker tap: highlight gone with the category, and not back when it comes on
+P15 120 shops left: 100 rows, Show more, 120 rows, no more
+P15 cafes back: 200 rows of 240, Show more again
+P16 Shops: 123 ms from the tap to two frames later
+P16 Shops: 148 ms from the tap to two frames later
+P16 Food & drink: 124 ms from the tap to two frames later
+P16 Food & drink: 129 ms from the tap to two frames later
+P17 straight after the message shows, the last chip's marker reads: #666666
+P17 polled: it goes
+  20 passed (57.1s)

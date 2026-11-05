@@ -2,6 +2,7 @@ import { useLayoutEffect, useState } from 'preact/hooks'
 import { phoneLanguage, uiLanguage, type Lang } from '../core/lang'
 import { en } from '../i18n/en'
 import { hu } from '../i18n/hu'
+import { categories, CategoryChips } from './CategoryChips'
 import { MapView } from './MapView'
 import { PlaceList } from './PlaceList'
 import { usePlaces } from './usePlaces'
@@ -84,11 +85,20 @@ export function App() {
           </>
         )}
         {point.mode === 'exploring' && <p>{t.exploreNote}</p>}
+        <CategoryChips off={places.categoriesOff} onToggle={places.toggleCategory} t={t} />
         {places.failed && (
           <p role="alert" class="load-error">
             {t.placesFailed}{' '}
             <button type="button" onClick={places.retry}>
               {t.retry}
+            </button>
+          </p>
+        )}
+        {places.categoriesOff.size === categories.length && (
+          <p class="all-off">
+            {t.allCategoriesOff}{' '}
+            <button type="button" onClick={places.allCategoriesOn}>
+              {t.turnAllOn}
             </button>
           </p>
         )}
