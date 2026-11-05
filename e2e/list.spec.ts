@@ -299,6 +299,16 @@ test.describe('the Wikipedia link', () => {
       await expectLink(page, museum, 'Wikipedia · DE', german)
       await expect(articleLink(page, busStation)).toHaveText('Wikipedia · HU')
     })
+
+    test('stays German when the page opens again in the saved UI language', async ({ page }) => {
+      await page.goto('/kilato/')
+      await button(page, 'HU').click()
+      await expect(page.locator('html')).toHaveAttribute('lang', 'hu')
+
+      await explore(page, 'A térkép felfedezése')
+
+      await expectLink(page, museum, 'Wikipedia · DE', german)
+    })
   })
 
   test.describe('with the locale fr-FR, which the manifest does not list', () => {
@@ -351,6 +361,22 @@ test.describe('the Wikipedia link', () => {
 
     expect((await newTab).url()).toBe('https://hu.wikipedia.org/wiki/Cikk')
     await expect(page.locator('[aria-current]')).toHaveCount(0)
+  })
+
+  test('sends Wikipedia no Referer when the article opens', async ({ page, context }) => {
+    await serve(page, [cafe('Has one', 240, { wiki: { hu: 'Cikk' } })])
+    await explore(page)
+    let referer: string | undefined = 'the article was not asked for'
+    await context.route('https://hu.wikipedia.org/**', (route) => {
+      referer = route.request().headers().referer
+      return route.fulfill({ body: '' })
+    })
+    const newTab = context.waitForEvent('page')
+
+    await articleLink(page, 'Has one').click()
+    await (await newTab).waitForLoadState()
+
+    expect(referer).toBeUndefined()
   })
 
   test('comes into view with its row when a marker is tapped', async ({ page }) => {

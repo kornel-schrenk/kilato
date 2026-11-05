@@ -174,6 +174,22 @@ describe('placeLoader', () => {
       expect(titleRequests(asked)).toEqual(['wiki/de.json'])
     })
 
+    it('asks for the file of the phone language, whichever the manifest lists', async () => {
+      const spanishTitles = { Q1: 'Título español' }
+      const { asked, fetchData } = fakeSite({
+        ...withTitles,
+        'manifest.json': { ...manifest, wikiLangs: ['de', 'es'] },
+        'wiki/es.json': spanishTitles,
+      })
+      const loader = placeLoader(fetchData, () => {}, 'es')
+
+      loader.moveTo(deak)
+      await settle()
+
+      expect(titleRequests(asked)).toEqual(['wiki/es.json'])
+      expect(loader.wikiTitles).toEqual(spanishTitles)
+    })
+
     /** A site whose titles don't arrive until `arrive` is called. */
     function siteWithLateTitles() {
       const site = fakeSite(withTitles)
