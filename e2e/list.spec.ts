@@ -4,7 +4,7 @@ import type { Page, Request } from '@playwright/test'
 import { cellKey } from '../src/core/cells'
 import { distanceMetres, nearby, type LatLon } from '../src/core/geo'
 import type { CategoryId, CellFile, Place } from '../src/core/types'
-import { categoryColors } from '../src/ui/categoryColors'
+import { categoryColors, categoryTextColors } from '../src/ui/categoryColors'
 import { expect, test } from './fixtures'
 import { box, button, centre, expectNear, geography, mapCentre, pinPlace, zoomTo } from './map-helpers'
 
@@ -1031,13 +1031,13 @@ test.describe('tapping a marker', () => {
 
 test.describe('the category chips', () => {
   const chips = (page: Page) => page.getByRole('group', { name: 'Categories' }).getByRole('button')
-  const chipColors: [string, string][] = [
-    ['Sights', categoryColors.sights],
-    ['Notable places', categoryColors.notable],
-    ['Food & drink', categoryColors.food],
-    ['Culture & leisure', categoryColors.leisure],
-    ['Services', categoryColors.services],
-    ['Shops', categoryColors.shops],
+  const chipColors: [string, string, string][] = [
+    ['Sights', categoryColors.sights, categoryTextColors.sights],
+    ['Notable places', categoryColors.notable, categoryTextColors.notable],
+    ['Food & drink', categoryColors.food, categoryTextColors.food],
+    ['Culture & leisure', categoryColors.leisure, categoryTextColors.leisure],
+    ['Services', categoryColors.services, categoryTextColors.services],
+    ['Shops', categoryColors.shops, categoryTextColors.shops],
   ]
   const hungarianNames = [
     'Látnivalók',
@@ -1054,8 +1054,10 @@ test.describe('the category chips', () => {
     await page.goto('/kilato/')
 
     await expect(chips(page)).toHaveText(chipColors.map(([name]) => name))
-    for (const [name, color] of chipColors) {
+    for (const [name, color, textColor] of chipColors) {
       await expect(button(page, name)).toHaveCSS('background-color', asRgb(color))
+      // src/ui/categoryColors.test.ts holds these pairs to 4.5:1. This holds the chip to the pair.
+      await expect(button(page, name)).toHaveCSS('color', asRgb(textColor))
       await expect(button(page, name)).toHaveAttribute('aria-pressed', 'true')
     }
   })
@@ -1131,13 +1133,65 @@ test.describe('the category chips', () => {
     expect(await markerColor(page, museum)).toBe(categoryColors.sights)
   })
 
-  test('still show an off chip in its colour', async ({ page }) => {
+  /** Waits for the rows and the markers with Shops off, and only then reads the chip's state. */
+  async function expectShopsOff(page: Page, shopsChip: string) {
+    await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Museum'])
+    await expect.poll(() => markerColor(page, coffee)).toBe(categoryColors.food)
+    await expect.poll(() => markerColor(page, books)).toBeNull()
+    await expect(button(page, shopsChip)).toHaveAttribute('aria-pressed', 'false')
+  }
+
+  test('stay as they are when the point moves and when the language switches', async ({ page }) => {
+    await exploreThree(page)
+    await button(page, 'Shops').click()
+    await expectShopsOff(page, 'Shops')
+    const before = await firstMeta(page).textContent()
+
+    // South of the start: the three places are to the north, so the tap hits no marker and all stay within 1 km.
+    const { x, y } = centre(await box(page, '.leaflet-container'))
+    await page.mouse.click(x, y + 60)
+
+    await expect(firstMeta(page)).not.toHaveText(before!)
+    await expectShopsOff(page, 'Shops')
+
+    await button(page, 'HU').click()
+
+    await expect(page.getByRole('group', { name: 'Kategóriák' })).toBeVisible()
+    await expectShopsOff(page, 'Üzletek')
+  })
+
+  test.describe('on a walk', () => {
+    test.use({
+      geolocation: { latitude: deakTer.lat, longitude: deakTer.lon, accuracy: 10 },
+      permissions: ['geolocation'],
+    })
+
+    test('stay as they are while the point follows', async ({ page, context }) => {
+      await serve(page, [coffee, books, museum])
+      await page.goto('/kilato/')
+      await expect(page.locator('.location-dot')).toBeVisible()
+      await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Books', 'Museum'])
+      await button(page, 'Shops').click()
+      await expectShopsOff(page, 'Shops')
+
+      const walked = atOffset(-100)
+      await context.setGeolocation({ latitude: walked.lat, longitude: walked.lon, accuracy: 10 })
+
+      await expect(firstMeta(page)).toHaveText('Café · 200 m')
+      await expectNear(() => mapCentre(page), walked, 3)
+      await expectShopsOff(page, 'Shops')
+    })
+  })
+
+  test('still show an off chip in its colour, with a name that reads', async ({ page }) => {
     await page.goto('/kilato/')
 
     await button(page, 'Shops').click()
 
     await expect(button(page, 'Shops')).toHaveCSS('border-top-color', asRgb(categoryColors.shops))
     await expect(button(page, 'Shops')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+    // #555 on the page's white is 7.46:1.
+    await expect(button(page, 'Shops')).toHaveCSS('color', 'rgb(85, 85, 85)')
   })
 
   test('are all on again at the next visit', async ({ page }) => {
@@ -1214,6 +1268,21 @@ test.describe('the category chips', () => {
       await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Books', 'Museum'])
       for (const [name] of chipColors) await expect(button(page, name)).toHaveAttribute('aria-pressed', 'true')
       await expect.poll(() => markerColor(page, coffee)).toBe(categoryColors.food)
+      await expect(page.getByText(allOff)).toHaveCount(0)
+      await expect(button(page, turnAllOn)).toHaveCount(0)
+    })
+
+    test('the list says so before there is a point too, and its button still works', async ({ page }) => {
+      await page.goto('/kilato/')
+      await expect(page.locator('.pin')).toHaveCount(0)
+
+      for (const [name] of chipColors) await button(page, name).click()
+
+      await expect(page.getByText(allOff)).toBeVisible()
+
+      await button(page, turnAllOn).click()
+
+      for (const [name] of chipColors) await expect(button(page, name)).toHaveAttribute('aria-pressed', 'true')
       await expect(page.getByText(allOff)).toHaveCount(0)
       await expect(button(page, turnAllOn)).toHaveCount(0)
     })
