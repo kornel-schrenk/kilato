@@ -478,6 +478,18 @@ test.describe('tapping a row', () => {
     await expect.poll(() => ringColor(page, near)).toBeNull()
   })
 
+  test('draws the highlighted marker over a neighbour that hid it', async ({ page }) => {
+    // 3 m is 1 px at zoom 15. The further place draws later, so it covers the nearer one's centre.
+    const hidden = cafe('Near', 200)
+    await serve(page, [hidden, cafe('Over it', 203, { cat: 'shops', kind: 'books' })])
+    await explore(page)
+    await expect.poll(() => markerColor(page, hidden)).toBe(categoryColors.shops)
+
+    await row(page, 'Near').click()
+
+    await expect.poll(() => markerColor(page, hidden)).toBe(categoryColors.food)
+  })
+
   test('opens the popup again after it was closed', async ({ page }) => {
     await serve(page, [near])
     await explore(page)
@@ -595,6 +607,19 @@ test.describe('tapping a marker', () => {
     await expect(popup(page)).toHaveCount(0)
     await expectNear(() => pinPlace(page), deakTer, 2)
     await expect(firstMeta(page)).toHaveText('Café · 200 m')
+  })
+
+  test('makes its row look different from the others', async ({ page }) => {
+    const near = cafe('Near', 200)
+    await serve(page, [near, cafe('Next', 400)])
+    await explore(page)
+    await expect(page.locator('.place')).toHaveCount(2)
+    const plain = await row(page, 'Near').evaluate((element) => getComputedStyle(element).backgroundColor)
+
+    await tapMarker(page, near)
+
+    await expect(row(page, 'Near')).not.toHaveCSS('background-color', plain)
+    await expect(row(page, 'Next')).toHaveCSS('background-color', plain)
   })
 
   test('reaches the marker through the pin and the 1 km circle above it', async ({ page }) => {

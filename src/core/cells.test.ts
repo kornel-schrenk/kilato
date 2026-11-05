@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cellKey, cellsWithin } from './cells'
+import { distanceMetres } from './geo'
 
 it('gives Deák Ferenc tér the key the spec names', () => {
   expect(cellKey(47.4975, 19.0545)).toBe('4749_1270')
@@ -45,6 +46,35 @@ describe('cellsWithin', () => {
     const keys = threeByThree([4748, 4749, 4750], [1269, 1270, 1271])
     expect(cellsWithin(keys, { lat: 40.7, lon: -74 }, 1000)).toEqual([])
     expect(cellsWithin(keys, { lat: 90, lon: 0 }, 1000)).toEqual([])
+  })
+
+  it('holds the cell of every place within 1 km, from anywhere in the box', () => {
+    // A cell left out hides its places with no error. Seeded, so a failure comes back the same.
+    let seed = 1
+    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+    const span = [-2, -1, 0, 1, 2]
+    const missed: unknown[] = []
+    let checked = 0
+    for (let index = 0; index < 4000; index++) {
+      const point = { lat: 47.35 + random() * 0.27, lon: 18.925 + random() * 0.41 }
+      const [row, col] = cellKey(point.lat, point.lon).split('_').map(Number)
+      const keys = threeByThree(
+        span.map((step) => row + step),
+        span.map((step) => col + step),
+      )
+      const found = cellsWithin(keys, point, 1000)
+      // 999 m away in a random direction: 111,195 m to a degree of latitude, and its cosine for longitude.
+      const bearing = random() * 2 * Math.PI
+      const place = {
+        lat: point.lat + (999 * Math.cos(bearing)) / 111195,
+        lon: point.lon + (999 * Math.sin(bearing)) / (111195 * Math.cos((point.lat * Math.PI) / 180)),
+      }
+      if (distanceMetres(point, place) > 1000) continue
+      checked++
+      if (!found.includes(cellKey(place.lat, place.lon))) missed.push({ point, place })
+    }
+    expect(checked).toBeGreaterThan(3900)
+    expect(missed).toEqual([])
   })
 
   it('finds at most 3 × 3 cells from anywhere in the box', () => {
