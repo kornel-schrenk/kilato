@@ -1,0 +1,47 @@
+QA's mutants on 7b28645, in a throwaway copy of the branch, restored after each. None reached a commit. Unit runs src/core/rank.test.ts. Page runs e2e/list.spec.ts -g "the order" on a fresh build. A unit mutant that gets past the unit tests also runs the page tests.
+40 mutants: 38 red, 2 past the tests. The 4 tunings at the end are meant to stay green, and do.
+
+AC2 the article counts for nothing: unit red: Most relevant > puts a shop with an article 250 m away before a shop without one 50 m away · Most relevant > counts as its adjustment in the table > an article
+AC2 every place counts as having an article: unit red: Most relevant > puts a shop with an article 250 m away before a shop without one 50 m away · Most relevant > counts as its adjustment in the table > an article
+AC2 the category is left out: unit red: Most relevant > counts as its adjustment in the table > sights · Most relevant > counts as its adjustment in the table > notable
+AC2 the open status is left out: unit red: Most relevant > puts an open café 300 m away before a closed café 50 m away · Most relevant > counts as its adjustment in the table > open
+AC2 the distance is left out of the score: unit red: Most relevant > counts as its adjustment in the table > an article · Most relevant > counts as its adjustment in the table > open
+AC2 highest score first: unit red: Most relevant > puts a sight with an article 400 m away before a closed bakery 60 m away · Most relevant > puts an open café 300 m away before a closed café 50 m away
+AC2 a tie skips the nearer place: unit red: Most relevant > gives a tie to the nearer place, whatever the names, with every signal added up
+AC2 a tie goes to the further place: unit red: Most relevant > gives a tie to the nearer place, whatever the names, with every signal added up
+AC2 no tie by name: unit red: Most relevant > gives a tie at the same distance to the name first in the Hungarian alphabet
+AC2 ties by code unit: unit red: Most relevant > gives a tie at the same distance to the name first in the Hungarian alphabet
+AC2 ties in the English alphabet: unit red: Most relevant > gives a tie at the same distance to the name first in the Hungarian alphabet
+AC3 Nearest goes by score: unit red: Nearest > ignores everything but distance · Nearest > keeps the order of rows at the same distance
+AC3 Nearest farthest first: unit red: Nearest > ignores everything but distance
+AC3 Nearest sorts the rows it was given: unit red: leaves the rows it was given as they were, in nearest order
+AC3 closed counts as nearer: unit red: Most relevant > puts a sight with an article 400 m away before a closed bakery 60 m away · Most relevant > puts an open café 300 m away before a closed café 50 m away
+AC3 open counts as further: unit red: Most relevant > puts an open café 300 m away before a closed café 50 m away
+AC3 an article pushes a place away: unit red: Most relevant > puts a sight with an article 400 m away before a closed bakery 60 m away · Most relevant > puts a shop with an article 250 m away before a shop without one 50 m away
+table typo: a sight counts as +200: PAST the unit tests · page red: e2e/list.spec.ts:1384:3 › the order › sorts the list by relevance, and back by distance
+table typo: closed counts as +200: PAST the unit tests · page red: e2e/list.spec.ts:1457:3 › the order › counts the rows showing in the order it is in, for a tapped marker
+table typo: food counts as 0: PAST the unit tests · PAST the page tests
+AC1 Most relevant at the start: page red: e2e/list.spec.ts:1345:3 › the order › reads Nearest and Most relevant, with Nearest on
+AC1 the order saved in localStorage: page red: e2e/list.spec.ts:1419:3 › the order › is Nearest again at the next visit
+AC1 the order saved in sessionStorage: page red: e2e/list.spec.ts:1419:3 › the order › is Nearest again at the next visit
+AC1 an English label differs: page red: e2e/list.spec.ts:1345:3 › the order › reads Nearest and Most relevant, with Nearest on
+AC1 a Hungarian label differs: page red: e2e/list.spec.ts:1356:5 › the order › on a Hungarian phone › reads Legközelebbi and Legérdekesebb, and switching the language changes them
+AC1 the toggle stays in English: page red: e2e/list.spec.ts:1356:5 › the order › on a Hungarian phone › reads Legközelebbi and Legérdekesebb, and switching the language changes them
+AC1 the two buttons do each other's job: page red: e2e/list.spec.ts:1384:3 › the order › sorts the list by relevance, and back by distance
+AC1 the chosen button is not marked: page red: e2e/list.spec.ts:1345:3 › the order › reads Nearest and Most relevant, with Nearest on
+AC1 the list ignores the order: page red: e2e/list.spec.ts:1384:3 › the order › sorts the list by relevance, and back by distance
+AC1 Most relevant ignores the filter: page red: e2e/list.spec.ts:1399:3 › the order › works with the category filter, in both orders
+AC1 a chip resets the order: page red: e2e/list.spec.ts:1399:3 › the order › works with the category filter, in both orders
+AC1 the order resets when the point moves: page red: e2e/list.spec.ts:1431:3 › the order › stays as it is when the point moves and when the language switches
+AC1 the order resets when the language switches: page red: e2e/list.spec.ts:1431:3 › the order › stays as it is when the point moves and when the language switches
+AC1 the toggle under the chips: page red: e2e/list.spec.ts:1367:3 › the order › sits above the chips, and both fit a phone in Hungarian
+AC1 a toggle button under 44 px: page red: e2e/list.spec.ts:1367:3 › the order › sits above the chips, and both fit a phone in Hungarian
+the map gets the sorted rows: page red: e2e/list.spec.ts:1477:3 › the order › leaves the markers alone
+the order only sorts again when the rows or the order change: page red: e2e/list.spec.ts:1444:3 › the order › moves a place down the list within a minute of its closing
+a marker counts rows in the order it was drawn in: page red: e2e/list.spec.ts:1457:3 › the order › counts the rows showing in the order it is in, for a tapped marker
+a marker counts rows nearest first: page red: e2e/list.spec.ts:1457:3 › the order › counts the rows showing in the order it is in, for a tapped marker
+the chosen button is not filled: PAST the page tests -g "the order": 11 passed
+tuned: an article is worth 350 m: unit green · page green
+tuned: closed counts as +400 m: unit green · page green
+tuned: open is worth 150 m: unit green · page green
+tuned: sights -250, notable -120, leisure -80, food -30: unit green · page green

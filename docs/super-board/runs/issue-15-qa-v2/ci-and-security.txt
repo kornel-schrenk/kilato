@@ -1,0 +1,13 @@
+CI. GitHub check verify: success on builder head e320c7a, run 42075416645. The QA commits start their own run on push. They add 3 page tests and this evidence folder, and no app code.
+
+pr-security-review, diff of develop...e320c7a, base 4a13ed5, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- src/ui/PlaceList.tsx:53: the status is a Preact text child, and its only values are the four constant labels in src/i18n/en.ts and src/i18n/hu.ts. No data from a place reaches it.
+- src/core/hours.ts:13: hours and hoursWindowStart only enter comparisons and Date.parse. Neither reaches the DOM, a URL or a request. They come from the same-origin manifest and cells, which our own build writes.
+- src/ui/usePlaces.ts:40: the timer only bumps a render counter, and its cleanup clears it.
+- The location: the diff adds no request. The probe saw 0 requests in five minutes of ticks with a list on the screen, so nothing about the point or the clock leaves the phone.
+- Added lines in src, scripts and index.html: 0 matches for innerHTML, dangerouslySetInnerHTML, eval, new Function, document.write, XMLHttpRequest, sendBeacon, localStorage, sessionStorage, cookie, postMessage, window.open, location.href, setContent, fetch( and any URL.
+- No new package: package.json and package-lock.json are not in the diff. No workflow file is in the diff.
+- Secret scan of the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.
+- The LGPL opening_hours package stays out of the page: dist/ has 0 files with opening_hours and 0 with getOpenIntervals, although scripts/data/hours.ts now imports from src/core/hours.ts. That import runs the one way, from the build to the page's code.
+- e2e and unit test files are out of scope for the skill, and so are the docs and the screenshots.

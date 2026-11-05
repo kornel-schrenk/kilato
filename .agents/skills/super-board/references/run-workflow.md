@@ -48,7 +48,9 @@ Required reads use `.claude/bin/super-board-github-read.py --kind <shape> -- <gh
 Three total attempts means the first attempt plus two retries of that same read;
 unrelated successful calls do not reset its failures. Authentication and permission
 errors stop immediately, and so do invalid GraphQL queries in strict scripts. Do not
-retry mutations.
+retry mutations. The one exception is `super-board-pr-body.sh`, which reads the body
+back after a failed PATCH and retries once if it is untouched (local patch:
+`docs/super-board/local-patches.md`).
 A payload that misses an agent-facing `--kind` shape (`READ_SHAPES` in
 `workflows/super-board-wave.js`) exits 64 for that call only, printing the valid
 form; it never halts the run. Any failed command-line read of those kinds that isn't

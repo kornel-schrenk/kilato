@@ -1,0 +1,29 @@
+Fresh runs in this QA worktree. Runner: Raspberry Pi, Chromium at /usr/bin/chromium, machine time zone Europe/Budapest.
+The 11 tests marked ✘ in the raw log are e2e/fixtures.spec.ts's own test.fail() tests. They count as passed, on both heads.
+
+===== builder head e320c7a: CHROMIUM_PATH=/usr/bin/chromium npm run verify
+ Test Files  24 passed (24)
+      Tests  520 passed (520)
+✓ built in 449ms
+  158 passed (7.1m)
+verify-exit=0
+seconds=448
+
+===== QA head dab05fa, which adds 3 tests to e320c7a: npm ci && CHROMIUM_PATH=/usr/bin/chromium npm run verify
+added 49 packages, and audited 50 packages in 4s
+ Test Files  24 passed (24)
+      Tests  520 passed (520)
+✓ built in 446ms
+  161 passed (7.1m)
+verify-exit=0
+seconds=453
+
+===== the open status tests on the QA tests, and the data fixture
+--- the 9 open status tests, 5 repeats, on this machine's zone (Europe/Budapest)
+  45 passed (2.5m)
+--- the 9 open status tests, once, with TZ=UTC as on a GitHub runner
+  9 passed (34.2s)
+--- data:fixture
+
+Wrote 311 places to /home/kornel/Projects/kilato/.claude/worktrees/issue-15-qa/test/fixtures/site-data
+fixture files changed: 0
