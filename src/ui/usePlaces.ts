@@ -16,7 +16,7 @@ export interface Selection {
   source: 'row' | 'marker'
 }
 
-/** The places around the point, nearest first, how many of them show as rows, and which one is tapped. */
+/** The manifest, the places around the point, nearest first, how many of them show as rows, and which one is tapped. */
 export function usePlaces(point: LatLon | null) {
   const [, setVersion] = useState(0)
   const [loader] = useState(() =>
@@ -48,6 +48,7 @@ export function usePlaces(point: LatLon | null) {
   }
 
   return {
+    manifest: loader.manifest,
     rows,
     shown,
     showMore: () => setShown((current) => current + pageSize),

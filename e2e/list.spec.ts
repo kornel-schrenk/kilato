@@ -5,7 +5,7 @@ import { cellKey } from '../src/core/cells'
 import { distanceMetres, nearby, type LatLon } from '../src/core/geo'
 import type { CategoryId, CellFile, Place } from '../src/core/types'
 import { categoryColors } from '../src/ui/categoryColors'
-import { expect, test } from './fixtures'
+import { expect, siteManifest, test } from './fixtures'
 import { box, button, centre, expectNear, geography, mapCentre, pinPlace, zoomTo } from './map-helpers'
 
 const deakTer = { lat: 47.4975, lon: 19.0545 }
@@ -35,7 +35,9 @@ async function serve(page: Page, places: Place[]) {
     const key = cellKey(place.lat, place.lon)
     cells.set(key, [...(cells.get(key) ?? []), place])
   }
-  await page.route('**/kilato/data/manifest.json', (route) => route.fulfill({ json: { cells: [...cells.keys()] } }))
+  await page.route('**/kilato/data/manifest.json', (route) =>
+    route.fulfill({ json: { ...siteManifest, cells: [...cells.keys()] } }),
+  )
   await page.route('**/kilato/data/cells/*.json', (route) =>
     route.fulfill({ json: { places: cells.get(keyOfCellRequest(route.request().url())) ?? [] } }),
   )

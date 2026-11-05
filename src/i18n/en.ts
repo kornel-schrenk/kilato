@@ -11,4 +11,24 @@ export const en = {
   placesFailed: "Couldn't load places",
   retry: 'Retry',
   showMore: 'Show more',
+  dataAge: (date: string, days: number) => `Data from ${date} · ${days} ${days === 1 ? 'day' : 'days'} old`,
+  mayBeOutOfDate: 'may be out of date',
+  close: 'Close',
+  // The spec's text, word for word, and its bold: e2e/footer.spec.ts compares them.
+  sentWhereTitle: 'What is sent where',
+  sentWhere: [
+    '**Your location** stays on your phone. Kilátó uses it only to find and sort the places near you.',
+    '**OpenStreetMap** sends the map images. It sees which part of the map is on screen and, as with any website, your IP address and browser.',
+    '**GitHub Pages** hosts Kilátó. It sends the page and the places for the area you look at, in squares about 1 km wide, so it sees roughly which area that is.',
+    '**Wikipedia** gets a request only when you open an article.',
+    'No account, no cookies, no analytics. This browser remembers your language choice.',
+  ],
+  about: 'About',
+  aboutOpenSource: 'Kilátó is open source under the MIT licence.',
+  aboutRepository: 'The code is on GitHub.',
+  aboutCredits: [
+    'Map and place data are © OpenStreetMap contributors under the Open Database License.',
+    'Article titles and positions come from Wikipedia under CC BY-SA 4.0.',
+    'The map is drawn with Leaflet.',
+  ],
 }

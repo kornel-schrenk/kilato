@@ -2,7 +2,9 @@ import { useLayoutEffect, useState } from 'preact/hooks'
 import { phoneLanguage, uiLanguage, type Lang } from '../core/lang'
 import { en } from '../i18n/en'
 import { hu } from '../i18n/hu'
+import { Footer } from './Footer'
 import { MapView } from './MapView'
+import { Panel, type PanelName } from './Panel'
 import { PlaceList } from './PlaceList'
 import { usePlaces } from './usePlaces'
 import { usePoint } from './usePoint'
@@ -35,6 +37,7 @@ export function App() {
   const t = messages[lang]
   const [point, dispatch] = usePoint()
   const places = usePlaces(point.point)
+  const [panel, setPanel] = useState<PanelName | null>(null)
 
   useLayoutEffect(() => {
     document.documentElement.lang = lang
@@ -79,6 +82,9 @@ export function App() {
                 {t.exploreTheMap}
               </button>
             </div>
+            <button type="button" class="link" onClick={() => setPanel('sentWhere')}>
+              {t.sentWhereTitle}
+            </button>
           </>
         )}
         {point.mode === 'exploring' && <p>{t.exploreNote}</p>}
@@ -100,6 +106,8 @@ export function App() {
           t={t}
         />
       </main>
+      <Footer manifest={places.manifest} onOpen={setPanel} lang={lang} t={t} />
+      {panel && <Panel name={panel} onClose={() => setPanel(null)} t={t} />}
     </>
   )
 }

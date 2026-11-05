@@ -11,4 +11,24 @@ export const hu = {
   placesFailed: 'Nem sikerült betölteni a helyeket',
   retry: 'Újrapróbálás',
   showMore: 'Továbbiak megjelenítése',
+  dataAge: (date: string, days: number) => `Adatok: ${date} · ${days} napos`,
+  mayBeOutOfDate: 'lehet, hogy elavult',
+  close: 'Bezárás',
+  // The spec's text, word for word, and its bold: e2e/footer.spec.ts compares them.
+  sentWhereTitle: 'Mi hová kerül',
+  sentWhere: [
+    '**A helyzeted** a telefonodon marad. A Kilátó csak arra használja, hogy megkeresse és sorba rendezze a közeli helyeket.',
+    '**Az OpenStreetMap** küldi a térkép képeit. Látja, hogy a térkép melyik része van a képernyőn, és mint minden weboldal, az IP-címedet és a böngésződet.',
+    '**A GitHub Pages** szolgálja ki a Kilátót. Tőle jön az oldal és a nézett környék helyei, nagyjából 1 km-es négyzetekben, így körülbelül látja, melyik környéket nézed.',
+    '**A Wikipédia** csak akkor kap kérést, ha megnyitsz egy szócikket.',
+    'Nincs fiók, süti és analitika. A választott nyelvet ez a böngésző jegyzi meg.',
+  ],
+  about: 'Névjegy',
+  aboutOpenSource: 'A Kilátó nyílt forráskódú, MIT-licenc alatt.',
+  aboutRepository: 'A kód a GitHubon van.',
+  aboutCredits: [
+    'A térkép és a helyek adatai: © az OpenStreetMap közreműködői, Open Database License alatt.',
+    'A szócikkek címei és helyzete a Wikipédiából származik, CC BY-SA 4.0 alatt.',
+    'A térképet a Leaflet rajzolja.',
+  ],
 }

@@ -8,8 +8,8 @@ const dataFolder = `${import.meta.env.BASE_URL}data/`
  * Loads the manifest, then the cells around the point. A loaded cell stays in memory, and what
  * failed or isn't loaded yet is asked for again on the next move or retry.
  *
- * `places` is every place loaded so far, as a new array only when a cell arrives. Read it and
- * `failed` after `onChange`.
+ * `places` is every place loaded so far, as a new array only when a cell arrives. Read it,
+ * `manifest` and `failed` after `onChange`.
  */
 export function placeLoader(fetchData: (url: string) => Promise<Response>, onChange: () => void) {
   let manifest: Manifest | null = null
@@ -60,6 +60,9 @@ export function placeLoader(fetchData: (url: string) => Promise<Response>, onCha
   }
 
   return {
+    get manifest() {
+      return manifest
+    },
     get places() {
       return places
     },
