@@ -56,20 +56,26 @@
       .show-more {
         min-height: 44px;
       }
+      .order,
       .chips {
         display: flex;
         flex-wrap: wrap;
         gap: 0.25rem;
         margin: 0.5rem 0;
       }
+      .order button,
       .chip {
         min-height: 44px;
         padding: 0 0.75rem;
-        border: 2px solid var(--chip-color);
+        border: 2px solid var(--chip-color, #555);
         border-radius: 22px;
         background: none;
         color: #555;
         font: inherit;
+      }
+      .order button[aria-pressed='true'] {
+        background: #555;
+        color: #fff;
       }
       .chip[aria-pressed='true'] {
         background: var(--chip-color);

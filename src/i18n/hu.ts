@@ -8,6 +8,9 @@ export const hu = {
   map: 'Térkép',
   zoomIn: 'Nagyítás',
   zoomOut: 'Kicsinyítés',
+  order: 'Sorrend',
+  nearest: 'Legközelebbi',
+  mostRelevant: 'Legérdekesebb',
   categories: 'Kategóriák',
   categoryNames: {
     sights: 'Látnivalók',

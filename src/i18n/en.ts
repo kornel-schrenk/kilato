@@ -8,6 +8,9 @@ export const en = {
   map: 'Map',
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
+  order: 'Order',
+  nearest: 'Nearest',
+  mostRelevant: 'Most relevant',
   categories: 'Categories',
   categoryNames: {
     sights: 'Sights',

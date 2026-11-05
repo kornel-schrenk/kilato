@@ -2,11 +2,12 @@ import { useEffect, useRef } from 'preact/hooks'
 import type { OpenStatus } from '../core/hours'
 import { formatDistance, type Lang } from '../core/lang'
 import { secondName } from '../core/names'
+import type { Row } from '../core/rank'
 import type { Place } from '../core/types'
 import type { WikiLink } from '../core/wiki'
 import type { en } from '../i18n/en'
 import { kindLabel } from '../i18n/kinds'
-import type { Row, Selection } from './usePlaces'
+import type { Selection } from './usePlaces'
 
 interface Props {
   rows: Row[]
