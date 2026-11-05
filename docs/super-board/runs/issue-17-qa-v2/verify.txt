@@ -1,0 +1,28 @@
+npm ci && npm run verify, on 4a01b5f (builder head ad236dc, develop 2ca9b0b merged, plus QA's test commit). Exit 0. tsc, 526 unit, build, 177 page.
+Eleven page tests in e2e/fixtures.spec.ts print a cross in the log and still count as passed: they are expected to fail.
+
+ Test Files  24 passed (24)
+      Tests  526 passed (526)
+✓ built in 436ms
+Running 177 tests using 2 workers
+  ✓  148 e2e/list.spec.ts:1053:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on (1.4s)
+  ✓  150 e2e/list.spec.ts:1065:3 › the category chips › sit between the map and the list, and fit a phone in Hungarian (1.6s)
+  ✓  151 e2e/list.spec.ts:1083:5 › the category chips › on a Hungarian phone › have the Hungarian names, and switching the language changes them (1.4s)
+  ✓  153 e2e/list.spec.ts:1106:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again (2.2s)
+  ✓  155 e2e/list.spec.ts:1124:3 › the category chips › work together: two chips off hide two categories (1.9s)
+  ✓  156 e2e/list.spec.ts:1144:3 › the category chips › stay as they are when the point moves and when the language switches (2.2s)
+  ✓  158 e2e/list.spec.ts:1169:5 › the category chips › on a walk › stay as they are while the point follows (2.3s)
+  ✓  160 e2e/list.spec.ts:1186:3 › the category chips › still show an off chip in its colour, with a name that reads (1.2s)
+  ✓  162 e2e/list.spec.ts:1197:3 › the category chips › are all on again at the next visit (2.8s)
+  ✓  164 e2e/list.spec.ts:1209:3 › the category chips › close the popup and the highlight of a tapped place whose category goes off (2.3s)
+  ✓  166 e2e/list.spec.ts:1225:3 › the category chips › keep the popup and the highlight of a tapped place whose category stays on (2.0s)
+  ✓  167 e2e/list.spec.ts:1238:3 › the category chips › count only the rows that are on for Show more (1.9s)
+  ✓  169 e2e/list.spec.ts:1253:5 › the category chips › with every chip off › the list says so, and its button turns them all back on (2.5s)
+  ✓  171 e2e/list.spec.ts:1275:5 › the category chips › with every chip off › the list says so before there is a point too, and its button still works (1.7s)
+  ✓  174 e2e/list.spec.ts:1290:5 › the category chips › with every chip off › turning one chip back on leaves the message and shows its places (2.2s)
+  ✓  176 e2e/list.spec.ts:1304:7 › the category chips › with every chip off › on a Hungarian phone › the message and the button are in Hungarian (1.4s)
+  177 passed (3.2m)
+VERIFY EXIT=0
+
+npx playwright test e2e/list.spec.ts -g "the category chips" --repeat-each=3, same tree:
+  48 passed (1.1m)
