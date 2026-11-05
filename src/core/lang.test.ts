@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatNumber, phoneLanguage, uiLanguage } from './lang'
+import { formatDate, formatDistance, formatNumber, phoneLanguage, uiLanguage } from './lang'
 
 describe('phoneLanguage', () => {
   it('is the primary subtag of the first language', () => {
@@ -37,6 +37,20 @@ describe('formatNumber', () => {
   it('formats the same number differently for hu and en', () => {
     expect(formatNumber(1234.5, 'hu')).toBe('1234,5')
     expect(formatNumber(1234.5, 'en')).toBe('1,234.5')
+  })
+})
+
+describe('formatDistance', () => {
+  it('rounds to 10 m', () => {
+    expect(formatDistance(123, 'en')).toBe('120 m')
+    expect(formatDistance(125, 'en')).toBe('130 m')
+    expect(formatDistance(4, 'en')).toBe('0 m')
+    expect(formatDistance(16.5, 'hu')).toBe('20 m')
+  })
+
+  it('formats the number in the UI language', () => {
+    expect(formatDistance(996, 'en')).toBe('1,000 m')
+    expect(formatDistance(996, 'hu')).toBe('1000 m')
   })
 })
 

@@ -1,0 +1,41 @@
+// QA's probe: any place within 1,000 m of a point must sit in a cell cellsWithin returns, and the answer is at most 3 x 3.
+// Own offsets and an own distance check, apart from the page's haversine. Seeded, so a rerun gives the same numbers.
+import { cellKey, cellsWithin } from 'src/core/cells.ts'
+
+const R = 6371000
+const rad = (d: number) => (d * Math.PI) / 180
+const hav = (a: {lat:number,lon:number}, b: {lat:number,lon:number}) => {
+  const h = Math.sin(rad(b.lat - a.lat) / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(rad(b.lon - a.lon) / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(h))
+}
+const all: string[] = []
+for (let row = 4730; row <= 4770; row++) for (let col = 1255; col <= 1295; col++) all.push(row + '_' + col)
+let seed = 12345
+const rand = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296)
+let checked = 0, missed = 0, maxRows = 0, maxCols = 0, maxCells = 0, points = 0
+for (let i = 0; i < 40000; i++) {
+  const point = { lat: 47.35 + rand() * 0.27, lon: 18.925 + rand() * 0.41 }
+  const found = new Set(cellsWithin(all, point, 1000))
+  points++
+  maxCells = Math.max(maxCells, found.size)
+  const parts = [...found].map((k) => k.split('_'))
+  maxRows = Math.max(maxRows, new Set(parts.map(([r]) => r)).size)
+  maxCols = Math.max(maxCols, new Set(parts.map(([, c]) => c)).size)
+  for (let b = 0; b < 8; b++) {
+    const bearing = rand() * 2 * Math.PI
+    const metres = b < 4 ? 999.9 : rand() * 1000
+    const place = { lat: point.lat + (metres * Math.cos(bearing)) / 111194.93, lon: point.lon + (metres * Math.sin(bearing)) / (111194.93 * Math.cos(rad(point.lat))) }
+    if (hav(point, place) > 1000) continue
+    checked++
+    if (!found.has(cellKey(place.lat, place.lon))) { missed++; console.log('MISSED', JSON.stringify({ point, place })) }
+  }
+}
+let edgePoints = 0, edgeBad = 0
+for (let row = 4735; row < 4762; row++) for (let col = 1262; col < 1289; col++) {
+  const point = { lat: row / 100, lon: (col * 3) / 200 }
+  const parts = cellsWithin(all, point, 1000)
+  edgePoints++
+  const rs = new Set(parts.map((k) => k.split('_')[0])).size, cs = new Set(parts.map((k) => k.split('_')[1])).size
+  if (rs > 3 || cs > 3 || !parts.includes(cellKey(point.lat, point.lon))) { edgeBad++; console.log('EDGE', JSON.stringify(point), rs, cs, parts.length) }
+}
+console.log(JSON.stringify({ points, placesChecked: checked, missed, maxRows, maxCols, maxCells, cornerPoints: edgePoints, cornerPointsBad: edgeBad }))

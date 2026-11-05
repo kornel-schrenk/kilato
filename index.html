@@ -50,8 +50,43 @@
         flex-wrap: wrap;
         gap: 0.5rem;
       }
-      .intro-buttons button {
+      .intro-buttons button,
+      .load-error button,
+      .show-more {
         min-height: 44px;
+      }
+      .places {
+        margin: 0.5rem 0;
+        padding: 0;
+        list-style: none;
+      }
+      .place {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: 0.25rem;
+        border: 0;
+        border-bottom: 1px solid #ddd;
+        background: none;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        overflow-wrap: anywhere;
+      }
+      .place[aria-current='true'] {
+        background: #ffe9a8;
+      }
+      .place-name {
+        display: block;
+        font-weight: 600;
+      }
+      .place-other,
+      .place-meta {
+        display: block;
+        font-size: 0.875rem;
+      }
+      .place-meta {
+        color: #555;
       }
       @media (min-width: 900px) {
         #app {

@@ -1,0 +1,26 @@
+oracle en: 308 rows compared with QA's haversine (name, second name, rounded distance, order): 0 differ
+oracle hu: 308 rows compared with QA's haversine (name, second name, rounded distance, order): 0 differ
+desktop: marker tap on "Grill Károly Könyvkiadóvállalata", highlighted row: "Grill Károly Könyvkiadóvállalata"
+tablet: marker tap on "Grill Károly Könyvkiadóvállalata", highlighted row: "Grill Károly Könyvkiadóvállalata"
+mobile: marker tap on "Grill Károly Könyvkiadóvállalata", highlighted row: "Grill Károly Könyvkiadóvállalata"
+colours at each marker's centre: {"sights":"#d55e00","notable":"#cc79a7","food":"#e69f00","leisure":"#009e73","services":"#56b4e9","shops":"#666666"}
+element under the tap on oracle[50] Invalidus-ház: CANVAS.leaflet-zoom-animated
+zoom 16: pixel at the highlighted marker's ring #000000, at another marker "#cc79a7"
+overlap before tap: centre of nearer #666666
+overlap after row tap on nearer: its centre #e69f00 (food is #e69f00)
+a 503 on a cell after a move: message shows, Retry brings the cell and clears it
+Enter on a focused row: popup opens, the row is highlighted
+row backgrounds, highlighted then plain: ["rgb(255, 233, 168)","rgba(0, 0, 0, 0)"]
+long name, 375 wide: page scrollWidth 375, popup 347 x 45 at x 13, y 101
+long name in the popup: content scrollWidth 1732, clientWidth 301
+phone, row 41 tapped: the map's bottom edge is at y -1615 of 667, so the map and its popup are off screen. The row is highlighted: true
+privacy: 21 requests to preview, tile.openstreetmap.org; 0 with a body; 0 holding any of 47.497 19.054 47.49 19.05 47.50 4749791 1905439 in URL, body or headers; storage {"local":"{}","session":"{}","cookie":""}
+cell requests: 4749_1269.json 4749_1270.json 4749_1271.json 4750_1269.json 4750_1270.json
+volume 2000: Explore to first rows 960 ms, row tap to popup 106 ms, tap on the map back to a list 115 ms (Pi, 4 cores, other lanes may be running)
+volume 4000: Explore to first rows 575 ms, row tap to popup 600 ms, tap on the map back to a list 111 ms (Pi, 4 cores, other lanes may be running)
+double click on a marker: zoom 15 then 16, highlighted "Anker-palota"
+row tap during a coast: pin tip at 384, 360 on a map 768 x 720; popup count 1; 100 rows
+language switch: row and popup stay, ring pixel #000000
+empty manifest: 0 rows, 0 Show more, 0 failure messages
+malformed, a manifest with no cells field: 0 message, no Retry to press, page errors ["Cannot read properties of undefined (reading 'filter')"]
+malformed, a cell with no places field: 1 message, 0 messages after Retry, 100 rows, page errors []

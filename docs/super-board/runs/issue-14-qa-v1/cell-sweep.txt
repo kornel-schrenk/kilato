@@ -1,0 +1,2 @@
+QA's sweep, on head 5a3c583. node cell-sweep.ts, seeded. Any place within 1,000 m of a point has to sit in a cell cellsWithin returns.
+{"points":40000,"placesChecked":319998,"missed":0,"maxRows":3,"maxCols":3,"maxCells":9,"cornerPoints":729,"cornerPointsBad":0}

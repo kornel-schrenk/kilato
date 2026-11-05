@@ -1,0 +1,14 @@
+CI. GitHub check verify: success on builder head 4f23a24, run 41972136656. The QA commits start their own run on push. They add 3 tests and this evidence folder.
+
+pr-security-review, diff of develop...4f23a24, base 258ce9e, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- src/ui/MapView.tsx:172: the popup's name goes in as textContent on a span, and Leaflet appends an element as it is. e2e/list.spec.ts:163 serves a name with <b> and <img> and finds neither in the popup.
+- src/ui/PlaceList.tsx: the name, the second name and the kind label render as Preact text. No dangerouslySetInnerHTML.
+- src/ui/MapView.tsx:144: fillColor reads categoryColors by the place's cat. The file is our own build's, and a canvas fillStyle can't run anything.
+- src/data/places.ts:54: the only path built from data is cells/<key>.json, from a manifest on the same origin. cellsWithin drops a key that doesn't parse as two numbers: the distance comes out NaN, and NaN <= 1000 is false.
+- The location stays in memory. Probe with the location at 47.49791, 19.05439, with a row tap, Show more, a walk, a drag and a tap: 21 requests, 0 with a body, 0 holding 47.497, 19.054, 47.49, 19.05, 47.50, 4749791 or 1905439 in the URL, the body or the headers. localStorage, sessionStorage and cookies hold nothing, see probe.txt.
+- Cell keys show the 1 km squares around the point, and the spec's What is sent where says so.
+- Added lines in src and index.html: 0 matches for innerHTML, dangerouslySetInnerHTML, eval, new Function, document.write, XMLHttpRequest, sendBeacon, localStorage, sessionStorage, cookie, postMessage, window.open, location.href, bindPopup, bindTooltip, and 0 URLs. 1 match for setContent, the line above, with an element.
+- No new package: package.json and package-lock.json are not in the diff.
+- Secret scan of the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.
+- e2e and unit test files are out of scope for the skill, and so are the docs and the screenshots.
