@@ -126,6 +126,15 @@ test.describe('the search box', () => {
       await page.goto('/kilato/')
       await expect(page.locator('header').getByRole('searchbox', { name: 'Keresés' })).toBeVisible()
     })
+
+    test('shows the Hungarian name under the name of a result', async ({ page }) => {
+      await serve(page, [cafe('Parliament', 100, { names: { hu: 'Országház', en: 'Parliament' } })])
+      await page.goto('/kilato/')
+
+      await page.locator('header').getByRole('searchbox', { name: 'Keresés' }).fill('orszag')
+
+      await expect(results(page).locator('.place-other')).toHaveText('Országház')
+    })
   })
 
   test.describe('on a phone', () => {
@@ -150,6 +159,26 @@ test.describe('the search box', () => {
 
       await expect(row(page, far.name)).toHaveAttribute('aria-current', 'true')
       await expect(row(page, far.name)).toBeInViewport()
+    })
+
+    test('has 16 px text, below which Safari zooms the page when the box gets focus', async ({ page }) => {
+      await page.goto('/kilato/')
+
+      await expect(searchBox(page)).toHaveCSS('font-size', '16px')
+    })
+
+    test('wraps a long name in a result, so the results do not scroll sideways', async ({ page }) => {
+      const long = cafe('Kávé'.repeat(60), 100)
+      await serve(page, [long])
+      await explore(page)
+
+      await searchBox(page).fill('kave')
+
+      await expect(results(page)).toHaveCount(1)
+      const widths = await page
+        .locator('.search-results')
+        .evaluate((list) => ({ client: list.clientWidth, scroll: list.scrollWidth }))
+      expect(widths.scroll).toBe(widths.client)
     })
   })
 
@@ -193,6 +222,29 @@ test.describe('the search box', () => {
 
     test('a 404 counts as failing too', async ({ page }) => {
       await page.route(`**${searchFile}`, (route) => route.fulfill({ status: 404 }))
+      await explore(page)
+
+      await searchBox(page).focus()
+
+      await expect(page.getByText(failure)).toBeVisible()
+    })
+
+    test('a 404 with valid JSON in it counts as failing too', async ({ page }) => {
+      await page.route(`**${searchFile}`, (route) =>
+        route.fulfill({ status: 404, json: { places: [cafe('Kávé', 100)] } }),
+      )
+      await explore(page)
+
+      await searchBox(page).fill('kave')
+
+      await expect(page.getByText(failure)).toBeVisible()
+      await expect(results(page)).toHaveCount(0)
+    })
+
+    test('a page of HTML in its place counts as failing too, as a Wi-Fi login page would send', async ({ page }) => {
+      await page.route(`**${searchFile}`, (route) =>
+        route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Log in</title>' }),
+      )
       await explore(page)
 
       await searchBox(page).focus()
@@ -305,6 +357,50 @@ test.describe('the results', () => {
     await searchBox(page).fill('kave')
     await expect.poll(() => resultNames(page)).toEqual(['Kávé north', 'Kávé south'])
   })
+
+  test('reorder when the point moves with the query still in the box', async ({ page }) => {
+    await serve(page, [cafe('Kávé north', 300), cafe('Kávé south', -100)])
+    await explore(page)
+    await searchBox(page).fill('kave')
+    await expect.poll(() => resultNames(page)).toEqual(['Kávé south', 'Kávé north'])
+    const { x, y } = centre(await box(page, '.leaflet-container'))
+
+    // 100 px north at zoom 15 is 323 m, right beside the north place. At this width the results sit over the list.
+    await page.mouse.click(x, y - 100)
+
+    await expect.poll(() => resultNames(page)).toEqual(['Kávé north', 'Kávé south'])
+  })
+
+  test('show up for a query typed while search.json was on its way', async ({ page }) => {
+    await serve(page, [cafe('Kávé', 100)])
+    let release = () => {}
+    const released = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    await page.route(`**${searchFile}`, async (route) => {
+      await released
+      await route.fallback()
+    })
+    await explore(page)
+    await searchBox(page).fill('kave')
+    await expect(results(page)).toHaveCount(0)
+
+    release()
+
+    await expect.poll(() => resultNames(page)).toEqual(['Kávé'])
+  })
+
+  test('show a name with HTML in it as plain text', async ({ page }) => {
+    const name = '<b>Bold</b> & <img src=x> kave'
+    await serve(page, [cafe(name, 100, { names: { en: '<i>Second</i>' } })])
+    await explore(page)
+
+    await searchBox(page).fill('kave')
+
+    await expect(results(page).locator('.place-name')).toHaveText(name)
+    await expect(results(page).locator('.place-other')).toHaveText('<i>Second</i>')
+    await expect(results(page).locator('b, i, img')).toHaveCount(0)
+  })
 })
 
 test.describe('picking a result', () => {
@@ -326,6 +422,16 @@ test.describe('picking a result', () => {
     await expect(button(page, 'My location')).toBeVisible()
   })
 
+  test('highlights the row of a place from the real files, whose search.json and cell name it alike', async ({ page }) => {
+    await explore(page)
+    await searchBox(page).fill('kave')
+
+    await result(page, 'Abbázia kávéház').click()
+
+    await expect(row(page, 'Abbázia kávéház')).toHaveAttribute('aria-current', 'true')
+    await expect(page.locator('[aria-current]')).toHaveCount(1)
+  })
+
   test('closes the results, empties the box and takes the focus out of it', async ({ page }) => {
     await serve(page, [here, far])
     await explore(page)
@@ -334,6 +440,20 @@ test.describe('picking a result', () => {
 
     await expect(results(page)).toHaveCount(0)
     await expect(searchBox(page)).toHaveValue('')
+    await expect(searchBox(page)).not.toBeFocused()
+  })
+
+  test('takes the focus out of the box when the tap itself leaves it there, as Safari on a phone does', async ({ page }) => {
+    await serve(page, [here, far])
+    await explore(page)
+    await searchBox(page).fill(far.name)
+    await expect(result(page, far.name)).toBeVisible()
+    await expect(searchBox(page)).toBeFocused()
+
+    // A mouse click would move the focus to the button by itself, so the test above can't tell.
+    await result(page, far.name).dispatchEvent('click')
+
+    await expect(row(page, far.name)).toHaveAttribute('aria-current', 'true')
     await expect(searchBox(page)).not.toBeFocused()
   })
 
@@ -432,6 +552,27 @@ test.describe('picking a result', () => {
 
     await expect(row(page, far.name)).toBeVisible()
     await expect(page.locator('[aria-current]')).toHaveCount(0)
+  })
+
+  test('highlights only the second of two picks made while their cells were on the way', async ({ page }) => {
+    // 700 m from `far`, so `far` stays in the list, and in the next cell north.
+    const second = cafe('Second Far', 3700)
+    await serve(page, [here, far, second])
+    const releaseFar = await holdCell(page, far)
+    const releaseSecond = await holdCell(page, second)
+    await explore(page)
+    await pick(page, far)
+    await expectNear(() => pinPlace(page), far, 2)
+    await pick(page, second)
+    await expectNear(() => pinPlace(page), second, 2)
+
+    releaseFar()
+    await expect(row(page, far.name)).toBeVisible()
+    await expect(page.locator('[aria-current]')).toHaveCount(0)
+    releaseSecond()
+
+    await expect(row(page, second.name)).toHaveAttribute('aria-current', 'true')
+    await expect(row(page, far.name)).not.toHaveAttribute('aria-current')
   })
 
   test('highlights the row after a failed cell and a Retry', async ({ page }) => {

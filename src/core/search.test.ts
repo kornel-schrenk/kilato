@@ -47,6 +47,16 @@ describe('what matches', () => {
   it('finds nothing when no name has the query', () => {
     expect(found([place('Kávé', 0, { hu: 'Kávé', en: 'Coffee' })], 'tea')).toEqual([])
   })
+
+  it('matches an accent typed as a separate mark, in the query or in the name', () => {
+    expect(found([place('Kávé')], 'Kávé')).toEqual(['Kávé'])
+    expect(found([place('Kávé')], 'kávé')).toEqual(['Kávé'])
+  })
+
+  it('reads the characters of a regular expression as plain text', () => {
+    expect(found([place('Kávé (régi)'), place('Tea')], '(r')).toEqual(['Kávé (régi)'])
+    expect(found([place('Kávé')], '.*')).toEqual([])
+  })
 })
 
 describe('how long a query has to be', () => {
@@ -88,6 +98,13 @@ describe('the order', () => {
   it('puts the nearest first among the rest', () => {
     const places = [place('A Kávé far', 5), place('A Kávé south', -2), place('A Kávé near', 1)]
     expect(found(places, 'kave')).toEqual(['A Kávé near', 'A Kávé south', 'A Kávé far'])
+  })
+
+  it('keeps the 20 of the first group when the second group is nearer', () => {
+    const beginning = Array.from({ length: 20 }, (_, index) => place(`Kávé ${index}`, 100 + index))
+    const names = found([place('A Kávé nearest', 1), ...beginning], 'kave')
+    expect(names).toHaveLength(20)
+    expect(names).not.toContain('A Kávé nearest')
   })
 })
 
