@@ -12,3 +12,13 @@ export const categoryColors: Record<CategoryId, string> = {
   services: '#56b4e9',
   shops: '#666666',
 }
+
+/** The colour of the name on a chip that is on: black where it reads, and white on the darker grey. */
+export const categoryTextColors: Record<CategoryId, string> = {
+  sights: '#000000',
+  notable: '#000000',
+  food: '#000000',
+  leisure: '#000000',
+  services: '#000000',
+  shops: '#ffffff',
+}

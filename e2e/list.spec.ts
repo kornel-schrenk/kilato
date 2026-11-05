@@ -754,6 +754,223 @@ test.describe('tapping a marker', () => {
   })
 })
 
+test.describe('the category chips', () => {
+  const chips = (page: Page) => page.getByRole('group', { name: 'Categories' }).getByRole('button')
+  const chipColors: [string, string][] = [
+    ['Sights', categoryColors.sights],
+    ['Notable places', categoryColors.notable],
+    ['Food & drink', categoryColors.food],
+    ['Culture & leisure', categoryColors.leisure],
+    ['Services', categoryColors.services],
+    ['Shops', categoryColors.shops],
+  ]
+  const hungarianNames = [
+    'Látnivalók',
+    'Nevezetes helyek',
+    'Étel és ital',
+    'Kultúra és szabadidő',
+    'Szolgáltatások',
+    'Üzletek',
+  ]
+  const asRgb = (hex: string) =>
+    `rgb(${[1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16)).join(', ')})`
+
+  test('are six, in the order of the spec, each in its marker colour, and all on', async ({ page }) => {
+    await page.goto('/kilato/')
+
+    await expect(chips(page)).toHaveText(chipColors.map(([name]) => name))
+    for (const [name, color] of chipColors) {
+      await expect(button(page, name)).toHaveCSS('background-color', asRgb(color))
+      await expect(button(page, name)).toHaveAttribute('aria-pressed', 'true')
+    }
+  })
+
+  test('sit between the map and the list, and fit a phone in Hungarian', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
+    await serve(page, [cafe('Corner', 100)])
+    await explore(page)
+    await button(page, 'HU').click()
+
+    const group = page.getByRole('group', { name: 'Kategóriák' })
+    await expect(group.getByRole('button')).toHaveCount(6)
+    const mapBottom = await page.locator('.map').evaluate((map) => map.getBoundingClientRect().bottom)
+    const { y, height } = await box(page, '.chips')
+    expect(y).toBeGreaterThanOrEqual(mapBottom)
+    expect(y + height).toBeLessThanOrEqual((await box(page, '.place')).y)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375)
+  })
+
+  test.describe('on a Hungarian phone', () => {
+    test.use({ locale: 'hu-HU' })
+
+    test('have the Hungarian names, and switching the language changes them', async ({ page }) => {
+      await page.goto('/kilato/')
+
+      await expect(page.getByRole('group', { name: 'Kategóriák' }).getByRole('button')).toHaveText(hungarianNames)
+
+      await button(page, 'EN').click()
+
+      await expect(chips(page)).toHaveText(chipColors.map(([name]) => name))
+    })
+  })
+
+  const coffee = cafe('Coffee', 100)
+  const books = cafe('Books', 200, { cat: 'shops', kind: 'books' })
+  const museum = cafe('Museum', 300, { cat: 'sights', kind: 'museum' })
+
+  /** Opens the page with the three places above, and waits for their rows and markers. */
+  async function exploreThree(page: Page) {
+    await serve(page, [coffee, books, museum])
+    await explore(page)
+    await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Books', 'Museum'])
+    await expect.poll(() => markerColor(page, books)).toBe(categoryColors.shops)
+  }
+
+  test('hide the places of a chip that is off, in the list and on the map, until it is on again', async ({ page }) => {
+    await exploreThree(page)
+
+    await button(page, 'Shops').click()
+
+    await expect(button(page, 'Shops')).toHaveAttribute('aria-pressed', 'false')
+    await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Museum'])
+    await expect.poll(() => markerColor(page, books)).toBeNull()
+    expect(await markerColor(page, coffee)).toBe(categoryColors.food)
+    expect(await markerColor(page, museum)).toBe(categoryColors.sights)
+
+    await button(page, 'Shops').click()
+
+    await expect(button(page, 'Shops')).toHaveAttribute('aria-pressed', 'true')
+    await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Books', 'Museum'])
+    await expect.poll(() => markerColor(page, books)).toBe(categoryColors.shops)
+  })
+
+  test('work together: two chips off hide two categories', async ({ page }) => {
+    await exploreThree(page)
+
+    await button(page, 'Shops').click()
+    await button(page, 'Food & drink').click()
+
+    await expect.poll(() => rowNames(page)).toEqual(['Museum'])
+    await expect.poll(() => markerColor(page, coffee)).toBeNull()
+    expect(await markerColor(page, books)).toBeNull()
+    expect(await markerColor(page, museum)).toBe(categoryColors.sights)
+  })
+
+  test('still show an off chip in its colour', async ({ page }) => {
+    await page.goto('/kilato/')
+
+    await button(page, 'Shops').click()
+
+    await expect(button(page, 'Shops')).toHaveCSS('border-top-color', asRgb(categoryColors.shops))
+    await expect(button(page, 'Shops')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  })
+
+  test('are all on again at the next visit', async ({ page }) => {
+    await exploreThree(page)
+    await button(page, 'Shops').click()
+    await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Museum'])
+
+    await page.reload()
+    await button(page, 'Explore the map').click()
+
+    await expect(button(page, 'Shops')).toHaveAttribute('aria-pressed', 'true')
+    await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Books', 'Museum'])
+  })
+
+  test('close the popup and the highlight of a tapped place whose category goes off', async ({ page }) => {
+    await exploreThree(page)
+    await row(page, 'Books').click()
+    await expect(popup(page)).toHaveText('Books')
+
+    await button(page, 'Shops').click()
+    await expect(popup(page)).toHaveCount(0)
+
+    await button(page, 'Shops').click()
+
+    await expect(row(page, 'Books')).toBeVisible()
+    await expect(page.locator('.place[aria-current]')).toHaveCount(0)
+    await expect(popup(page)).toHaveCount(0)
+    await expect.poll(() => ringColor(page, books)).toBeNull()
+  })
+
+  test('keep the popup and the highlight of a tapped place whose category stays on', async ({ page }) => {
+    await exploreThree(page)
+    await row(page, 'Books').click()
+    await expect(popup(page)).toHaveText('Books')
+
+    await button(page, 'Food & drink').click()
+
+    await expect.poll(() => rowNames(page)).toEqual(['Books', 'Museum'])
+    await expect(row(page, 'Books')).toHaveAttribute('aria-current', 'true')
+    await expect(popup(page)).toHaveText('Books')
+    await expect.poll(() => ringColor(page, books)).toBe('#000000')
+  })
+
+  test('count only the rows that are on for Show more', async ({ page }) => {
+    await serve(page, [...grid(120), cafe('One shop', 700, { cat: 'shops', kind: 'books' })])
+    await explore(page)
+    await expect(button(page, 'Show more')).toBeVisible()
+
+    await button(page, 'Food & drink').click()
+
+    await expect.poll(() => rowNames(page)).toEqual(['One shop'])
+    await expect(button(page, 'Show more')).toHaveCount(0)
+  })
+
+  test.describe('with every chip off', () => {
+    const allOff = 'All categories are off.'
+    const turnAllOn = 'Turn them all back on'
+
+    test('the list says so, and its button turns them all back on', async ({ page }) => {
+      await exploreThree(page)
+      await expect(page.getByText(allOff)).toHaveCount(0)
+      await expect(button(page, turnAllOn)).toHaveCount(0)
+
+      for (const [name] of chipColors) await button(page, name).click()
+
+      await expect(page.getByText(allOff)).toBeVisible()
+      await expect(page.locator('.place')).toHaveCount(0)
+      await expect.poll(() => markerColor(page, coffee)).toBeNull()
+      expect(await markerColor(page, books)).toBeNull()
+      expect(await markerColor(page, museum)).toBeNull()
+
+      await button(page, turnAllOn).click()
+
+      await expect.poll(() => rowNames(page)).toEqual(['Coffee', 'Books', 'Museum'])
+      for (const [name] of chipColors) await expect(button(page, name)).toHaveAttribute('aria-pressed', 'true')
+      await expect.poll(() => markerColor(page, coffee)).toBe(categoryColors.food)
+      await expect(page.getByText(allOff)).toHaveCount(0)
+      await expect(button(page, turnAllOn)).toHaveCount(0)
+    })
+
+    test('turning one chip back on leaves the message and shows its places', async ({ page }) => {
+      await exploreThree(page)
+      for (const [name] of chipColors) await button(page, name).click()
+      await expect(page.getByText(allOff)).toBeVisible()
+
+      await button(page, 'Shops').click()
+
+      await expect(page.getByText(allOff)).toHaveCount(0)
+      await expect.poll(() => rowNames(page)).toEqual(['Books'])
+    })
+
+    test.describe('on a Hungarian phone', () => {
+      test.use({ locale: 'hu-HU' })
+
+      test('the message and the button are in Hungarian', async ({ page }) => {
+        await serve(page, [coffee])
+        await explore(page, 'A térkép felfedezése')
+        for (const name of hungarianNames) await button(page, name).click()
+
+        await expect(page.getByText('Minden kategória ki van kapcsolva.')).toBeVisible()
+        await button(page, 'Mind visszakapcsolása').click()
+
+        await expect.poll(() => rowNames(page)).toEqual(['Coffee'])
+      })
+    })
+  })
+})
+
 test.describe('with the location at 47.49791, 19.05439', () => {
   test.use({
     geolocation: { latitude: 47.49791, longitude: 19.05439, accuracy: 10 },

@@ -52,8 +52,28 @@
       }
       .intro-buttons button,
       .load-error button,
+      .all-off button,
       .show-more {
         min-height: 44px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin: 0.5rem 0;
+      }
+      .chip {
+        min-height: 44px;
+        padding: 0 0.75rem;
+        border: 2px solid var(--chip-color);
+        border-radius: 22px;
+        background: none;
+        color: #555;
+        font: inherit;
+      }
+      .chip[aria-pressed='true'] {
+        background: var(--chip-color);
+        color: var(--chip-text-color);
       }
       .places {
         margin: 0.5rem 0;

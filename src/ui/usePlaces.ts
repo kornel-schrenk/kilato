@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { listRadius, nearby, type LatLon } from '../core/geo'
-import type { Place } from '../core/types'
+import type { CategoryId, Place } from '../core/types'
 import { placeLoader } from '../data/places'
 
 const pageSize = 100
@@ -16,7 +16,10 @@ export interface Selection {
   source: 'row' | 'marker'
 }
 
-/** The places around the point, nearest first, how many of them show as rows, and which one is tapped. */
+/**
+ * The places around the point whose category is on, nearest first, how many of them show as rows,
+ * and which one is tapped. Every category is on at the start of a visit, and that isn't saved.
+ */
 export function usePlaces(point: LatLon | null) {
   const [, setVersion] = useState(0)
   const [loader] = useState(() =>
@@ -27,15 +30,16 @@ export function usePlaces(point: LatLon | null) {
   )
   const [shown, setShown] = useState(pageSize)
   const [selection, setSelection] = useState<Selection | null>(null)
+  const [categoriesOff, setCategoriesOff] = useState<ReadonlySet<CategoryId>>(new Set())
 
   useEffect(() => loader.moveTo(point), [loader, point])
 
   const rows: Row[] = useMemo(
-    () => (point ? nearby(loader.places, point, listRadius) : []),
-    [point, loader.places],
+    () => (point ? nearby(loader.places, point, listRadius).filter(({ place }) => !categoriesOff.has(place.cat)) : []),
+    [point, loader.places, categoriesOff],
   )
 
-  // A place the point has moved away from has no row and no marker left to highlight.
+  // A place the point has moved away from, or whose category went off, has no row and no marker left to highlight.
   useEffect(() => {
     if (selection && !rows.some(({ place }) => place.id === selection.place.id)) setSelection(null)
   }, [rows])
@@ -47,8 +51,18 @@ export function usePlaces(point: LatLon | null) {
     setShown((current) => Math.max(current, (Math.floor(rank / pageSize) + 1) * pageSize))
   }
 
+  const toggleCategory = (id: CategoryId) =>
+    setCategoriesOff((current) => {
+      const next = new Set(current)
+      if (!next.delete(id)) next.add(id)
+      return next
+    })
+
   return {
     rows,
+    categoriesOff,
+    toggleCategory,
+    allCategoriesOn: () => setCategoriesOff(new Set()),
     shown,
     showMore: () => setShown((current) => current + pageSize),
     selection,
