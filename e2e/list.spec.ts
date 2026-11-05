@@ -181,6 +181,86 @@ test.describe('a row', () => {
   })
 })
 
+test.describe('the open status', () => {
+  // The fixture's hours window starts at local midnight on 2 November, 23:00 UTC the day before.
+  // That day Minta Kávézó is open 07:00–22:00 and Minta Pékség 06:00–18:00, both local time.
+  const kavezo = (page: Page) => row(page, 'Minta Kávézó').locator('.place-status')
+  const pekseg = (page: Page) => row(page, 'Minta Pékség').locator('.place-status')
+  const beforeClosing = '2026-11-02T20:50:00Z'
+
+  test('shows Open now or Closed now as soon as the list is built', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+
+    await expect(kavezo(page)).toHaveText('Open now')
+    await expect(pekseg(page)).toHaveText('Closed now')
+  })
+
+  test.describe('on a Hungarian phone', () => {
+    test.use({ locale: 'hu-HU' })
+
+    test('is in Hungarian, and switching the language changes it', async ({ page }) => {
+      await page.clock.install({ time: beforeClosing })
+      await explore(page, 'A térkép felfedezése')
+
+      await expect(kavezo(page)).toHaveText('Most nyitva')
+      await expect(pekseg(page)).toHaveText('Most zárva')
+
+      await button(page, 'EN').click()
+
+      await expect(kavezo(page)).toHaveText('Open now')
+      await expect(pekseg(page)).toHaveText('Closed now')
+    })
+  })
+
+  test('shows nothing for a place with no hours', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+
+    await expect(kavezo(page)).toHaveText('Open now')
+    await expect(row(page, 'Deák Ferenc tér')).toBeVisible()
+    await expect(row(page, 'Deák Ferenc tér').locator('.place-status')).toHaveCount(0)
+  })
+
+  test('shows nothing for any place once the 14-day window has passed', async ({ page }) => {
+    await page.clock.install({ time: '2026-11-16T12:00:00Z' })
+    await explore(page)
+
+    await expect(row(page, 'Minta Kávézó')).toBeVisible()
+    await expect(page.locator('.place-status')).toHaveCount(0)
+  })
+
+  test('changes from Open now to Closed now within a minute of the closing time', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    await page.clock.pauseAt('2026-11-02T20:59:59Z')
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    // One second to the closing time, and then the longest a minute's timer can take.
+    await page.clock.runFor(61_000)
+    await expect(kavezo(page)).toHaveText('Closed now')
+  })
+
+  test('is worked out again when the list is rebuilt, ahead of the next minute', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    // The jump fires the minute's timer once, so the next one is due at 21:00:59. Two seconds on,
+    // the place has closed and no timer has said so.
+    await page.clock.pauseAt('2026-11-02T20:59:59Z')
+    await page.clock.runFor(2000)
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    const { x, y } = centre(await box(page, '.leaflet-container'))
+    await page.mouse.click(x + 20, y)
+
+    await expect(kavezo(page)).toHaveText('Closed now')
+  })
+})
+
 test.describe('the list', () => {
   test('holds the places within 1,000 m of the point, nearest first', async ({ page }) => {
     await serve(page, [

@@ -66,6 +66,9 @@ export function placeLoader(fetchData: (url: string) => Promise<Response>, onCha
     get failed() {
       return failed
     },
+    get hoursWindowStart() {
+      return manifest?.hoursWindowStart
+    },
     moveTo(next: LatLon | null) {
       point = next
       load()
