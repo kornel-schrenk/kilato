@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { listRadius, nearby, type LatLon } from '../core/geo'
+import { openStatus } from '../core/hours'
 import type { Place } from '../core/types'
 import { wikiLink } from '../core/wiki'
 import { placeLoader } from '../data/places'
 
 const pageSize = 100
+const statusInterval = 60_000
 
 export interface Row {
   place: Place
@@ -17,7 +19,7 @@ export interface Selection {
   source: 'row' | 'marker'
 }
 
-/** The places around the point, nearest first, how many show as rows, which one is tapped, and each one's article. */
+/** The places around the point, nearest first, how many show as rows, which one is tapped, which are open, and each one's article. */
 export function usePlaces(point: LatLon | null, phone: string) {
   const [, setVersion] = useState(0)
   const [loader] = useState(() =>
@@ -31,6 +33,14 @@ export function usePlaces(point: LatLon | null, phone: string) {
   const [selection, setSelection] = useState<Selection | null>(null)
 
   useEffect(() => loader.moveTo(point), [loader, point])
+
+  // Every render reads the clock for the statuses, so this only has to render once a minute. The
+  // rows stay the same objects: new ones would redraw every marker on the map.
+  useEffect(() => {
+    const timer = setInterval(() => setVersion((version) => version + 1), statusInterval)
+    return () => clearInterval(timer)
+  }, [])
+  const now = Date.now()
 
   const rows: Row[] = useMemo(
     () => (point ? nearby(loader.places, point, listRadius) : []),
@@ -55,6 +65,7 @@ export function usePlaces(point: LatLon | null, phone: string) {
     showMore: () => setShown((current) => current + pageSize),
     selection,
     select,
+    statusOf: (place: Place) => openStatus(place.hours, loader.hoursWindowStart, now),
     failed: loader.failed,
     retry: loader.retry,
     wikiLink: (place: Place) => wikiLink(place.wiki, phone, loader.wikiTitles),

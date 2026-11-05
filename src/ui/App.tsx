@@ -98,6 +98,7 @@ export function App() {
           selection={places.selection}
           onSelect={places.select}
           onShowMore={places.showMore}
+          statusOf={places.statusOf}
           wikiLink={places.wikiLink}
           lang={lang}
           t={t}

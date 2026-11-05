@@ -10,7 +10,7 @@ const dataFolder = `${import.meta.env.BASE_URL}data/`
  * or isn't loaded yet is asked for again on the next move or retry.
  *
  * `places` is every place loaded so far, as a new array only when a cell arrives. Read it,
- * `wikiTitles` and `failed` after `onChange`.
+ * `wikiTitles`, `hoursWindowStart` and `failed` after `onChange`.
  */
 export function placeLoader(fetchData: (url: string) => Promise<Response>, onChange: () => void, phone = '') {
   let manifest: Manifest | null = null
@@ -75,6 +75,9 @@ export function placeLoader(fetchData: (url: string) => Promise<Response>, onCha
     },
     get failed() {
       return failed
+    },
+    get hoursWindowStart() {
+      return manifest?.hoursWindowStart
     },
     moveTo(next: LatLon | null) {
       point = next

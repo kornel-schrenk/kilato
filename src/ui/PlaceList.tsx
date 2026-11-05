@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'preact/hooks'
+import type { OpenStatus } from '../core/hours'
 import { formatDistance, type Lang } from '../core/lang'
 import { secondName } from '../core/names'
 import type { Place } from '../core/types'
@@ -13,13 +14,15 @@ interface Props {
   selection: Selection | null
   onSelect: (place: Place, source: Selection['source']) => void
   onShowMore: () => void
+  statusOf: (place: Place) => OpenStatus
   wikiLink: (place: Place) => WikiLink | undefined
   lang: Lang
   t: typeof en
 }
 
-export function PlaceList({ rows, shown, selection, onSelect, onShowMore, wikiLink, lang, t }: Props) {
+export function PlaceList({ rows, shown, selection, onSelect, onShowMore, statusOf, wikiLink, lang, t }: Props) {
   const list = useRef<HTMLUListElement>(null)
+  const statusLabels = { open: t.openNow, closed: t.closedNow, unknown: null }
 
   useEffect(() => {
     if (selection?.source === 'marker') {
@@ -32,6 +35,7 @@ export function PlaceList({ rows, shown, selection, onSelect, onShowMore, wikiLi
       <ul ref={list} class="places">
         {rows.slice(0, shown).map(({ place, metres }) => {
           const other = secondName(place, lang)
+          const status = statusLabels[statusOf(place)]
           const article = wikiLink(place)
           return (
             <li key={place.id}>
@@ -46,6 +50,7 @@ export function PlaceList({ rows, shown, selection, onSelect, onShowMore, wikiLi
                 <span class="place-meta">
                   {kindLabel(place.cat, place.kind, lang)} · {formatDistance(metres, lang)}
                 </span>
+                {status && <span class="place-status">{status}</span>}
               </button>
               {/* Beside the button, because a link can't sit inside one. */}
               {article && (

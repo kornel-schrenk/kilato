@@ -1,0 +1,39 @@
+Test-gap check for #15, on the diff of develop...e320c7a, with QA's tests from dab05fa. The repo has no component rung: page tests drive the components, so that column is n/a for all three.
+
+Ledger
+AC1 open, closed and unknown, with all three and both window edges under unit tests
+  unit: src/core/hours.test.ts:17, :21 open · :25 closed · :43 unknown, no hours · :47 the window's first moment · :55 the window's last moment and its end · :29, :34 a pair's edges · :63 a clock change · :71 a window start that is missing or doesn't parse · src/data/places.test.ts:65 the loader gives the window start
+  e2e:  e2e/list.spec.ts:193 both words on real fixture rows · :227 past the window
+AC2 Open now / Most nyitva, Closed now / Most zárva, and nothing for unknown
+  unit: n/a, the labels are drawn only in the page
+  e2e:  e2e/list.spec.ts:193 English · :204 Hungarian, and the switch · :218 no hours · :227 past the window
+AC3 worked out when the list is built and every minute, and the change within a minute of closing
+  unit: n/a, the timer lives in the hook
+  e2e:  e2e/list.spec.ts:193 when the list is built · :235 the change with page.clock · :248 a rebuilt list ahead of the timer · QA's :265 no later than 60 seconds
+
+Edge cases
+boundaries: pinned at src/core/hours.test.ts:29, :34, :47, :55 limit-1 and limit on each edge · :39 an empty list against :43 no list · oracle.txt reads the same edges through the page, on 308 rows
+money and dates: money n/a · a clock change pinned at src/core/hours.test.ts:63 · another time zone pinned at QA's e2e/list.spec.ts:309 · a month end is no case, because the rule subtracts two instants
+input: the labels are constants and the hours are numbers, so unicode, long text and CSV are n/a · a window start that doesn't parse pinned at src/core/hours.test.ts:71, and read through the page in the probe only
+volume: 0 rows has nothing to show · 308 rows with Show more in oracle.txt, where 4 of the 11 places with hours sit past row 100
+auth: n/a, the page has no accounts
+error paths: the diff adds no catch and no promise · a manifest with no window start, or one that doesn't parse, gives no status and no page error, in the probe only
+idempotency and races: one timer, with empty dependencies, cleared on unmount · a cell arriving late has its status at once, in the probe only · a tick and a rebuild each read the clock on their own
+UI states: loading and empty have no rows, so no status · a failed cell keeps the rows that loaded, through the same render · disabled: n/a
+accessibility: the status is text inside the row's button, so it joins the button's accessible name, in the probe: getByRole('button', { name: /Magyar Állami Operaház.*Most nyitva/ }) · it doesn't rest on colour · black on white
+
+Test the tests: mutants.txt. All 40 mutants are red now, where 2 passed e320c7a's tests, and a third was red only on a runner in this machine's time zone.
+
+Rank
+High: none. Every AC has a test at some rung.
+Medium, written, each seen red on its mutant in mutants.txt:
+- a 61-second timer: QA's e2e/list.spec.ts:265
+- rows rebuilt each minute, which draws every marker again (847 arcs became 1463 in two minutes): QA's e2e/list.spec.ts:278
+- a page that reads local time as UTC: e2e/list.spec.ts:193 passes it on a runner in UTC, which is the default on GitHub. QA's e2e/list.spec.ts:309 fails it on any runner
+
+Test gaps (not written), none of them block.
+- Low, a phone that sleeps: while a phone's screen is off or the tab is in the background, the browser may hold the timer back, so a status can be out of date for a moment when the page comes back. Not measured: page.clock can't show it, and nothing here ran on a real phone. The spec says every minute and asks for nothing on waking.
+- Low, an open page crossing an edge: Closed now to Open now, and a 24/7 place losing or gaining its status as the window ends or starts, in the probe only. They use the same timer and rule as e2e/list.spec.ts:235.
+- Low, the CSS: no test holds .place-status at display: block and 14 px. The probe reads both on all three viewports, with no sideways scroll and the status between the kind and the link.
+- Low, a screen reader: a status that changes on screen isn't announced, as there is no live region. The spec doesn't ask for one.
+- Low, unreachable: dropping clearInterval goes unnoticed, because App never unmounts. Dropping !hoursWindowStart changes nothing, because Date.parse(undefined) is NaN and :17 of src/core/hours.ts treats it as outside the window.

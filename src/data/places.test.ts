@@ -62,6 +62,18 @@ describe('placeLoader', () => {
     expect(ids(loader)).toEqual(['a', 'b', 'c'])
   })
 
+  it('gives the start of the hours window once the manifest has arrived', async () => {
+    const hoursWindowStart = '2026-11-01T23:00:00.000Z'
+    const { fetchData } = fakeSite({ 'manifest.json': { ...manifest, hoursWindowStart } })
+    const loader = placeLoader(fetchData, () => {})
+
+    loader.moveTo(null)
+    expect(loader.hoursWindowStart).toBeUndefined()
+    await settle()
+
+    expect(loader.hoursWindowStart).toBe(hoursWindowStart)
+  })
+
   it('waits for a manifest still on its way, then loads the cells for the latest point', async () => {
     const { asked, fetchData } = fakeSite()
     const loader = placeLoader(fetchData, () => {})

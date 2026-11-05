@@ -1,0 +1,436 @@
+// QA's probes for #15. Not part of the suite: it writes row dumps and measurements to QA_OUT.
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { cellKey } from '../src/core/cells'
+import type { Place } from '../src/core/types'
+import { expect, test } from './fixtures'
+import { box, button, centre, expectNear, mapCentre } from './map-helpers'
+
+const out = process.env.QA_OUT!
+mkdirSync(out, { recursive: true })
+const log = (line: string) => appendFileSync(join(out, 'probe.log'), `${line}\n`)
+
+const deakTer = { lat: 47.4975, lon: 19.0545 }
+const row = (page: Page, name: string) => page.locator('.place', { has: page.getByText(name, { exact: true }) })
+const statusOf = (page: Page, name: string) => row(page, name).locator('.place-status')
+const statusText = async (page: Page, name: string) => {
+  const found = statusOf(page, name)
+  return (await found.count()) ? found.textContent() : null
+}
+
+async function explore(page: Page, name = 'Explore the map') {
+  const errors: string[] = []
+  page.on('pageerror', (error) => {
+    errors.push(error.message)
+    log(`PAGE ERROR ${error.message}`)
+  })
+  page.on('console', (message) => {
+    if (message.type() === 'error') log(`CONSOLE ERROR ${message.text()}`)
+  })
+  await page.goto('/kilato/')
+  await button(page, name).click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+  await expectNear(() => mapCentre(page), deakTer)
+  await expect(page.locator('.place').first()).toBeVisible()
+  return errors
+}
+
+async function showAll(page: Page) {
+  while (await page.locator('.show-more').count()) await page.locator('.show-more').click()
+}
+
+async function serve(page: Page, places: Place[], manifest: object) {
+  const cells = new Map<string, Place[]>()
+  for (const place of places) {
+    const key = cellKey(place.lat, place.lon)
+    cells.set(key, [...(cells.get(key) ?? []), place])
+  }
+  await page.route('**/kilato/data/manifest.json', (route) =>
+    route.fulfill({ json: { cells: [...cells.keys()], wikiLangs: [], ...manifest } }),
+  )
+  await page.route('**/kilato/data/cells/*.json', (route) =>
+    route.fulfill({
+      json: { places: cells.get(new URL(route.request().url()).pathname.split('/').pop()!.replace('.json', '')) ?? [] },
+    }),
+  )
+}
+
+const place = (name: string, more: Partial<Place>): Place => ({
+  id: name,
+  cat: 'food',
+  kind: 'cafe',
+  name,
+  lat: deakTer.lat + 0.001,
+  lon: deakTer.lon,
+  ...more,
+})
+
+const at = (instant: string) => new Date(instant).getTime()
+const iso = (ms: number) => new Date(ms).toISOString()
+
+/** Steps the paused clock one second at a time, and gives the seconds until the row reads `want`. */
+async function secondsUntil(page: Page, name: string, want: string | null, limit = 90) {
+  for (let seconds = 0; seconds <= limit; seconds++) {
+    if ((await statusText(page, name)) === want) return seconds
+    await page.clock.runFor(1000)
+  }
+  return null
+}
+
+test.describe('oracle dumps', () => {
+  const instants = [
+    '2026-11-01T22:59:59.999Z',
+    '2026-11-01T23:00:00.000Z',
+    '2026-11-02T05:59:59.000Z',
+    '2026-11-02T06:00:00.000Z',
+    '2026-11-02T12:00:00.000Z',
+    '2026-11-02T20:59:59.000Z',
+    '2026-11-02T21:00:00.000Z',
+    '2026-11-09T07:30:00.000Z',
+    '2026-11-14T23:30:00.000Z',
+    '2026-11-15T22:59:59.999Z',
+    '2026-11-15T23:00:00.000Z',
+    '2026-11-20T12:00:00.000Z',
+  ]
+  const locales = [
+    ['en-GB', 'Explore the map'],
+    ['hu-HU', 'A térkép felfedezése'],
+    ['de-AT', 'Explore the map'],
+  ] as const
+  for (const [locale, explorer] of locales) {
+    test.describe(locale, () => {
+      test.use({ locale })
+      for (const instant of instants) {
+        test(`rows at ${instant}`, async ({ page }) => {
+          test.setTimeout(90_000)
+          await page.clock.setFixedTime(instant)
+          await explore(page, explorer)
+          await showAll(page)
+          await expect(page.locator('.place')).toHaveCount(308)
+          const rows = await page.evaluate(() =>
+            [...document.querySelectorAll('.places li')].map((li) => ({
+              name: li.querySelector('.place-name')!.textContent,
+              meta: li.querySelector('.place-meta')!.textContent,
+              status: li.querySelector('.place-status')?.textContent ?? null,
+              statusCount: li.querySelectorAll('.place-status').length,
+            })),
+          )
+          writeFileSync(join(out, `rows-${locale}-${instant.replace(/[:.]/g, '')}.json`), JSON.stringify(rows))
+          expect(rows.length).toBe(308)
+        })
+      }
+    })
+  }
+})
+
+test.describe('the change, measured', () => {
+  const closing = at('2026-11-02T21:00:00Z')
+  for (const before of [1, 17, 31, 59]) {
+    test(`Open now to Closed now, with the last tick ${before} s before closing`, async ({ page }) => {
+      test.setTimeout(120_000)
+      await page.clock.install({ time: '2026-11-02T20:50:00Z' })
+      await explore(page)
+      await expect(statusOf(page, 'Minta Kávézó')).toHaveText('Open now')
+      await page.clock.pauseAt(iso(closing - before * 1000))
+      await expect(statusOf(page, 'Minta Kávézó')).toHaveText('Open now')
+      const seconds = await secondsUntil(page, 'Minta Kávézó', 'Closed now')
+      const lag = seconds === null ? null : seconds - before
+      log(`close: last tick ${before} s before closing, the row turns ${lag} s after closing`)
+      expect(lag).not.toBeNull()
+      expect(lag!).toBeGreaterThanOrEqual(0)
+      expect(lag!).toBeLessThanOrEqual(60)
+    })
+  }
+
+  test('Closed now to Open now, at the opening time', async ({ page }) => {
+    test.setTimeout(120_000)
+    await page.clock.install({ time: '2026-11-02T05:50:00Z' })
+    await explore(page)
+    await expect(statusOf(page, 'Minta Kávézó')).toHaveText('Closed now')
+    await page.clock.pauseAt('2026-11-02T05:59:30Z')
+    const seconds = await secondsUntil(page, 'Minta Kávézó', 'Open now')
+    log(`open: the row turns ${seconds === null ? null : seconds - 30} s after opening`)
+    expect(seconds).not.toBeNull()
+    expect(seconds! - 30).toBeLessThanOrEqual(60)
+  })
+
+  test('a 24/7 place loses its status as the window ends, on an open page', async ({ page }) => {
+    test.setTimeout(120_000)
+    await page.clock.install({ time: '2026-11-15T22:50:00Z' })
+    await explore(page)
+    await showAll(page)
+    await expect(statusOf(page, 'Minta Gyógyszertár')).toHaveText('Open now')
+    await page.clock.pauseAt('2026-11-15T22:59:30Z')
+    const seconds = await secondsUntil(page, 'Minta Gyógyszertár', null)
+    log(`window end: the row loses its status ${seconds === null ? null : seconds - 30} s after the window ends`)
+    expect(seconds).not.toBeNull()
+    expect(seconds! - 30).toBeLessThanOrEqual(60)
+  })
+
+  test('a 24/7 place gains its status as the window starts, on an open page', async ({ page }) => {
+    test.setTimeout(120_000)
+    await page.clock.install({ time: '2026-11-01T22:50:00Z' })
+    await explore(page)
+    await showAll(page)
+    await expect(statusOf(page, 'Minta Gyógyszertár')).toHaveCount(0)
+    await page.clock.pauseAt('2026-11-01T22:59:30Z')
+    const seconds = await secondsUntil(page, 'Minta Gyógyszertár', 'Open now')
+    log(`window start: the row gains its status ${seconds === null ? null : seconds - 30} s after the window starts`)
+    expect(seconds).not.toBeNull()
+    expect(seconds! - 30).toBeLessThanOrEqual(60)
+  })
+
+  test('with the real clock, no faking', async ({ page }) => {
+    test.setTimeout(150_000)
+    const close = Date.now() + 20_000
+    await serve(page, [place('Real clock', { hours: [[0, 1320]] })], {
+      hoursWindowStart: iso(close - 1320 * 60_000),
+    })
+    await explore(page)
+    await expect(statusOf(page, 'Real clock')).toHaveText('Open now')
+    await expect(statusOf(page, 'Real clock')).toHaveText('Closed now', { timeout: 95_000 })
+    const lag = (Date.now() - close) / 1000
+    log(`real clock: closing to the row turning took ${lag.toFixed(1)} s`)
+    expect(lag).toBeGreaterThan(0)
+    expect(lag).toBeLessThan(62)
+  })
+})
+
+test.describe('the minute render changes nothing else', () => {
+  test('popup, highlight, map, focus, scroll, rows and requests all stay', async ({ page }) => {
+    test.setTimeout(120_000)
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.addInitScript(() => {
+      const original = CanvasRenderingContext2D.prototype.arc
+      ;(window as unknown as { arcs: number }).arcs = 0
+      CanvasRenderingContext2D.prototype.arc = function (...args) {
+        ;(window as unknown as { arcs: number }).arcs++
+        return original.apply(this, args)
+      }
+    })
+    await page.clock.install({ time: '2026-11-02T20:30:00Z' })
+    const errors = await explore(page)
+    await page.locator('.show-more').click()
+    await expect(page.locator('.place')).toHaveCount(200)
+
+    await row(page, 'Minta Kávézó').click()
+    await expect(page.locator('.leaflet-popup-content')).toHaveText('Minta Kávézó')
+    // Let any map animation finish, then drag the map away from the place.
+    await page.clock.runFor(2000)
+    // On a phone the tap scrolled the map off the screen, and a mouse can't drag it from there.
+    await page.evaluate(() => window.scrollTo(0, 0))
+    const centreBeforeDrag = await mapCentre(page)
+    const area = centre(await box(page, '.leaflet-container'))
+    await page.mouse.move(area.x, area.y)
+    await page.mouse.down()
+    await page.mouse.move(area.x - 60, area.y - 30, { steps: 4 })
+    await page.mouse.up()
+    await page.clock.runFor(2000)
+
+    await row(page, 'Minta Pékség').focus()
+    await page.evaluate(() => window.scrollTo(0, 400))
+    await page.evaluate(() => {
+      ;(document.querySelectorAll('.place')[150] as unknown as { qaMark: string }).qaMark = 'kept'
+    })
+
+    const read = () =>
+      page.evaluate(() => ({
+        arcs: (window as unknown as { arcs: number }).arcs,
+        popup: document.querySelector('.leaflet-popup-content')?.textContent ?? null,
+        current: document.querySelector('[aria-current]')?.querySelector('.place-name')?.textContent ?? null,
+        focused: document.activeElement?.querySelector('.place-name')?.textContent ?? null,
+        scrollY: Math.round(window.scrollY),
+        rows: document.querySelectorAll('.place').length,
+        sameNode: (document.querySelectorAll('.place')[150] as unknown as { qaMark?: string }).qaMark === 'kept',
+        mapPane: (document.querySelector('.leaflet-map-pane') as HTMLElement).style.transform,
+      }))
+    const requests: string[] = []
+    page.on('request', (request) => requests.push(request.url()))
+
+    const before = await read()
+    const centreBefore = await mapCentre(page)
+    await page.clock.runFor(5 * 60_000)
+    await expect(statusOf(page, 'Minta Kávézó')).toHaveText('Open now')
+    const after = await read()
+    const centreAfter = await mapCentre(page)
+    log(`minute render, map centre: before the drag ${JSON.stringify(centreBeforeDrag)}, after it ${JSON.stringify(centreBefore)}, 5 minutes on ${JSON.stringify(centreAfter)}`)
+    expect(centreBefore).not.toEqual(centreBeforeDrag)
+    expect(centreAfter).toEqual(centreBefore)
+    log(`minute render, before: ${JSON.stringify(before)}`)
+    log(`minute render, after 5 minutes: ${JSON.stringify(after)}`)
+    log(`minute render, requests in 5 minutes: ${requests.length}, page errors: ${errors.length}`)
+    expect(after).toEqual(before)
+    expect(requests).toEqual([])
+    expect(errors).toEqual([])
+  })
+
+  test('the status changes on a row that stays the same element, with the focus on it', async ({ page }) => {
+    await page.clock.install({ time: '2026-11-02T20:50:00Z' })
+    await explore(page)
+    await row(page, 'Minta Kávézó').focus()
+    await page.clock.pauseAt('2026-11-02T20:59:59Z')
+    await page.clock.runFor(61_000)
+    await expect(statusOf(page, 'Minta Kávézó')).toHaveText('Closed now')
+    const focused = await page.evaluate(() => document.activeElement?.querySelector('.place-name')?.textContent)
+    log(`focus on the row that changes: ${focused}`)
+    expect(focused).toBe('Minta Kávézó')
+  })
+
+  test('the intro screen and the timer', async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    await page.clock.install({ time: '2026-11-02T20:50:00Z' })
+    await page.goto('/kilato/')
+    await expect(button(page, 'Explore the map')).toBeVisible()
+    await page.clock.runFor(11 * 60_000)
+    await expect(button(page, 'Explore the map')).toBeVisible()
+    await button(page, 'Explore the map').click()
+    await expect(statusOf(page, 'Minta Kávézó')).toHaveText('Closed now')
+    log(`eleven minutes on the intro screen, past 21:00, then the first list: Minta Kávézó reads Closed now, page errors: ${errors.length}`)
+    expect(errors).toEqual([])
+  })
+})
+
+test.describe('a phone on another clock', () => {
+  for (const timezoneId of ['Europe/Budapest', 'America/Los_Angeles', 'Asia/Tokyo', 'Pacific/Kiritimati']) {
+    test.describe(timezoneId, () => {
+      test.use({ timezoneId })
+      test('reads the same statuses', async ({ page }) => {
+        await page.clock.setFixedTime('2026-11-02T20:50:00Z')
+        await explore(page)
+        const shown = [await statusText(page, 'Minta Kávézó'), await statusText(page, 'Minta Pékség')]
+        log(`${timezoneId}: Minta Kávézó ${shown[0]}, Minta Pékség ${shown[1]}`)
+        expect(shown).toEqual(['Open now', 'Closed now'])
+      })
+    })
+  }
+})
+
+test.describe('data edges, through the page', () => {
+  const window = { hoursWindowStart: '2026-11-01T23:00:00.000Z' }
+  const noon = '2026-11-02T12:00:00Z'
+
+  test('an empty list of hours reads Closed now, and no hours reads nothing', async ({ page }) => {
+    await page.clock.setFixedTime(noon)
+    await serve(page, [place('Empty', { hours: [] }), place('None', {})], window)
+    await explore(page)
+    await expect(statusOf(page, 'Empty')).toHaveText('Closed now')
+    await expect(statusOf(page, 'None')).toHaveCount(0)
+    log('hours [] reads Closed now, no hours reads nothing')
+  })
+
+  test('a manifest with no window start shows nothing and breaks nothing', async ({ page }) => {
+    await page.clock.setFixedTime(noon)
+    await serve(page, [place('Open', { hours: [[0, 20160]] })], {})
+    const errors = await explore(page)
+    await expect(row(page, 'Open')).toBeVisible()
+    await expect(statusOf(page, 'Open')).toHaveCount(0)
+    log(`manifest with no window start: no status, page errors ${errors.length}`)
+    expect(errors).toEqual([])
+  })
+
+  test('a window start that does not parse shows nothing and breaks nothing', async ({ page }) => {
+    await page.clock.setFixedTime(noon)
+    await serve(page, [place('Open', { hours: [[0, 20160]] })], { hoursWindowStart: 'soon' })
+    const errors = await explore(page)
+    await expect(row(page, 'Open')).toBeVisible()
+    await expect(statusOf(page, 'Open')).toHaveCount(0)
+    log(`window start that does not parse: no status, page errors ${errors.length}`)
+    expect(errors).toEqual([])
+  })
+
+  test('a failed cell leaves the statuses on the rows that did load', async ({ page }) => {
+    await page.clock.setFixedTime('2026-11-02T20:50:00Z')
+    await page.route('**/kilato/data/cells/4749_1269.json', (route) => route.abort())
+    await explore(page)
+    await expect(page.getByRole('alert')).toContainText("Couldn't load places")
+    await expect(statusOf(page, 'Minta Kávézó')).toHaveText('Open now')
+    log(`a failed cell: the message shows, and Minta Kávézó still reads ${await statusText(page, 'Minta Kávézó')}`)
+  })
+
+  test('a place in a cell that arrives late gets its status at once', async ({ page }) => {
+    await page.clock.setFixedTime(noon)
+    await serve(page, [place('Late', { hours: [[0, 20160]] })], window)
+    let release = () => {}
+    const held = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    await page.route('**/kilato/data/cells/*.json', async (route) => {
+      await held
+      await route.fallback()
+    })
+    await page.goto('/kilato/')
+    await button(page, 'Explore the map').click()
+    await expect(page.locator('.pin')).toBeVisible()
+    await expect(page.locator('.place')).toHaveCount(0)
+    release()
+    await expect(statusOf(page, 'Late')).toHaveText('Open now')
+    log('a late cell: its row has its status with no minute passing')
+  })
+})
+
+test.describe('a row, read as a person reads it', () => {
+  for (const [name, width, height] of [
+    ['desktop', 1920, 1080],
+    ['tablet', 1024, 768],
+    ['mobile', 375, 667],
+  ] as const) {
+    test.describe(name, () => {
+      test.use({ viewport: { width, height }, locale: 'hu-HU' })
+      test('order, size, colour, name and width', async ({ page }) => {
+        await page.clock.setFixedTime('2026-11-02T12:00:00Z')
+        await explore(page, 'A térkép felfedezése')
+        await showAll(page)
+        const opera = await page.evaluate(() => {
+          const button = [...document.querySelectorAll('.place')].find(
+            (element) => element.querySelector('.place-name')!.textContent === 'Magyar Állami Operaház',
+          )!
+          const li = button.closest('li')!
+          const status = button.querySelector('.place-status')!
+          const style = getComputedStyle(status)
+          const y = (element: Element) => Math.round(element.getBoundingClientRect().top)
+          return {
+            children: [...button.children].map((child) => child.className),
+            afterButton: button.nextElementSibling?.className ?? null,
+            linkText: button.nextElementSibling?.textContent ?? null,
+            statusText: status.textContent,
+            metaY: y(button.querySelector('.place-meta')!),
+            statusY: y(status),
+            linkY: y(button.nextElementSibling!),
+            fontSize: style.fontSize,
+            display: style.display,
+            color: style.color,
+            background: getComputedStyle(document.body).backgroundColor,
+            scrollWidth: document.documentElement.scrollWidth,
+            liChildren: li.children.length,
+          }
+        })
+        log(`${name}: ${JSON.stringify(opera)}`)
+        expect(opera.children.at(-1)).toBe('place-status')
+        expect(opera.afterButton).toBe('place-wiki')
+        expect(opera.statusY).toBeGreaterThan(opera.metaY)
+        expect(opera.linkY).toBeGreaterThan(opera.statusY)
+        expect(opera.display).toBe('block')
+        expect(opera.fontSize).toBe('14px')
+        expect(opera.scrollWidth).toBe(width)
+        await expect(page.getByRole('button', { name: /Magyar Állami Operaház.*Most nyitva/ })).toBeVisible()
+      })
+    })
+  }
+
+  test.describe('in the location mode', () => {
+    test.use({ geolocation: { latitude: 47.4975, longitude: 19.0545, accuracy: 20 }, permissions: ['geolocation'] })
+    test('rows follow the same rule', async ({ page }) => {
+      await page.clock.install({ time: '2026-11-02T20:59:00Z' })
+      await page.goto('/kilato/')
+      // With the permission granted, the page follows the location from the start.
+      await expect(statusOf(page, 'Minta Kávézó')).toHaveText('Open now')
+      await page.clock.pauseAt('2026-11-02T20:59:59Z')
+      await page.clock.runFor(61_000)
+      await expect(statusOf(page, 'Minta Kávézó')).toHaveText('Closed now')
+      log('location mode: Open now, then Closed now within a minute of closing')
+    })
+  })
+})
