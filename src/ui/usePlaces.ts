@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks'
 import { listRadius, nearby, type LatLon } from '../core/geo'
 import { openStatus } from '../core/hours'
 import type { Place } from '../core/types'
+import { wikiLink } from '../core/wiki'
 import { placeLoader } from '../data/places'
 
 const pageSize = 100
@@ -18,13 +19,14 @@ export interface Selection {
   source: 'row' | 'marker'
 }
 
-/** The places around the point, nearest first, how many of them show as rows, which one is tapped, and which are open. */
-export function usePlaces(point: LatLon | null) {
+/** The places around the point, nearest first, how many show as rows, which one is tapped, which are open, and each one's article. */
+export function usePlaces(point: LatLon | null, phone: string) {
   const [, setVersion] = useState(0)
   const [loader] = useState(() =>
     placeLoader(
       (url) => fetch(url),
       () => setVersion((version) => version + 1),
+      phone,
     ),
   )
   const [shown, setShown] = useState(pageSize)
@@ -66,5 +68,6 @@ export function usePlaces(point: LatLon | null) {
     statusOf: (place: Place) => openStatus(place.hours, loader.hoursWindowStart, now),
     failed: loader.failed,
     retry: loader.retry,
+    wikiLink: (place: Place) => wikiLink(place.wiki, phone, loader.wikiTitles),
   }
 }

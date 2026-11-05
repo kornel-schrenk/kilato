@@ -60,13 +60,15 @@
         padding: 0;
         list-style: none;
       }
+      .places li {
+        border-bottom: 1px solid #ddd;
+      }
       .place {
         display: block;
         width: 100%;
         min-height: 44px;
         padding: 0.25rem;
         border: 0;
-        border-bottom: 1px solid #ddd;
         background: none;
         color: inherit;
         font: inherit;
@@ -88,6 +90,12 @@
       }
       .place-meta {
         color: #555;
+      }
+      .place-wiki {
+        display: inline-block;
+        padding: 0 0.25rem;
+        font-size: 0.875rem;
+        line-height: 44px;
       }
       @media (min-width: 900px) {
         #app {
