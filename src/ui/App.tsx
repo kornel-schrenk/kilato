@@ -3,6 +3,7 @@ import { inCoverage } from '../core/coverage'
 import { phoneLanguage, uiLanguage, type Lang } from '../core/lang'
 import { en } from '../i18n/en'
 import { hu } from '../i18n/hu'
+import { categories, CategoryChips } from './CategoryChips'
 import { MapView } from './MapView'
 import { PlaceList } from './PlaceList'
 import { usePlaces } from './usePlaces'
@@ -32,10 +33,12 @@ function saveLang(lang: Lang) {
 }
 
 export function App() {
-  const [lang, setLang] = useState(() => uiLanguage(savedLang(), phoneLanguage(navigator.languages)))
+  // Read once, because the titles the page loads are in this language.
+  const [phone] = useState(() => phoneLanguage(navigator.languages))
+  const [lang, setLang] = useState(() => uiLanguage(savedLang(), phone))
   const t = messages[lang]
   const [point, dispatch] = usePoint()
-  const places = usePlaces(point.point)
+  const places = usePlaces(point.point, phone)
   const outside = point.point !== null && !inCoverage(point.point)
 
   useLayoutEffect(() => {
@@ -87,12 +90,21 @@ export function App() {
         {outside ? (
           <>
             <p>{t.outsideBudapest}</p>
-            <button type="button" onClick={() => dispatch({ type: 'explore' })}>
+            <button type="button" class="go-to-budapest" onClick={() => dispatch({ type: 'explore' })}>
               {t.goToBudapest}
             </button>
           </>
         ) : (
           <>
+            <div class="order" role="group" aria-label={t.order}>
+              <button type="button" aria-pressed={places.order === 'nearest'} onClick={() => places.setOrder('nearest')}>
+                {t.nearest}
+              </button>
+              <button type="button" aria-pressed={places.order === 'relevant'} onClick={() => places.setOrder('relevant')}>
+                {t.mostRelevant}
+              </button>
+            </div>
+            <CategoryChips off={places.categoriesOff} onToggle={places.toggleCategory} t={t} />
             {places.failed && (
               <p role="alert" class="load-error">
                 {t.placesFailed}{' '}
@@ -101,12 +113,22 @@ export function App() {
                 </button>
               </p>
             )}
+            {places.categoriesOff.size === categories.length && (
+              <p class="all-off">
+                {t.allCategoriesOff}{' '}
+                <button type="button" onClick={places.allCategoriesOn}>
+                  {t.turnAllOn}
+                </button>
+              </p>
+            )}
             <PlaceList
-              rows={places.rows}
+              rows={places.listRows}
               shown={places.shown}
               selection={places.selection}
               onSelect={places.select}
               onShowMore={places.showMore}
+              statusOf={places.statusOf}
+              wikiLink={places.wikiLink}
               lang={lang}
               t={t}
             />

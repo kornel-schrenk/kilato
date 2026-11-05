@@ -28,6 +28,15 @@ describe.each([
   })
 })
 
+it.each([
+  { edge: 'west', point: { ...middle, lon: west } },
+  { edge: 'east', point: { ...middle, lon: east } },
+  { edge: 'south', point: { ...middle, lat: south } },
+  { edge: 'north', point: { ...middle, lat: north } },
+])('covers a point exactly on the $edge edge', ({ point }) => {
+  expect(inCoverage(point)).toBe(true)
+})
+
 it('does not cover Vienna', () => {
   expect(inCoverage({ lat: 48.2082, lon: 16.3738 })).toBe(false)
 })

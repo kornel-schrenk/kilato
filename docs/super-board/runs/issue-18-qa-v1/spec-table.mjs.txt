@@ -1,0 +1,49 @@
+// QA's check for #18: the numbers and the labels in the code against the spec's text, read from the file.
+// Run from the worktree: node <this file>. It imports the code and nothing here is committed in src.
+import { readFileSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
+import { join } from 'node:path'
+
+const root = process.cwd()
+const load = (path) => import(pathToFileURL(join(root, path)).href)
+const { adjustments } = await load('src/core/rank.ts')
+const { en } = await load('src/i18n/en.ts')
+const { hu } = await load('src/i18n/hu.ts')
+
+const spec = readFileSync(join(root, 'spec/2026-11-02-kilato-mvp.md'), 'utf8')
+const section = spec.slice(spec.indexOf('### Order'), spec.indexOf('### Category filter'))
+const rows = [...section.matchAll(/^\| (.+?) \| (.+?) \|$/gm)]
+  .map(([, signal, value]) => [signal, value])
+  .filter(([signal]) => signal !== 'Signal' && !signal.startsWith('---'))
+
+const metres = (text) => Number(text.replace('−', '-').replace('+', '').replace(' m', ''))
+const inCode = {
+  'Has a Wikipedia article': [adjustments.article],
+  Sights: [adjustments.category.sights],
+  'Notable places, Culture & leisure': [adjustments.category.notable, adjustments.category.leisure],
+  'Food & drink': [adjustments.category.food],
+  'Services, Shops': [adjustments.category.services, adjustments.category.shops],
+  'Open now': [adjustments.status.open],
+  'Closed now': [adjustments.status.closed],
+  'Hours unknown': [adjustments.status.unknown],
+}
+
+let wrong = 0
+for (const [signal, value] of rows) {
+  const code = inCode[signal]
+  const ok = code && code.every((n) => n === metres(value))
+  if (!ok) wrong++
+  console.log(`${ok ? 'same' : 'DIFFERENT'}: ${signal} · spec ${value} · code ${code?.join(', ')}`)
+}
+if (rows.length !== Object.keys(inCode).length) {
+  wrong++
+  console.log(`DIFFERENT: ${rows.length} rows in the spec, ${Object.keys(inCode).length} here`)
+}
+
+const labels = section.match(/^Labels: (.+?) \/ (.+?), (.+?) \/ (.+?)\.$/m).slice(1)
+const inCodeLabels = [en.nearest, hu.nearest, en.mostRelevant, hu.mostRelevant]
+const same = labels.every((label, i) => label === inCodeLabels[i])
+if (!same) wrong++
+console.log(`${same ? 'same' : 'DIFFERENT'}: labels · spec ${labels.join(', ')} · code ${inCodeLabels.join(', ')}`)
+console.log(wrong ? `${wrong} DIFFERENT` : '0 different')
+process.exit(wrong ? 1 : 0)

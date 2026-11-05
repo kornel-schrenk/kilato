@@ -1,0 +1,22 @@
+CI. GitHub check verify: success on builder head a28755c, run 41982362602. The QA commits start their own run on push. They add 3 tests and this evidence folder.
+
+pr-security-review, diff of develop...a28755c, base 7cc1db7, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- src/core/wiki.ts:12: the URL's scheme and host are fixed, and the title goes through encodeURI, with ? encoded after it. So a title can't change the scheme or the host, and can't add a query.
+- A title can come from an OpenStreetMap wikipedia tag (scripts/data/merge.ts:15), which anyone can edit. These titles ran through the same two calls, and the new URL.origin stayed https://hu.wikipedia.org for each one:
+    ../../w/index.php?title=Special:UserLogout  gives https://hu.wikipedia.org/w/index.php%3Ftitle=Special:UserLogout
+    javascript:alert(1)  gives https://hu.wikipedia.org/wiki/javascript:alert(1)
+    //evil.example/x  gives https://hu.wikipedia.org/wiki///evil.example/x
+    @evil.example  gives https://hu.wikipedia.org/wiki/@evil.example
+    a"><script>  gives https://hu.wikipedia.org/wiki/a%22%3E%3Cscript%3E
+    x?y=1&z=2  gives https://hu.wikipedia.org/wiki/x%3Fy=1&z=2
+  ../ can reach another path on the same Wikipedia, as can any article link. That is no boundary crossed.
+- src/core/wiki.ts:22: the host's language is `phone` only when a title came from the title file. `phone` comes from navigator.languages (src/ui/App.tsx:35), which is the visitor's own browser, and the file loads only when the same-origin manifest lists it (src/data/places.ts:61). Otherwise the language is the literal hu or en. A host-changing value such as evil.example/# would need the visitor's own browser and our own manifest to both name it.
+- src/data/places.ts:62: the path wiki/<phone>.json is built only from a value the manifest lists, on the same origin.
+- src/ui/PlaceList.tsx:52: the link's href and text are Preact attributes and text. No dangerouslySetInnerHTML.
+- src/ui/PlaceList.tsx:52: target="_blank" has rel="noreferrer". The probe reads a null window.opener and no Referer in the new tab, and QA's e2e/list.spec.ts:366 now holds the Referer.
+- The location: the title file's path holds a language, never a point. The probe saw hosts 127.0.0.1 and tile.openstreetmap.org only, and no Wikipedia host before a tap on a link.
+- Added lines in src and index.html: 0 matches for innerHTML, dangerouslySetInnerHTML, eval, new Function, document.write, XMLHttpRequest, sendBeacon, localStorage, sessionStorage, cookie, postMessage, window.open, location.href, setContent. The only URL in code is the one at src/core/wiki.ts:12.
+- No new package: package.json and package-lock.json are not in the diff. No workflow file is in the diff.
+- Secret scan of the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.
+- e2e and unit test files are out of scope for the skill, and so are the docs and the screenshots.

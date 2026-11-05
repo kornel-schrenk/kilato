@@ -1,0 +1,100 @@
+// QA's screenshots for #16. Not part of the suite: it writes them to QA_OUT.
+import { mkdirSync } from 'node:fs'
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { expect, test } from './fixtures'
+import { button, expectNear, mapCentre } from './map-helpers'
+
+const out = process.env.QA_OUT!
+const before = process.env.QA_BEFORE === '1'
+mkdirSync(out, { recursive: true })
+const deakTer = { lat: 47.4975, lon: 19.0545 }
+const museum = 'Földalatti Vasúti Múzeum'
+const busStation = 'Erzsébet tér autóbusz-pályaudvar'
+
+async function explore(page: Page) {
+  await page.goto('/kilato/')
+  await button(page, 'Explore the map').click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+  await expectNear(() => mapCentre(page), deakTer)
+  await expect(page.locator('.place').first()).toBeVisible()
+}
+
+const row = (page: Page, name: string) => page.locator('.places li', { has: page.locator('.place-name', { hasText: new RegExp(`^${name}$`) }) })
+const link = (page: Page, name: string) => row(page, name).getByRole('link')
+
+for (const [name, width, height] of [
+  ['desktop', 1920, 1080],
+  ['tablet', 1024, 768],
+  ['mobile', 375, 667],
+] as const) {
+  const shot = (page: Page, file: string) => page.screenshot({ path: join(out, `${file}-${name}.png`) })
+
+  test.describe(name, () => {
+    test.use({ viewport: { width, height } })
+
+    test.describe('a German phone', () => {
+      test.use({ locale: 'de-AT' })
+
+      if (before) {
+        test('before', async ({ page }) => {
+          await explore(page)
+          await row(page, museum).scrollIntoViewIfNeeded()
+          await shot(page, 'before-develop')
+        })
+      } else {
+        test('AC1, AC2, AC3', async ({ page }) => {
+          await explore(page)
+          await expect(link(page, museum)).toHaveText('Wikipedia · DE')
+          await row(page, museum).scrollIntoViewIfNeeded()
+          await shot(page, 'after')
+
+          await button(page, 'HU').click()
+          await expect(page.locator('html')).toHaveAttribute('lang', 'hu')
+          await expect(link(page, museum)).toHaveText('Wikipedia · DE')
+          await row(page, museum).scrollIntoViewIfNeeded()
+          await shot(page, 'ac1-hu-ui-german-phone')
+
+          await button(page, 'EN').click()
+          await expect(link(page, busStation)).toHaveText('Wikipedia · HU')
+          await row(page, busStation).scrollIntoViewIfNeeded()
+          await shot(page, 'ac2-no-german-article')
+
+          await row(page, museum).locator('.place').focus()
+          await page.keyboard.press('Tab')
+          await expect(link(page, museum)).toBeFocused()
+          await link(page, museum).scrollIntoViewIfNeeded()
+          await shot(page, 'ac3-link-focused')
+        })
+
+        if (name === 'mobile') {
+          test('a tapped row, and a failed title file', async ({ page }) => {
+            await page.route('**/kilato/data/wiki/de.json', (route) => route.fulfill({ status: 404 }))
+            await explore(page)
+            await expect(page.getByRole('alert')).toBeVisible()
+            await expect(link(page, museum)).toHaveText('Wikipedia · HU')
+            await shot(page, 'title-file-failed')
+
+            await row(page, museum).locator('.place').click()
+            await expect(row(page, museum).locator('.place')).toHaveAttribute('aria-current', 'true')
+            await shot(page, 'row-tapped')
+          })
+        }
+      }
+    })
+
+    if (!before) {
+      test.describe('a French phone', () => {
+        test.use({ locale: 'fr-FR' })
+
+        test('AC4', async ({ page }) => {
+          await explore(page)
+          await expect(link(page, museum)).toHaveText('Wikipedia · HU')
+          await row(page, museum).scrollIntoViewIfNeeded()
+          await shot(page, 'ac4-french-phone')
+        })
+      })
+    }
+  })
+}

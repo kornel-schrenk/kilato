@@ -1,0 +1,32 @@
+QA's probes for #15, one run of all 60 on the build of dab05fa, whose app code is e320c7a's: 60 passed. probe-spec.ts.txt has them, and oracle.txt reads the row dumps.
+An earlier run failed 2 of them through mistakes in the probe, not in the page: it took 20:55 for a time past closing, and clicked a button a granted location skips. A third probe's drag did nothing, because the tap had scrolled the map off the phone's screen. All three are corrected here.
+The one console error comes from the probe aborting a cell on purpose.
+
+close: last tick 1 s before closing, the row turns 59 s after closing
+close: last tick 17 s before closing, the row turns 43 s after closing
+close: last tick 31 s before closing, the row turns 29 s after closing
+close: last tick 59 s before closing, the row turns 1 s after closing
+open: the row turns 30 s after opening
+window end: the row loses its status 30 s after the window ends
+window start: the row gains its status 30 s after the window starts
+real clock: closing to the row turning took 41.2 s
+minute render, map centre: before the drag {"lat":47.49748605089482,"lon":19.05452013015747}, after it {"lat":47.49621027411471,"lon":19.058339595794678}, 5 minutes on {"lat":47.49621027411471,"lon":19.058339595794678}
+minute render, before: {"arcs":849,"popup":"Minta Kávézó","current":"Minta Kávézó","focused":"Minta Pékség","scrollY":400,"rows":200,"sameNode":true,"mapPane":"translate3d(-89px, -44px, 0px)"}
+minute render, after 5 minutes: {"arcs":849,"popup":"Minta Kávézó","current":"Minta Kávézó","focused":"Minta Pékség","scrollY":400,"rows":200,"sameNode":true,"mapPane":"translate3d(-89px, -44px, 0px)"}
+minute render, requests in 5 minutes: 0, page errors: 0
+focus on the row that changes: Minta Kávézó
+eleven minutes on the intro screen, past 21:00, then the first list: Minta Kávézó reads Closed now, page errors: 0
+Europe/Budapest: Minta Kávézó Open now, Minta Pékség Closed now
+America/Los_Angeles: Minta Kávézó Open now, Minta Pékség Closed now
+Asia/Tokyo: Minta Kávézó Open now, Minta Pékség Closed now
+Pacific/Kiritimati: Minta Kávézó Open now, Minta Pékség Closed now
+hours [] reads Closed now, no hours reads nothing
+manifest with no window start: no status, page errors 0
+window start that does not parse: no status, page errors 0
+CONSOLE ERROR Failed to load resource: net::ERR_FAILED
+a failed cell: the message shows, and Minta Kávézó still reads Open now
+a late cell: its row has its status with no minute passing
+desktop: {"children":["place-name","place-meta","place-status"],"afterButton":"place-wiki","linkText":"Wikipedia · HU","statusText":"Most nyitva","metaY":-6702,"statusY":-6686,"linkY":-6666,"fontSize":"14px","display":"block","color":"rgb(0, 0, 0)","background":"rgba(0, 0, 0, 0)","scrollWidth":1920,"liChildren":2}
+tablet: {"children":["place-name","place-meta","place-status"],"afterButton":"place-wiki","linkText":"Wikipedia · HU","statusText":"Most nyitva","metaY":-7177,"statusY":-7161,"linkY":-7141,"fontSize":"14px","display":"block","color":"rgb(0, 0, 0)","background":"rgba(0, 0, 0, 0)","scrollWidth":1024,"liChildren":2}
+mobile: {"children":["place-name","place-meta","place-status"],"afterButton":"place-wiki","linkText":"Wikipedia · HU","statusText":"Most nyitva","metaY":-7314,"statusY":-7298,"linkY":-7278,"fontSize":"14px","display":"block","color":"rgb(0, 0, 0)","background":"rgba(0, 0, 0, 0)","scrollWidth":375,"liChildren":2}
+location mode: Open now, then Closed now within a minute of closing

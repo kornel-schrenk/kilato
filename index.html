@@ -52,13 +52,43 @@
       }
       .intro-buttons button,
       .load-error button,
+      .all-off button,
+      .go-to-budapest,
       .show-more {
         min-height: 44px;
+      }
+      .order,
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin: 0.5rem 0;
+      }
+      .order button,
+      .chip {
+        min-height: 44px;
+        padding: 0 0.75rem;
+        border: 2px solid var(--chip-color, #555);
+        border-radius: 22px;
+        background: none;
+        color: #555;
+        font: inherit;
+      }
+      .order button[aria-pressed='true'] {
+        background: #555;
+        color: #fff;
+      }
+      .chip[aria-pressed='true'] {
+        background: var(--chip-color);
+        color: var(--chip-text-color);
       }
       .places {
         margin: 0.5rem 0;
         padding: 0;
         list-style: none;
+      }
+      .places li {
+        border-bottom: 1px solid #ddd;
       }
       .place {
         display: block;
@@ -66,7 +96,6 @@
         min-height: 44px;
         padding: 0.25rem;
         border: 0;
-        border-bottom: 1px solid #ddd;
         background: none;
         color: inherit;
         font: inherit;
@@ -81,12 +110,19 @@
         font-weight: 600;
       }
       .place-other,
-      .place-meta {
+      .place-meta,
+      .place-status {
         display: block;
         font-size: 0.875rem;
       }
       .place-meta {
         color: #555;
+      }
+      .place-wiki {
+        display: inline-block;
+        padding: 0 0.25rem;
+        font-size: 0.875rem;
+        line-height: 44px;
       }
       @media (min-width: 900px) {
         #app {

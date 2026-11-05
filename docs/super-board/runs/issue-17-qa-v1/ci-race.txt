@@ -1,0 +1,34 @@
+The CI failure on builder head 1c04268, and why the fix is in the test.
+
+===== CI verify, run 41984947564, on 1c04268
+1 failed, 153 passed:
+  e2e/list.spec.ts:924:5 › the category chips › with every chip off › the list says so, and its button turns them all back on
+    Error: expect(received).toBeNull()
+    Received: "#666666"
+    > 934 |       expect(await markerColor(page, books)).toBeNull()
+Local `npm run verify` on the same head: exit 0, 494 unit, 154 page. The Builder's five repeats passed on this machine too.
+
+===== Cause
+The chips go off in the spec's order, so Shops goes last and Books (#666666) is the last marker to go.
+Coffee's chip went three taps earlier. So the wait on line 933, `expect.poll(() => markerColor(page, coffee)).toBeNull()`, passes on its first read and says nothing about the last tap.
+Line 934 then reads Books once, with no wait. The list changes when Preact commits. The markers change in a useEffect after the next frame, and Leaflet's canvas redraws on the frame after that (`_requestRedraw` asks for an animation frame). A fast CI runner can read inside that gap.
+So the page is right and the test reads too early. Nothing in src/ changes.
+
+===== A loop that goes red every time
+Holding every animation frame back did not reproduce it: 200 ms and 1500 ms both gave 13 passed. `geography()` uses `page.waitForFunction`, which also waits on a frame, so the test slowed down along with the page.
+Holding back only the marker canvas does. A temporary line in src/ui/MapView.tsx, restored afterwards, never committed:
+    { const c = canvas.current as any; const r = c._redraw; c._redraw = function () { setTimeout(() => r.call(c), 300) } }
+
+npx playwright test e2e/list.spec.ts -g "the category chips"
+
+Before the fix, with the redraw held back 300 ms: 1 failed, 12 passed. The same test, the same line, the same value as CI:
+  1) e2e/list.spec.ts:924:5 › the category chips › with every chip off › the list says so, and its button turns them all back on
+    Received: "#666666"
+    > 934 |       expect(await markerColor(page, books)).toBeNull()
+
+After the fix, with the redraw still held back 300 ms: 13 passed. So no other chip test reads the canvas too early.
+
+probe.txt P17 shows the same thing from outside the test: with frames held back, Shops' marker still reads #666666 straight after the message shows, and a poll sees it go.
+
+===== The fix
+e2e/list.spec.ts: each of the three markers gets its own expect.poll, commit 13ecb2e. The test still fails if a marker stays: with a map that ignores the filter it goes red at the new line 935, with Received: "#e69f00". See the end of mutants.txt.

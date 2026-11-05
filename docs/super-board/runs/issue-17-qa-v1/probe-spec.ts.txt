@@ -1,0 +1,499 @@
+// QA's probe for #17. Own oracles: the spec's table read from the spec file, the colours typed in by hand,
+// its own haversine over the fixture. It prints one PROBE line per fact. Copied into e2e/ to run, never committed there.
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { cellKey } from '../src/core/cells'
+import { expect, test } from './fixtures'
+import { button, geography } from './map-helpers'
+
+const say = (line: string) => console.log(`PROBE ${line}`)
+const here = { lat: 47.4975, lon: 19.0545 }
+const atOffset = (north: number, east = 0) => ({
+  lat: here.lat + (north / 111.19) * 0.001,
+  lon: here.lon + (east / 75.13) * 0.001,
+})
+// Typed by hand from the #14 marker table, not imported.
+const colours: Record<string, string> = {
+  sights: '#d55e00',
+  notable: '#cc79a7',
+  food: '#e69f00',
+  leisure: '#009e73',
+  services: '#56b4e9',
+  shops: '#666666',
+}
+const ids = Object.keys(colours)
+
+const specTable = () => {
+  const spec = readFileSync(join(import.meta.dirname, '../spec/2026-11-02-kilato-mvp.md'), 'utf8')
+  const section = spec.slice(spec.indexOf('### Category filter'), spec.indexOf('### Open now'))
+  return [...section.matchAll(/^\| `(\w+)` \| (.+?) \| (.+?) \|$/gm)].map(([, id, en, hu]) => ({ id, en, hu }))
+}
+const enName = (id: string) => specTable().find((row) => row.id === id)!.en
+
+const rad = (d: number) => (d * Math.PI) / 180
+const hav = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
+  const h =
+    Math.sin(rad(b.lat - a.lat) / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(rad(b.lon - a.lon) / 2) ** 2
+  return 2 * 6371000 * Math.asin(Math.sqrt(h))
+}
+type P = { id: string; cat: string; kind: string; name: string; lat: number; lon: number }
+const fixture = (): P[] => {
+  const folder = join(import.meta.dirname, '../test/fixtures/site-data/cells')
+  return readdirSync(folder).flatMap((file) => JSON.parse(readFileSync(join(folder, file), 'utf8')).places)
+}
+
+async function serve(page: Page, places: P[], { slowCells = 0 } = {}) {
+  const cells = new Map<string, P[]>()
+  for (const place of places) {
+    const key = cellKey(place.lat, place.lon)
+    cells.set(key, [...(cells.get(key) ?? []), place])
+  }
+  await page.route('**/kilato/data/manifest.json', (route) => route.fulfill({ json: { cells: [...cells.keys()] } }))
+  await page.route('**/kilato/data/cells/*.json', async (route) => {
+    if (slowCells) await new Promise((done) => setTimeout(done, slowCells))
+    const key = new URL(route.request().url()).pathname.split('/').pop()!.replace('.json', '')
+    await route.fulfill({ json: { places: cells.get(key) ?? [] } })
+  })
+}
+
+const rowNames = (page: Page) => page.locator('.place-name').allTextContents()
+
+async function explore(page: Page, name = 'Explore the map') {
+  await page.goto('/kilato/')
+  await button(page, name).click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+}
+
+const pixel = (page: Page, point: { x: number; y: number }) =>
+  page.evaluate(({ x, y }) => {
+    const canvas = document.querySelector<HTMLCanvasElement>('.leaflet-places-pane canvas')
+    if (!canvas) return null
+    const area = canvas.getBoundingClientRect()
+    const scale = canvas.width / area.width
+    const [r, g, b, a] = canvas.getContext('2d')!.getImageData((x - area.x) * scale, (y - area.y) * scale, 1, 1).data
+    return a === 0 ? null : `#${[r, g, b].map((part) => part.toString(16).padStart(2, '0')).join('')}`
+  }, point)
+const markerColor = async (page: Page, place: { lat: number; lon: number }) =>
+  pixel(page, (await geography(page)).screen(place))
+
+const place = (cat: string, north: number, east = 0): P => ({
+  id: `${cat} place`,
+  cat,
+  kind: 'x',
+  name: `${cat} place`,
+  ...atOffset(north, east),
+})
+// Six places, one per category, far enough apart that no marker covers another.
+const six = ids.map((cat, index) => place(cat, -250 + index * 100))
+
+const trackErrors = (page: Page) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`))
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`)
+  })
+  return errors
+}
+
+test('P1 six chips: the spec table, in order, in both languages, with the marker colours', async ({ page }) => {
+  const errors = trackErrors(page)
+  const table = specTable()
+  expect(table.map((row) => row.id)).toEqual(ids)
+  await page.goto('/kilato/')
+  const chips = page.locator('.chip')
+  await expect(chips).toHaveText(table.map((row) => row.en))
+  say(`P1 EN chips == spec table: ${JSON.stringify(await chips.allTextContents())}`)
+  await button(page, 'HU').click()
+  await expect(chips).toHaveText(table.map((row) => row.hu))
+  say(`P1 HU chips == spec table: ${JSON.stringify(await chips.allTextContents())}`)
+  await button(page, 'EN').click()
+  const read = await chips.evaluateAll((all) =>
+    all.map((chip) => ({
+      text: chip.textContent,
+      pressed: chip.getAttribute('aria-pressed'),
+      background: getComputedStyle(chip).backgroundColor,
+      color: getComputedStyle(chip).color,
+      height: chip.getBoundingClientRect().height,
+    })),
+  )
+  for (const chip of read) say(`P1 ${JSON.stringify(chip)}`)
+  const asRgb = (hex: string) => `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`
+  expect(read.map((chip) => chip.background)).toEqual(ids.map((id) => asRgb(colours[id])))
+  expect(read.every((chip) => chip.pressed === 'true')).toBe(true)
+  expect(read.every((chip) => chip.height >= 44)).toBe(true)
+  expect(errors).toEqual([])
+})
+
+test('P2 nothing is remembered: storage, cookies, URL, history, a new tab', async ({ page, context }) => {
+  await serve(page, six)
+  await explore(page)
+  await expect.poll(() => rowNames(page)).toHaveLength(6)
+  const url = page.url()
+  const history = await page.evaluate(() => history.length)
+  await button(page, 'Shops').click()
+  await button(page, 'Food & drink').click()
+  await expect.poll(() => rowNames(page)).toHaveLength(4)
+  const stored = await page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage }, cookie: document.cookie }))
+  say(`P2 after two chips off: ${JSON.stringify(stored)} url unchanged=${page.url() === url} history +${(await page.evaluate(() => history.length)) - history}`)
+  expect(stored).toEqual({ local: {}, session: {}, cookie: '' })
+  expect(await context.cookies()).toEqual([])
+  const second = await context.newPage()
+  await second.goto('/kilato/')
+  await expect(second.locator('.chip[aria-pressed="true"]')).toHaveCount(6)
+  say('P2 a second tab in the same browser: 6 on')
+  await second.close()
+  await page.reload()
+  await expect(page.locator('.chip[aria-pressed="true"]')).toHaveCount(6)
+  say('P2 reload: 6 on')
+})
+
+test('P3 the full fixture: each chip off leaves exactly the list an own haversine predicts', async ({ page }) => {
+  const errors = trackErrors(page)
+  await explore(page)
+  const near = fixture()
+    .map((p) => ({ p, metres: hav(here, p) }))
+    .filter(({ metres }) => metres <= 1000)
+    .sort((a, b) => a.metres - b.metres)
+  const expected = (off: string[]) => near.filter(({ p }) => !off.includes(p.cat)).map(({ p }) => p.name)
+  await expect.poll(async () => page.locator('.place').count()).toBe(100)
+  while (await button(page, 'Show more').count()) await button(page, 'Show more').click()
+  await expect.poll(() => rowNames(page)).toHaveLength(near.length)
+  say(`P3 fixture: ${near.length} places within 1 km, all listed`)
+  for (const id of ids) {
+    await button(page, enName(id)).click()
+    await expect.poll(async () => (await rowNames(page)).sort()).toEqual(expected([id]).sort())
+    const names = new Set(await rowNames(page))
+    const hidden = near.filter(({ p }) => p.cat === id).length
+    say(`P3 ${id} off: ${names.size} rows, ${hidden} hidden, matches the oracle`)
+    await button(page, enName(id)).click()
+    await expect.poll(async () => page.locator('.place').count()).toBe(near.length)
+  }
+  // And the other way: only one chip on.
+  for (const id of ids) {
+    for (const other of ids) if (other !== id) await button(page, enName(other)).click()
+    const off = ids.filter((other) => other !== id)
+    await expect.poll(async () => (await rowNames(page)).sort()).toEqual(expected(off).sort())
+    say(`P3 only ${id} on: ${expected(off).length} rows, matches the oracle`)
+    for (const other of ids) if (other !== id) await button(page, enName(other)).click()
+    await expect.poll(async () => page.locator('.place').count()).toBe(near.length)
+  }
+  expect(errors).toEqual([])
+})
+
+test('P4 markers: each of the six chips hides its own marker, and only that one', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 900 })
+  await serve(page, six)
+  await explore(page)
+  await expect.poll(() => rowNames(page)).toHaveLength(6)
+  for (const p of six) await expect.poll(() => markerColor(page, p)).toBe(colours[p.cat])
+  say('P4 all six markers show their typed-in colour')
+  for (const off of six) {
+    await button(page, enName(off.cat)).click()
+    await expect.poll(() => markerColor(page, off)).toBeNull()
+    for (const other of six.filter((p) => p !== off)) expect(await markerColor(page, other)).toBe(colours[other.cat])
+    await button(page, enName(off.cat)).click()
+    await expect.poll(() => markerColor(page, off)).toBe(colours[off.cat])
+    say(`P4 ${off.cat}: off clears its pixel, the other five stay, on brings it back`)
+  }
+})
+
+test('P5 a hidden marker takes no tap: the tap reaches the map and moves the point', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 900 })
+  await serve(page, six)
+  await explore(page)
+  const shops = six.find((p) => p.cat === 'shops')!
+  await expect.poll(() => markerColor(page, shops)).toBe(colours.shops)
+  const before = await page.locator('.pin').boundingBox()
+  await button(page, 'Shops').click()
+  await expect.poll(() => markerColor(page, shops)).toBeNull()
+  const { x, y } = (await geography(page)).screen(shops)
+  await page.mouse.click(x, y)
+  await expect.poll(async () => (await page.locator('.pin').boundingBox())?.y).not.toBe(before?.y)
+  await expect(page.locator('.place[aria-current]')).toHaveCount(0)
+  say('P5 tap on the hidden marker: no row highlighted, the pin moved')
+})
+
+test('P6 the filter holds when the point moves, when places arrive late, and sends nothing', async ({ page }) => {
+  // One shop and one cafe near the start, one of each about 1.3 km north, in other cells.
+  const near = [place('shops', 100), place('food', 150)]
+  const far = [
+    { ...place('shops', 1300), id: 'far shop', name: 'far shop' },
+    { ...place('food', 1350), id: 'far cafe', name: 'far cafe' },
+  ]
+  await serve(page, [...near, ...far], { slowCells: 400 })
+  const requests: string[] = []
+  page.on('request', (request) => requests.push(request.url()))
+  await page.goto('/kilato/')
+  // Off before any place has loaded.
+  await button(page, 'Shops').click()
+  await button(page, 'Explore the map').click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expect.poll(() => rowNames(page)).toEqual(['food place'])
+  say('P6 chip off before the point and the data: the places that arrive stay filtered')
+  await expect.poll(() => markerColor(page, near[1])).toBe(colours.food)
+  expect(await markerColor(page, near[0])).toBeNull()
+  // Move the point north with a map tap.
+  const target = atOffset(1000)
+  const { x, y } = (await geography(page)).screen(target)
+  await page.mouse.click(x, Math.max(y, 80))
+  await expect.poll(async () => rowNames(page)).toContain('far cafe')
+  const names = await rowNames(page)
+  expect(names).not.toContain('far shop')
+  await expect(button(page, 'Shops')).toHaveAttribute('aria-pressed', 'false')
+  say(`P6 after the point moved: ${JSON.stringify(names)}; Shops stays off`)
+  await button(page, 'Shops').click()
+  await expect.poll(async () => rowNames(page)).toContain('far shop')
+  say('P6 Shops back on: the far shop shows, with no reload')
+  await expect.poll(async () => {
+    await page.waitForTimeout(600)
+    return requests.length
+  }).toBe(requests.length)
+  const count = requests.length
+  for (let turn = 0; turn < 6; turn++) await button(page, 'Food & drink').click()
+  await expect(button(page, 'Food & drink')).toHaveAttribute('aria-pressed', 'true')
+  await page.waitForTimeout(500)
+  say(`P6 six taps on a chip sent ${requests.length - count} requests`)
+  expect(requests.length).toBe(count)
+})
+
+test('P7 the language switch keeps the filter, and the message follows it', async ({ page }) => {
+  await serve(page, six)
+  await explore(page)
+  await expect.poll(() => rowNames(page)).toHaveLength(6)
+  await button(page, 'Shops').click()
+  await button(page, 'HU').click()
+  await expect(button(page, 'Üzletek')).toHaveAttribute('aria-pressed', 'false')
+  await expect.poll(() => rowNames(page)).toHaveLength(5)
+  say('P7 HU: Üzletek stays off, 5 rows')
+  for (const row of specTable()) if (row.id !== 'shops') await button(page, row.hu).click()
+  await expect(page.getByText('Minden kategória ki van kapcsolva.')).toBeVisible()
+  await button(page, 'EN').click()
+  await expect(page.getByText('All categories are off.')).toBeVisible()
+  await expect(button(page, 'Turn them all back on')).toBeVisible()
+  say('P7 all off, then EN: the message and the button change language')
+})
+
+test('P8 all off in each mode: before a point, and following a location', async ({ page, context }) => {
+  const errors = trackErrors(page)
+  await page.goto('/kilato/')
+  for (const id of ids) await button(page, enName(id)).click()
+  await expect(page.getByText('All categories are off.')).toBeVisible()
+  await button(page, 'Turn them all back on').click()
+  await expect(page.locator('.chip[aria-pressed="true"]')).toHaveCount(6)
+  say('P8 intro, no point yet: the message, the button and all on again work')
+  await context.grantPermissions(['geolocation'])
+  await context.setGeolocation({ latitude: here.lat, longitude: here.lon, accuracy: 10 })
+  await serve(page, six)
+  await page.goto('/kilato/')
+  await expect.poll(() => rowNames(page)).toHaveLength(6)
+  for (const id of ids) await button(page, enName(id)).click()
+  await expect(page.getByText('All categories are off.')).toBeVisible()
+  await expect(page.locator('.place')).toHaveCount(0)
+  await button(page, 'Turn them all back on').click()
+  await expect.poll(() => rowNames(page)).toHaveLength(6)
+  say('P8 following: 0 rows with all off, 6 with all on again')
+  expect(errors).toEqual([])
+})
+
+test('P9 all off next to a failed load: both say so, and Retry still works', async ({ page }) => {
+  let broken = true
+  await serve(page, six)
+  await page.route('**/kilato/data/cells/*.json', (route) => (broken ? route.abort() : route.fallback()))
+  await explore(page)
+  await expect(page.getByRole('alert')).toHaveText(/Couldn't load places/)
+  for (const id of ids) await button(page, enName(id)).click()
+  await expect(page.getByText('All categories are off.')).toBeVisible()
+  await expect(page.getByRole('alert')).toBeVisible()
+  say('P9 the error and the all-off message show together')
+  broken = false
+  await button(page, 'Retry').click()
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await button(page, 'Turn them all back on').click()
+  await expect.poll(() => rowNames(page)).toHaveLength(6)
+  say('P9 Retry, then all on: 6 rows')
+})
+
+test('P10 keyboard: Tab, Space and Enter work; where focus goes', async ({ page }) => {
+  await serve(page, six)
+  await explore(page)
+  await expect.poll(() => rowNames(page)).toHaveLength(6)
+  await button(page, 'Sights').focus()
+  await page.keyboard.press('Space')
+  await expect(button(page, 'Sights')).toHaveAttribute('aria-pressed', 'false')
+  await page.keyboard.press('Enter')
+  await expect(button(page, 'Sights')).toHaveAttribute('aria-pressed', 'true')
+  expect(await page.evaluate(() => document.activeElement?.textContent)).toBe('Sights')
+  say('P10 Space and Enter toggle, and focus stays on the chip')
+  await page.keyboard.press('Tab')
+  say(`P10 Tab goes to: ${await page.evaluate(() => document.activeElement?.textContent)}`)
+  for (const id of ids) await button(page, enName(id)).click()
+  await button(page, 'Turn them all back on').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('.chip[aria-pressed="true"]')).toHaveCount(6)
+  say(`P10 after the turn-all-on button is gone, focus is on: ${await page.evaluate(() => document.activeElement?.tagName)}`)
+  const live = await page.evaluate(() => document.querySelector('.all-off')?.getAttribute('role') ?? 'gone')
+  say(`P10 all-off element after closing: ${live}`)
+  for (const id of ids) await button(page, enName(id)).click()
+  say(`P10 role and aria-live on the all-off message: ${JSON.stringify(await page.locator('.all-off').evaluate((el) => [el.getAttribute('role'), el.getAttribute('aria-live')]))}`)
+  await button(page, 'Turn them all back on').click()
+  const name = await page.getByRole('group', { name: 'Categories' }).getAttribute('aria-label')
+  say(`P10 the group's name: ${name}`)
+  expect(name).toBe('Categories')
+})
+
+for (const [width, height] of [[320, 568], [375, 667], [1024, 768], [1920, 1080]]) {
+  test(`P11 layout at ${width}x${height} in Hungarian`, async ({ page }) => {
+    await page.setViewportSize({ width, height })
+    await serve(page, six)
+    await explore(page)
+    await button(page, 'HU').click()
+    await expect.poll(() => rowNames(page)).toHaveLength(6)
+    const chips = await page.locator('.chip').evaluateAll((all) =>
+      all.map((chip) => {
+        const r = chip.getBoundingClientRect()
+        return { x: r.x, y: r.y, right: r.right, height: r.height }
+      }),
+    )
+    const rows = new Set(chips.map((chip) => chip.y)).size
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    say(`P11 ${width}x${height}: ${rows} rows of chips, min height ${Math.min(...chips.map((c) => c.height))}, widest right edge ${Math.max(...chips.map((c) => c.right))}, page scrollWidth ${scrollWidth}`)
+    expect(scrollWidth).toBe(width)
+    expect(Math.max(...chips.map((c) => c.right))).toBeLessThanOrEqual(width)
+  })
+}
+
+test('P12 readable: contrast of the name on and off, from the computed colours', async ({ page }) => {
+  await page.goto('/kilato/')
+  const parse = (css: string) => css.match(/\d+(\.\d+)?/g)!.slice(0, 3).map(Number)
+  const lum = ([r, g, b]: number[]) => {
+    const [x, y, z] = [r, g, b].map((v) => v / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+    return 0.2126 * x + 0.7152 * y + 0.0722 * z
+  }
+  const ratio = (a: number[], b: number[]) => {
+    const [l, d] = [lum(a), lum(b)].sort((p, q) => q - p)
+    return (l + 0.05) / (d + 0.05)
+  }
+  for (const id of ids) {
+    const chip = button(page, enName(id))
+    const on = await chip.evaluate((el) => [getComputedStyle(el).color, getComputedStyle(el).backgroundColor])
+    const onRatio = ratio(parse(on[0]), parse(on[1]))
+    await chip.click()
+    const off = await chip.evaluate((el) => [getComputedStyle(el).color, getComputedStyle(el).borderTopColor])
+    const white = [255, 255, 255]
+    say(`P12 ${id}: on ${onRatio.toFixed(2)}:1 · off name on the page ${ratio(parse(off[0]), white).toFixed(2)}:1 · off border on the page ${ratio(parse(off[1]), white).toFixed(2)}:1`)
+    expect(onRatio).toBeGreaterThanOrEqual(4.5)
+    expect(ratio(parse(off[0]), white)).toBeGreaterThanOrEqual(4.5)
+    await chip.click()
+  }
+})
+
+test('P13 quick taps land on the right state', async ({ page }) => {
+  await serve(page, six)
+  await explore(page)
+  await expect.poll(() => rowNames(page)).toHaveLength(6)
+  // 21 clicks in one task, faster than any render.
+  await page.evaluate(() => {
+    const chip = [...document.querySelectorAll<HTMLButtonElement>('.chip')].find((b) => b.textContent === 'Shops')!
+    for (let turn = 0; turn < 21; turn++) chip.click()
+  })
+  await expect(button(page, 'Shops')).toHaveAttribute('aria-pressed', 'false')
+  await expect.poll(() => rowNames(page)).toHaveLength(5)
+  say('P13 21 clicks in one task: off, 5 rows')
+  await page.evaluate(() => {
+    for (const chip of document.querySelectorAll<HTMLButtonElement>('.chip')) chip.click()
+  })
+  // Shops was off, so it comes on, and the other five go off.
+  await expect.poll(() => rowNames(page)).toEqual(['shops place'])
+  say('P13 all six clicked in one task: only the one that was off is on')
+})
+
+test('P14 a place tapped on the map, whose category goes off, loses its highlight and row', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 900 })
+  await serve(page, six)
+  await explore(page)
+  const shops = six.find((p) => p.cat === 'shops')!
+  await expect.poll(() => markerColor(page, shops)).toBe(colours.shops)
+  const { x, y } = (await geography(page)).screen(shops)
+  await page.mouse.click(x, y)
+  await expect(page.locator('.place[aria-current]')).toHaveText(/shops place/)
+  await button(page, 'Shops').click()
+  await expect(page.locator('.place[aria-current]')).toHaveCount(0)
+  await button(page, 'Shops').click()
+  await expect.poll(() => rowNames(page)).toHaveLength(6)
+  await expect(page.locator('.place[aria-current]')).toHaveCount(0)
+  say('P14 a marker tap: highlight gone with the category, and not back when it comes on')
+})
+
+test('P15 Show more follows the filtered count, and a marker tap finds its filtered rank', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 900 })
+  // 120 cafes, then 120 shops further out on a grid.
+  const grid: P[] = Array.from({ length: 240 }, (_, index) => {
+    const cat = index % 2 ? 'shops' : 'food'
+    const row = Math.floor(index / 24)
+    const col = index % 24
+    return { id: `G${index}`, cat, kind: 'x', name: `G${index}`, ...atOffset((row - 5) * 40, (col - 12) * 40) }
+  })
+  await serve(page, grid)
+  await explore(page)
+  await expect.poll(async () => page.locator('.place').count()).toBe(100)
+  await expect(button(page, 'Show more')).toBeVisible()
+  await button(page, 'Food & drink').click()
+  await expect.poll(async () => page.locator('.place').count()).toBe(100)
+  await expect(button(page, 'Show more')).toBeVisible()
+  await button(page, 'Show more').click()
+  await expect.poll(async () => page.locator('.place').count()).toBe(120)
+  await expect(button(page, 'Show more')).toHaveCount(0)
+  say('P15 120 shops left: 100 rows, Show more, 120 rows, no more')
+  await button(page, 'Food & drink').click()
+  await expect.poll(async () => page.locator('.place').count()).toBe(200)
+  await expect(button(page, 'Show more')).toBeVisible()
+  say('P15 cafes back: 200 rows of 240, Show more again')
+})
+
+test('P16 2,000 markers: how long a tap takes to reach the list and the canvas', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 900 })
+  const many: P[] = Array.from({ length: 2000 }, (_, index) => ({
+    id: `M${index}`,
+    cat: ids[index % 6],
+    kind: 'x',
+    name: `M${index}`,
+    ...atOffset(((index % 45) - 22) * 30, ((Math.floor(index / 45) % 45) - 22) * 30),
+  }))
+  await serve(page, many)
+  await explore(page)
+  await expect.poll(async () => page.locator('.place').count()).toBe(100)
+  await page.waitForTimeout(500)
+  for (const name of ['Shops', 'Shops', 'Food & drink', 'Food & drink']) {
+    const took = await page.evaluate(async (chipName) => {
+      const chip = [...document.querySelectorAll<HTMLButtonElement>('.chip')].find((b) => b.textContent === chipName)!
+      const start = performance.now()
+      chip.click()
+      await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(done))))
+      return Math.round(performance.now() - start)
+    }, name)
+    say(`P16 ${name}: ${took} ms from the tap to two frames later`)
+  }
+  await expect(page.locator('.chip[aria-pressed="false"]')).toHaveCount(0)
+})
+
+test('P17 the page tests\' CI failure: with frames held back 200 ms the marker still goes, a frame late', async ({ page }) => {
+  await page.addInitScript(() => {
+    const raf = window.requestAnimationFrame.bind(window)
+    window.requestAnimationFrame = (callback) => setTimeout(() => raf(callback), 200) as unknown as number
+  })
+  await page.setViewportSize({ width: 1024, height: 900 })
+  await serve(page, six)
+  await explore(page)
+  const shops = six.find((p) => p.cat === 'shops')!
+  await expect.poll(() => markerColor(page, shops)).toBe(colours.shops)
+  for (const id of ids) await button(page, enName(id)).click()
+  await expect(page.getByText('All categories are off.')).toBeVisible()
+  await expect(page.locator('.place')).toHaveCount(0)
+  const right = await markerColor(page, shops)
+  say(`P17 straight after the message shows, the last chip's marker reads: ${right}`)
+  await expect.poll(() => markerColor(page, shops)).toBeNull()
+  say('P17 polled: it goes')
+})

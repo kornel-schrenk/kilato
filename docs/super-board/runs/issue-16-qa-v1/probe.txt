@@ -1,0 +1,24 @@
+de-AT: 308 rows, 230 links, the same after the switch to HU: true, title requests ["/kilato/data/wiki/de.json"], hosts 127.0.0.1 tile.openstreetmap.org, errors []
+fr-FR: 308 rows, 230 links, the same after the switch to HU: true, title requests [], hosts 127.0.0.1 tile.openstreetmap.org, errors []
+es-ES: 308 rows, 230 links, the same after the switch to HU: true, title requests [], hosts 127.0.0.1 tile.openstreetmap.org, errors []
+zh-Hant-TW: 308 rows, 230 links, the same after the switch to HU: true, title requests [], hosts 127.0.0.1 tile.openstreetmap.org, errors []
+hu-HU: 308 rows, 230 links, the same after the switch to EN: true, title requests [], hosts 127.0.0.1 tile.openstreetmap.org, errors []
+en-GB: 308 rows, 230 links, the same after the switch to HU: true, title requests [], hosts 127.0.0.1 tile.openstreetmap.org, errors []
+reload: de-AT with HU saved: Wikipedia · DE
+reload: hu-HU with EN saved: Wikipedia · HU
+reload: en-GB with HU saved: Wikipedia · EN
+languages ["de-AT","fr-FR"]: Wikipedia · DE, title requests ["/kilato/data/wiki/de.json"]
+languages ["fr-FR","de-DE"]: Wikipedia · HU, title requests []
+languages ["en-US","de-DE"]: Wikipedia · EN, title requests []
+languages ["pt-BR","hu-HU"]: Wikipedia · HU, title requests []
+languages []: Wikipedia · HU, title requests []
+three moves: title requests ["/kilato/data/wiki/de.json"], errors []
+404 then Retry: 100 rows during the failure, title requests ["/kilato/data/wiki/de.json","/kilato/data/wiki/de.json"]
+malformed title file: the message shows, the link stays Hungarian
+empty title file: fallback, no message, title requests ["/kilato/data/wiki/de.json"]
+late titles: Hungarian first, then German, row moved 0 px
+new tab: url https://de.wikipedia.org/wiki/U-Bahn-Museum_Budapest, opener null true, Referer undefined, Wikipedia hosts before the tap [], first page still open true
+keyboard: Tab from the row lands on its link, outline auto, Enter opens the new tab, the row stays untapped
+desktop: link 109 x 44 px, sideways scroll 0 px, overlaps its button: false
+tablet: link 109 x 44 px, sideways scroll 0 px, overlaps its button: false
+mobile: link 109 x 44 px, sideways scroll 0 px, overlaps its button: false
