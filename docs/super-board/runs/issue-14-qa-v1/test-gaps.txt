@@ -23,7 +23,7 @@ auth, money, dates: n/a.
 QA's mutants: mutants.txt. 4 real ones got past the tests on 4f23a24, and all 4 go red now.
 Oracle: oracle.py reads the site fixture with its own haversine. All 308 rows match the page in order, name, second name and rounded distance, in English and in Hungarian. It finds what :198 says: 311 places, 308 within 1 km, the nearest at 16.5 m.
 Tautology check: :383 builds its list of places with nearby() from the code under test, but pins the count to the literal 308, which oracle.py confirms. :636 and :652 use nearby() only to pick a target.
-Every page test ends with an assertion after its last action, as AGENTS.md asks: checked by script over all 41 test blocks in e2e/list.spec.ts. It flagged 1, :263, and that test ends in an expect over several lines.
+Every page test ends with an assertion after its last action, as AGENTS.md asks: checked by script over all 41 test blocks in e2e/list.spec.ts. In 3 the last line isn't the expect itself: :263 and :288 end in an expect over several lines, and :763 in a loop of expects.
 e2e/map.spec.ts changes only by importing its helpers, in the diff. All of its tests pass.
 
 ===== rank
