@@ -23,7 +23,7 @@ const cafe = (name: string, metresNorth: number, more: Partial<Place> = {}): Pla
 async function serve(page: Page, places: Place[]) {
   const inCell = (key: string) => places.filter((place) => cellKey(place.lat, place.lon) === key)
   await page.route('**/kilato/data/manifest.json', (route) =>
-    route.fulfill({ json: { cells: [...new Set(places.map((place) => cellKey(place.lat, place.lon)))] } }),
+    route.fulfill({ json: { cells: [...new Set(places.map((place) => cellKey(place.lat, place.lon)))], wikiLangs: [] } }),
   )
   await page.route('**/kilato/data/cells/*.json', (route) => {
     const key = new URL(route.request().url()).pathname.split('/').pop()!.replace('.json', '')
@@ -315,6 +315,17 @@ test.describe('the results', () => {
     await expect(results(page).last()).toContainText('Kávé 19')
   })
 
+  test('have a line under each, as the rows do', async ({ page }) => {
+    await serve(page, [cafe('Kávé 100', 100), cafe('Kávé 200', 200)])
+    await explore(page)
+    await expect(page.locator('.places li').first()).toHaveCSS('border-bottom', '1px solid rgb(221, 221, 221)')
+
+    await searchBox(page).fill('kave')
+
+    await expect(page.locator('.search-results li')).toHaveCount(2)
+    await expect(page.locator('.search-results li').first()).toHaveCSS('border-bottom', '1px solid rgb(221, 221, 221)')
+  })
+
   test('come from the fixture, in the order worked out apart from the page', async ({ page }) => {
     await explore(page)
 
@@ -522,6 +533,54 @@ test.describe('picking a result', () => {
     await expect(row(page, 'Stall 149')).toHaveAttribute('aria-current', 'true')
     await expect(row(page, 'Stall 149')).toBeInViewport()
     await expect(page.locator('.place')).toHaveCount(150)
+  })
+
+  test('brings its article link into view with its row', async ({ page }) => {
+    const crowd = Array.from({ length: 100 }, (_, index) => cafe(`Stall ${index}`, 3000, { wiki: { hu: `Stall ${index}` } }))
+    await serve(page, [here, ...crowd])
+    await explore(page)
+
+    await pick(page, crowd[99])
+
+    await expect(row(page, 'Stall 99')).toHaveAttribute('aria-current', 'true')
+    await expect(page.locator('li', { has: row(page, 'Stall 99') }).getByRole('link')).toBeInViewport()
+  })
+
+  test('counts the rows showing in Most relevant, when that is the order', async ({ page }) => {
+    // The nearest of all once the point is on it, and the last in Most relevant, behind the cafés.
+    const shop = cafe('The Shop', 3000, { cat: 'shops', kind: 'supermarket' })
+    const crowd = Array.from({ length: 120 }, (_, index) => cafe(`Stall ${index}`, 3000))
+    await serve(page, [here, shop, ...crowd])
+    await explore(page)
+    await button(page, 'Most relevant').click()
+    await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'true')
+
+    await pick(page, shop)
+
+    await expect(page.locator('.place')).toHaveCount(121)
+    await expect(page.locator('.place-name').last()).toHaveText(shop.name)
+    await expect(row(page, shop.name)).toHaveAttribute('aria-current', 'true')
+    await expect(row(page, shop.name)).toBeInViewport()
+  })
+
+  test('leaves an off chip off, and highlights the row if the chip comes back on', async ({ page }) => {
+    const shop = cafe('Beside Shop', 3100, { cat: 'shops', kind: 'supermarket' })
+    await serve(page, [here, far, shop])
+    await explore(page)
+    await button(page, 'Food & drink').click()
+    await expect(button(page, 'Food & drink')).toHaveAttribute('aria-pressed', 'false')
+
+    await pick(page, far)
+
+    await expect(row(page, shop.name)).toBeVisible()
+    await expectNear(() => pinPlace(page), far, 2)
+    await expect(button(page, 'Food & drink')).toHaveAttribute('aria-pressed', 'false')
+    await expect(row(page, far.name)).toHaveCount(0)
+    await expect(page.locator('[aria-current]')).toHaveCount(0)
+
+    await button(page, 'Food & drink').click()
+
+    await expect(row(page, far.name)).toHaveAttribute('aria-current', 'true')
   })
 
   test('highlights the row only once the slow cell has arrived', async ({ page }) => {

@@ -69,7 +69,8 @@ export function usePlaces(point: LatLon | null, phone: string) {
     setShown((current) => Math.max(current, (Math.floor(rank / pageSize) + 1) * pageSize))
   }
 
-  // The picked place has no row until its cell arrives. A point that moved on first leaves the row unhighlighted.
+  // The picked place has no row until its cell arrives, or while its category is off. A point that moved on
+  // first leaves the row unhighlighted.
   useEffect(() => {
     if (!picked) return
     const pointStayed = point?.lat === picked.lat && point.lon === picked.lon
