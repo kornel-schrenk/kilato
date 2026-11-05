@@ -24,6 +24,8 @@ The full diffs are on the PRs: [#25](https://github.com/kornel-schrenk/kilato/pu
 - Authentication and permission errors (HTTP 401 and 403), on any read. An agent probing an endpoint it has no permission for still halts the run.
 - Rate limits and outages that last all three attempts, on any read.
 - A PR body update that fails twice with the body unchanged, whose read-back fails, or whose read-back shows a body changed by someone else.
+- Any failed write in `super-qa-file-bug.sh` and `super-review-file-refactor.sh`, which file issues and comments, or in `super-board-collect-state.py`. These still halt on one failure. A retry there could file a duplicate.
+- A failed merge response in `super-board-merge-gate.sh`. This one should halt, because a merge must never be retried blindly.
 - A lane running `--require` for a helper that is neither installed nor given a fallback. Every skill in the registry resolves on `develop` now, but a worktree on a branch cut earlier reads that branch's copy (finding 26).
 
 An outage whose error text matches nothing in `ACCESS_OR_OUTAGE` fails only that call. The next strict script then halts the run.
