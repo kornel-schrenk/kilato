@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { listRadius, nearby, type LatLon } from '../core/geo'
+import type { SearchPlace } from '../core/search'
 import type { Place } from '../core/types'
 import { placeLoader } from '../data/places'
 
@@ -13,7 +14,7 @@ export interface Row {
 /** The place last tapped, and where. A new object is a new tap, even on the same place. */
 export interface Selection {
   place: Place
-  source: 'row' | 'marker'
+  source: 'row' | 'marker' | 'search'
 }
 
 /** The places around the point, nearest first, how many of them show as rows, and which one is tapped. */
@@ -27,6 +28,8 @@ export function usePlaces(point: LatLon | null) {
   )
   const [shown, setShown] = useState(pageSize)
   const [selection, setSelection] = useState<Selection | null>(null)
+  // A search result that was picked, until its row is there.
+  const [picked, setPicked] = useState<SearchPlace | null>(null)
 
   useEffect(() => loader.moveTo(point), [loader, point])
 
@@ -47,12 +50,22 @@ export function usePlaces(point: LatLon | null) {
     setShown((current) => Math.max(current, (Math.floor(rank / pageSize) + 1) * pageSize))
   }
 
+  // The picked place has no row until its cell arrives. A point that moved on first leaves the row unhighlighted.
+  useEffect(() => {
+    if (!picked) return
+    const pointStayed = point?.lat === picked.lat && point.lon === picked.lon
+    const row = rows.find(({ place }) => place.id === picked.id)
+    if (pointStayed && row) select(row.place, 'search')
+    if (row || !pointStayed) setPicked(null)
+  }, [point, rows, picked])
+
   return {
     rows,
     shown,
     showMore: () => setShown((current) => current + pageSize),
     selection,
     select,
+    pick: setPicked,
     failed: loader.failed,
     retry: loader.retry,
   }

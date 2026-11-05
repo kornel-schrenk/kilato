@@ -20,7 +20,9 @@ export function PlaceList({ rows, shown, selection, onSelect, onShowMore, lang, 
   const list = useRef<HTMLUListElement>(null)
 
   useEffect(() => {
-    if (selection?.source === 'marker') list.current?.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' })
+    if (selection && selection.source !== 'row') {
+      list.current?.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' })
+    }
   }, [selection])
 
   return (

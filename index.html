@@ -10,14 +10,45 @@
         font-family: system-ui, sans-serif;
       }
       header {
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 0.5rem;
         padding: 0 0.5rem;
       }
       h1 {
         margin: 0;
         font-size: 1.25rem;
+      }
+      .search {
+        flex: 1;
+        min-width: 0;
+      }
+      .search input {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 44px;
+        /* Below 16 px, Safari on a phone zooms the page when the box gets focus. */
+        font-size: 1rem;
+      }
+      /* Over the map, so that the results don't push it down under the finger. */
+      .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 2;
+        max-height: 50vh;
+        margin: 0;
+        padding: 0 0.5rem;
+        overflow-y: auto;
+        list-style: none;
+        background: #fff;
+        box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
+      }
+      p.search-results {
+        padding: 0.5rem;
       }
       .lang-switch button {
         min-width: 44px;
@@ -60,7 +91,8 @@
         padding: 0;
         list-style: none;
       }
-      .place {
+      .place,
+      .search-result {
         display: block;
         width: 100%;
         min-height: 44px;

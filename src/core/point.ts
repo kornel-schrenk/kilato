@@ -32,6 +32,7 @@ export type PointEvent =
   | { type: 'dragStart' }
   | { type: 'dragEnd'; center: LatLon }
   | { type: 'tap'; at: LatLon }
+  | { type: 'pick'; at: LatLon }
 
 export const initialPoint: PointState = {
   mode: 'starting',
@@ -42,14 +43,16 @@ export const initialPoint: PointState = {
   view: null,
 }
 
-const exploreDeakTer = (): PointState => ({
+const exploreAt = (view: { center: LatLon; zoom?: number }): PointState => ({
   mode: 'exploring',
-  point: deakTer,
+  point: view.center,
   accuracy: null,
   watching: false,
   dragging: false,
-  view: { center: deakTer, zoom: startZoom },
+  view,
 })
+
+const exploreDeakTer = () => exploreAt({ center: deakTer, zoom: startZoom })
 
 export function nextPoint(state: PointState, event: PointEvent): PointState {
   switch (event.type) {
@@ -105,5 +108,9 @@ export function nextPoint(state: PointState, event: PointEvent): PointState {
     case 'tap':
       // Leaflet lets a coast run on through a tap. The tap is the later choice, so the coast's end must not undo it.
       return state.mode === 'exploring' ? { ...state, point: event.at, watching: false, dragging: false } : state
+
+    case 'pick':
+      // From any mode: the search box is there from the start, and it needs no location.
+      return exploreAt({ center: event.at })
   }
 }

@@ -259,6 +259,50 @@ describe('exploring', () => {
   })
 })
 
+describe('picking a search result', () => {
+  const place = { lat: 47.52, lon: 19.07 }
+  const pick: PointEvent = { type: 'pick', at: place }
+
+  for (const [name, from] of [
+    ['before the page knows the permission', initialPoint],
+    ['at the intro', intro],
+    ['while following', following],
+    ['while exploring', moved],
+  ] as const) {
+    it(`${name}, starts exploring with the point at the place, and the map goes there at its own zoom`, () => {
+      expect(run([pick], from)).toEqual({
+        mode: 'exploring',
+        point: place,
+        accuracy: null,
+        watching: false,
+        dragging: false,
+        view: { center: place },
+      })
+    })
+  }
+
+  it('stays when the permission answer comes after it', () => {
+    expect(run([pick, { type: 'permission', granted: true }]).point).toEqual(place)
+  })
+
+  it('cancels a request for the location, so a late fix does not move the point', () => {
+    expect(run([{ type: 'useMyLocation' }, pick, fix(start)], intro).point).toEqual(place)
+  })
+
+  it('stops following, so the next fix does not move the point', () => {
+    expect(run([pick, fix(start)], following).point).toEqual(place)
+  })
+
+  it('keeps the point at the place when a map still coasting stops', () => {
+    const coasting = run([{ type: 'dragStart' }, pick], moved)
+    expect(run([{ type: 'dragEnd', center: deakTer }], coasting).point).toEqual(place)
+  })
+
+  it('leaves My location working', () => {
+    expect(run([pick, { type: 'useMyLocation' }, fix(start)], following).mode).toBe('following')
+  })
+})
+
 it('My location does nothing while following or before the page knows the permission', () => {
   expect(run([{ type: 'useMyLocation' }], following)).toEqual(following)
   expect(run([{ type: 'useMyLocation' }])).toEqual(initialPoint)
