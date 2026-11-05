@@ -67,18 +67,20 @@ async function pick(page: Page, place: Place) {
   await result(page, place.name).click()
 }
 
-/** Makes this place's cell wait until the returned function is called. */
-async function holdCell(page: Page, place: Place) {
+/** Makes this file wait until the returned function is called. */
+async function hold(page: Page, path: string) {
   let release = () => {}
   const released = new Promise<void>((resolve) => {
     release = resolve
   })
-  await page.route(`**${cellRequest(place)}`, async (route) => {
+  await page.route(`**${path}`, async (route) => {
     await released
     await route.fallback()
   })
   return release
 }
+
+const holdCell = (page: Page, place: Place) => hold(page, cellRequest(place))
 
 test.describe('the search box', () => {
   test('sits in the header, and search.json loads only when it first gets focus', async ({ page }) => {
@@ -116,6 +118,24 @@ test.describe('the search box', () => {
     await searchBox(page).fill('kave')
 
     await expect(results(page)).not.toHaveCount(0)
+    expect(paths.filter((path) => path === searchFile)).toHaveLength(1)
+  })
+
+  test('asks for search.json once when it gets focus again while the file is on its way', async ({ page }) => {
+    await serve(page, [cafe('Kávé', 100)])
+    const release = await hold(page, searchFile)
+    const paths = dataRequests(page)
+    await explore(page)
+    await searchBox(page).focus()
+    await expect.poll(() => paths).toContain(searchFile)
+
+    await page.locator('h1').click()
+    await searchBox(page).focus()
+    await page.locator('h1').click()
+    await searchBox(page).fill('kave')
+    release()
+
+    await expect.poll(() => resultNames(page)).toEqual(['Kávé'])
     expect(paths.filter((path) => path === searchFile)).toHaveLength(1)
   })
 
@@ -344,13 +364,14 @@ test.describe('the results', () => {
   })
 
   test('start from Deák Ferenc tér at the intro, with no point yet', async ({ page }) => {
-    await serve(page, [cafe('Kávé 900', 900), cafe('Kávé 100', 100)])
+    // The south place tells the fallback from a point anywhere south of all three, which would put it first.
+    await serve(page, [cafe('Kávé 900', 900), cafe('Kávé south', -300), cafe('Kávé 100', 100)])
     await page.goto('/kilato/')
     await expect(button(page, 'Explore the map')).toBeVisible()
 
     await searchBox(page).fill('kave')
 
-    await expect.poll(() => resultNames(page)).toEqual(['Kávé 100', 'Kávé 900'])
+    await expect.poll(() => resultNames(page)).toEqual(['Kávé 100', 'Kávé south', 'Kávé 900'])
   })
 
   test('start from where the point has moved to', async ({ page }) => {
@@ -384,14 +405,7 @@ test.describe('the results', () => {
 
   test('show up for a query typed while search.json was on its way', async ({ page }) => {
     await serve(page, [cafe('Kávé', 100)])
-    let release = () => {}
-    const released = new Promise<void>((resolve) => {
-      release = resolve
-    })
-    await page.route(`**${searchFile}`, async (route) => {
-      await released
-      await route.fallback()
-    })
+    const release = await hold(page, searchFile)
     await explore(page)
     await searchBox(page).fill('kave')
     await expect(results(page)).toHaveCount(0)
