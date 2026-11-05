@@ -1,4 +1,5 @@
 import { useLayoutEffect, useState } from 'preact/hooks'
+import { inCoverage } from '../core/coverage'
 import { phoneLanguage, uiLanguage, type Lang } from '../core/lang'
 import { en } from '../i18n/en'
 import { hu } from '../i18n/hu'
@@ -35,6 +36,7 @@ export function App() {
   const t = messages[lang]
   const [point, dispatch] = usePoint()
   const places = usePlaces(point.point)
+  const outside = point.point !== null && !inCoverage(point.point)
 
   useLayoutEffect(() => {
     document.documentElement.lang = lang
@@ -82,23 +84,34 @@ export function App() {
           </>
         )}
         {point.mode === 'exploring' && <p>{t.exploreNote}</p>}
-        {places.failed && (
-          <p role="alert" class="load-error">
-            {t.placesFailed}{' '}
-            <button type="button" onClick={places.retry}>
-              {t.retry}
+        {outside ? (
+          <>
+            <p>{t.outsideBudapest}</p>
+            <button type="button" onClick={() => dispatch({ type: 'explore' })}>
+              {t.goToBudapest}
             </button>
-          </p>
+          </>
+        ) : (
+          <>
+            {places.failed && (
+              <p role="alert" class="load-error">
+                {t.placesFailed}{' '}
+                <button type="button" onClick={places.retry}>
+                  {t.retry}
+                </button>
+              </p>
+            )}
+            <PlaceList
+              rows={places.rows}
+              shown={places.shown}
+              selection={places.selection}
+              onSelect={places.select}
+              onShowMore={places.showMore}
+              lang={lang}
+              t={t}
+            />
+          </>
         )}
-        <PlaceList
-          rows={places.rows}
-          shown={places.shown}
-          selection={places.selection}
-          onSelect={places.select}
-          onShowMore={places.showMore}
-          lang={lang}
-          t={t}
-        />
       </main>
     </>
   )

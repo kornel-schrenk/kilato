@@ -11,4 +11,6 @@ export const hu = {
   placesFailed: 'Nem sikerült betölteni a helyeket',
   retry: 'Újrapróbálás',
   showMore: 'Továbbiak megjelenítése',
+  outsideBudapest: 'A Kilátó egyelőre csak Budapestet ismeri.',
+  goToBudapest: 'Irány Budapest',
 }

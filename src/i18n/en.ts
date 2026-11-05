@@ -11,4 +11,6 @@ export const en = {
   placesFailed: "Couldn't load places",
   retry: 'Retry',
   showMore: 'Show more',
+  outsideBudapest: 'Kilátó covers Budapest only for now.',
+  goToBudapest: 'Go to Budapest',
 }
