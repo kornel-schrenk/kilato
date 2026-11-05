@@ -261,6 +261,59 @@ test.describe('the open status', () => {
 
     await expect(kavezo(page)).toHaveText('Closed now')
   })
+
+  test('is worked out again no later than 60 seconds after the last time', async ({ page }) => {
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    // The jump fires the minute's timer once, so the next one is due at 21:00:59.
+    await page.clock.pauseAt('2026-11-02T20:59:59Z')
+    await expect(kavezo(page)).toHaveText('Open now')
+
+    await page.clock.runFor(60_000)
+    await expect(kavezo(page)).toHaveText('Closed now')
+  })
+
+  test('leaves the markers alone as the minutes pass', async ({ page }) => {
+    // Leaflet draws each marker with one arc on the canvas, so new rows would add hundreds.
+    await page.addInitScript(() => {
+      const drawn = { arcs: 0 }
+      const arc = CanvasRenderingContext2D.prototype.arc
+      CanvasRenderingContext2D.prototype.arc = function (...args) {
+        drawn.arcs++
+        return arc.apply(this, args)
+      }
+      Object.assign(window, { drawn })
+    })
+    const arcs = () => page.evaluate(() => (window as unknown as { drawn: { arcs: number } }).drawn.arcs)
+
+    await page.clock.install({ time: beforeClosing })
+    await explore(page)
+    await expect(kavezo(page)).toHaveText('Open now')
+    await page.clock.pauseAt('2026-11-02T20:59:00Z')
+    // Lets anything still due from the first draw happen now, so that it doesn't count below.
+    await page.clock.runFor(1000)
+    await expect.poll(arcs).toBeGreaterThan(0)
+    const before = await arcs()
+
+    await page.clock.runFor(120_000)
+
+    await expect(kavezo(page)).toHaveText('Closed now')
+    expect(await arcs()).toBe(before)
+  })
+
+  test.describe('on a phone in another time zone', () => {
+    test.use({ timezoneId: 'America/Los_Angeles' })
+
+    test('reads the same, because the window start and the clock are both instants', async ({ page }) => {
+      await page.clock.install({ time: beforeClosing })
+      await explore(page)
+
+      await expect(kavezo(page)).toHaveText('Open now')
+      await expect(pekseg(page)).toHaveText('Closed now')
+    })
+  })
 })
 
 test.describe('the list', () => {
