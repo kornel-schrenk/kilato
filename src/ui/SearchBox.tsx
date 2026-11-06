@@ -3,8 +3,7 @@ import type { LatLon } from '../core/geo'
 import type { Lang } from '../core/lang'
 import { secondName } from '../core/names'
 import { placeSearch, type SearchPlace } from '../core/search'
-import type { SearchFile } from '../core/types'
-import { dataFolder } from '../data/places'
+import { loadSearchPlaces } from '../data/search'
 import type { en } from '../i18n/en'
 
 interface Props {
@@ -27,13 +26,9 @@ export function SearchBox({ point, onPick, lang, t }: Props) {
     if (asked.current) return
     asked.current = true
     setFailed(false)
-    fetch(`${dataFolder}search.json`)
-      .then((response) => {
-        if (!response.ok) throw new Error(`search.json: ${response.status}`)
-        return response.json() as Promise<SearchFile>
-      })
+    loadSearchPlaces()
       // Wrapped, because useState would call a function it is handed.
-      .then((file) => setSearch(() => placeSearch(file.places)))
+      .then((places) => setSearch(() => placeSearch(places)))
       .catch(() => {
         asked.current = false
         setFailed(true)
