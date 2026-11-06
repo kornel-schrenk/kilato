@@ -1,0 +1,45 @@
+Against the merged code and QA's tests at 83618a7: 39 of 40 red. Round 1's 33, then R2, R3 and the merge's 7 lines.
+The one left, the footer stays in the left column, is equivalent, as in round 1: without its grid-column the footer lands in the same grid cell, and e2e/footer.spec.ts:305 measures the same box.
+Each killer below is a test about the broken line, not a timeout. Rerun: CHROMIUM_PATH=/usr/bin/chromium python3 mutate.py <results file>
+
+red          older date becomes the newer (src/core/dataAge.ts) :: 
+red          warning at exactly 10 days (src/core/dataAge.ts) :: 
+red          whole days round up (src/core/dataAge.ts) :: 
+red          a clock behind the data goes negative (src/core/dataAge.ts) :: 
+red          no warning look (src/ui/Footer.tsx) :: e2e/footer.spec.ts:39:3 › the data age › 11 days after the data date, the line turns into a warning 
+red          no warning words (src/ui/Footer.tsx) :: e2e/footer.spec.ts:39:3 › the data age › 11 days after the data date, the line turns into a warning 
+red          the line ignores the language (src/ui/Footer.tsx) :: e2e/footer.spec.ts:65:5 › the data age › on a Hungarian phone › 3 days after the data date, the line is in Hungarian 
+red          the footer's About opens the other panel (src/ui/Footer.tsx) :: e2e/footer.spec.ts:87:3 › the data age › with no manifest there is no line, and the links still work 
+red          the footer's sent-where link does nothing (src/ui/Footer.tsx) :: e2e/footer.spec.ts:138:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          no intro link (src/ui/App.tsx) :: e2e/footer.spec.ts:146:5 › What is sent where on a phone set to en-GB › opens from the intro with the same text 
+red          the intro link opens About (src/ui/App.tsx) :: e2e/footer.spec.ts:146:5 › What is sent where on a phone set to en-GB › opens from the intro with the same text 
+red          a word changes, English (src/i18n/en.ts) :: e2e/footer.spec.ts:138:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          a word changes, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:138:5 › What is sent where on a phone set to hu-HU › opens from the footer with the text of the spec, word for word 
+red          a line loses its bold, English (src/i18n/en.ts) :: e2e/footer.spec.ts:138:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          a line loses its bold, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:138:5 › What is sent where on a phone set to hu-HU › opens from the footer with the text of the spec, word for word 
+red          the bold takes a word more, English (src/i18n/en.ts) :: e2e/footer.spec.ts:138:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          the last line goes, English (src/i18n/en.ts) :: e2e/footer.spec.ts:138:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          the Hungarian title changes (src/i18n/hu.ts) :: e2e/footer.spec.ts:138:5 › What is sent where on a phone set to hu-HU › opens from the footer with the text of the spec, word for word 
+red          no modal: Esc and the focus go (src/ui/Panel.tsx) :: e2e/footer.spec.ts:173:3 › the panels › Esc shuts a panel, and it opens again ─────────────────
+red          the repository link goes elsewhere (src/ui/Panel.tsx) :: e2e/footer.spec.ts:261:5 › About on a phone set to en-GB › links the repository, in a new tab ─
+red          About loses the MIT words, English (src/i18n/en.ts) :: e2e/footer.spec.ts:251:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+red          About: map and place data becomes map data, English (src/i18n/en.ts) :: e2e/footer.spec.ts:251:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+red          About: place data goes, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:251:5 › About on a phone set to hu-HU › opens from the footer and names the licences, the sources and Leaflet 
+red          About: positions go, English (src/i18n/en.ts) :: e2e/footer.spec.ts:251:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+red          About: positions go, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:251:5 › About on a phone set to hu-HU › opens from the footer and names the licences, the sources and Leaflet 
+red          About: CC BY-SA loses its version, English (src/i18n/en.ts) :: e2e/footer.spec.ts:251:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+red          About: Open Database License goes, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:251:5 › About on a phone set to hu-HU › opens from the footer and names the licences, the sources and Leaflet 
+red          About: Leaflet goes, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:251:5 › About on a phone set to hu-HU › opens from the footer and names the licences, the sources and Leaflet 
+red          About: drawn with goes, English (src/i18n/en.ts) :: e2e/footer.spec.ts:251:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+SURVIVED     the footer stays in the left column on wide screens (index.html) :: 
+red          the map spans two rows, so the footer drops under it (index.html) :: e2e/footer.spec.ts:305:5 › the layout › at 1280 px wide › the footer sits at the bottom of the right column, and the map keeps its size 
+red          the Hungarian line changes (src/i18n/hu.ts) :: e2e/footer.spec.ts:65:5 › the data age › on a Hungarian phone › 3 days after the data date, the line is in Hungarian 
+red          the English singular goes (src/i18n/en.ts) :: e2e/footer.spec.ts:32:5 › the data age › 1 days after the data date, the line reads "Data from 2 Nov 2026 · 1 day old", with no warning 
+red          R2: the warning look reads whole days (src/ui/Footer.tsx) :: e2e/footer.spec.ts:45:3 › the data age › 10 and a half days after the data date, the line warns, though it counts 10 whole days 
+red          R2: the warning words read whole days (src/ui/Footer.tsx) :: e2e/footer.spec.ts:45:3 › the data age › 10 and a half days after the data date, the line warns, though it counts 10 whole days 
+red          R3: the list's row doesn't take the spare height (index.html) :: e2e/footer.spec.ts:305:5 › the layout › at 1280 px wide › the footer sits at the bottom of the right column, and the map keeps its size 
+red          merge: usePlaces hands out no manifest (src/ui/usePlaces.ts) :: e2e/footer.spec.ts:32:5 › the data age › 3 days after the data date, the line reads "Data from 2 Nov 2026 · 3 days old", with no warning 
+red          merge: the panel isn't rendered (src/ui/App.tsx) :: e2e/footer.spec.ts:87:3 › the data age › with no manifest there is no line, and the links still work 
+red          merge: closing leaves the panel state set (src/ui/App.tsx) :: e2e/footer.spec.ts:173:3 › the panels › Esc shuts a panel, and it opens again ─────────────────
+red          merge: the footer's left out (src/ui/App.tsx) :: e2e/footer.spec.ts:32:5 › the data age › 3 days after the data date, the line reads "Data from 2 Nov 2026 · 3 days old", with no warning 
+restored; 

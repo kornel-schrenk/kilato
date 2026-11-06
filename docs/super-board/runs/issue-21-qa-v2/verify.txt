@@ -1,0 +1,49 @@
+The ✘ lines are the tests in e2e/fixtures.spec.ts marked test.fail(). They count as passed only because they fail.
+head 83618a747758859abf1a5dbced95ed111aa4b90e  dirty files: 0
+started 2026-11-06T06:08:39Z  load 3.84 3.29 4.97
+$ npm ci
+added 49 packages in 9s
+npm ci exit=0
+$ CHROMIUM_PATH=/usr/bin/chromium npm run verify
+> kilato@0.0.0 verify
+> npm run typecheck && npm test && npm run build && npm run test:e2e
+> kilato@0.0.0 typecheck
+> tsc
+> kilato@0.0.0 test
+> vitest run
+ RUN  v5.1.0 /home/kornel/Projects/kilato/.claude/worktrees/issue-21-qa-verify
+ Test Files  28 passed (28)
+      Tests  596 passed (596)
+   Start at  07:08:56
+   Duration  30.84s (tests 76%, import 12%, transform 9%, worker 3%)
+    Isolate  28 workers spawned · ~1.06s startup each (spawn + environment, per file)
+             at least ~8.84s faster with isolate: false — reuses workers across files instead of one per file
+> kilato@0.0.0 build
+> vite build
+vite v8.3.5 building client environment for production...
+transforming...
+rendering chunks...
+computing gzip size...
+dist/index.html                   2.85 kB │ gzip:  1.22 kB
+dist/assets/index-vh-t_kPv.css   15.09 kB │ gzip:  6.36 kB
+dist/assets/index-s5VdQi5k.js   188.58 kB │ gzip: 60.04 kB
+> kilato@0.0.0 test:e2e
+> playwright test
+Running 268 tests using 2 workers
+  ✘    1 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/ fails the test (4.6s)
+  ✘    3 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test (2.7s)
+  ✘    5 e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test (3.0s)
+  ✘    6 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test (1.9s)
+  ✘    8 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test (6.4s)
+  ✘   10 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test (6.6s)
+  ✘   12 e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test (6.6s)
+  ✘   14 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test (6.9s)
+  ✘   16 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test (6.2s)
+  ✘   18 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test (6.3s)
+  ✘   20 e2e/fixtures.spec.ts:37:1 › an unexpected WebSocket fails the test (4.2s)
+  Slow test file: e2e/list.spec.ts (11.5m)
+  Slow test file: e2e/map.spec.ts (9.6m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  268 passed (17.7m)
+verify exit=0
+finished 2026-11-06T06:27:17Z  load 9.33 12.90 12.05
