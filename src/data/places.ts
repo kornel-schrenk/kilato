@@ -1,8 +1,7 @@
 import { cellsWithin } from '../core/cells'
 import { listRadius, type LatLon } from '../core/geo'
 import type { CellFile, Manifest, Place, WikiLangFile } from '../core/types'
-
-export const dataFolder = `${import.meta.env.BASE_URL}data/`
+import { readDataFile } from './file'
 
 /**
  * Loads the manifest, then the cells around the point and the article titles in the phone
@@ -24,11 +23,7 @@ export function placeLoader(fetchData: (url: string) => Promise<Response>, onCha
   function request<T>(path: string, arrived: (file: T) => void) {
     if (onItsWay.has(path)) return
     onItsWay.add(path)
-    void fetchData(dataFolder + path)
-      .then((response) => {
-        if (!response.ok) throw new Error(`${path}: ${response.status}`)
-        return response.json() as Promise<T>
-      })
+    void readDataFile<T>(fetchData, path)
       .then(arrived)
       .catch(() => {
         failed = true
