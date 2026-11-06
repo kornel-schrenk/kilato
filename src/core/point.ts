@@ -1,7 +1,6 @@
 import { distanceMetres, type LatLon } from './geo'
 
 export const deakTer: LatLon = { lat: 47.4975, lon: 19.0545 }
-export const startZoom = 15
 
 /** While following, the point moves only when the location is this many metres from it. */
 const followStep = 15
@@ -20,7 +19,7 @@ export interface PointState {
    * The last view the map was asked to go to. A new object is a new request. With no zoom, the map
    * keeps the one it has. `forScreen` is the spec's start zoom for this screen, which only the page can read.
    */
-  view: { center: LatLon; zoom?: number | 'forScreen' } | null
+  view: { center: LatLon; zoom?: 'forScreen' } | null
 }
 
 export type PointEvent =
@@ -43,7 +42,7 @@ export const initialPoint: PointState = {
   view: null,
 }
 
-const exploreAt = (view: { center: LatLon; zoom?: number }): PointState => ({
+const exploreAt = (view: NonNullable<PointState['view']>): PointState => ({
   mode: 'exploring',
   point: view.center,
   accuracy: null,
@@ -52,7 +51,7 @@ const exploreAt = (view: { center: LatLon; zoom?: number }): PointState => ({
   view,
 })
 
-const exploreDeakTer = () => exploreAt({ center: deakTer, zoom: startZoom })
+const exploreDeakTer = () => exploreAt({ center: deakTer, zoom: 'forScreen' })
 
 export function nextPoint(state: PointState, event: PointEvent): PointState {
   switch (event.type) {

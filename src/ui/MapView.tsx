@@ -2,7 +2,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useRef } from 'preact/hooks'
 import { listRadius, type LatLon } from '../core/geo'
-import { deakTer, startZoom, type PointEvent, type PointState } from '../core/point'
+import { deakTer, type PointEvent, type PointState } from '../core/point'
 import type { Row } from '../core/rank'
 import type { Place } from '../core/types'
 import type { en } from '../i18n/en'
@@ -15,6 +15,8 @@ const highlightStyle: L.CircleMarkerOptions = { radius: 8, color: '#000', weight
 
 // The spec's Start zoom. 900 px is also where the layout switches, in index.html.
 const zoomForScreen = () => (matchMedia('(min-width: 900px)').matches ? 15 : 14)
+// The view before anything has started. There is no circle to fit yet.
+const openingZoom = 15
 
 // The tip of the pin is its bottom centre, so the anchor sits exactly on the point.
 const pin = L.divIcon({
@@ -51,7 +53,7 @@ export function MapView({ state, onEvent, rows, selection, onSelect, t }: Props)
   const { point, mode, accuracy, view } = state
 
   useEffect(() => {
-    const map = L.map(container.current!, { zoomControl: false }).setView(toLeaflet(deakTer), startZoom)
+    const map = L.map(container.current!, { zoomControl: false }).setView(toLeaflet(deakTer), openingZoom)
     mapRef.current = map
 
     // Under the overlay pane, so the point draws on top. Leaflet's SVG root lets taps through to the canvas.
@@ -92,7 +94,7 @@ export function MapView({ state, onEvent, rows, selection, onSelect, t }: Props)
     if (!view) return
     const map = mapRef.current!
     const go = () =>
-      map.setView(toLeaflet(view.center), view.zoom === 'forScreen' ? zoomForScreen() : (view.zoom ?? map.getZoom()))
+      map.setView(toLeaflet(view.center), view.zoom === 'forScreen' ? zoomForScreen() : map.getZoom())
     // Leaflet silently drops a new zoom asked for during a zoom animation, so this waits that one out.
     if (zooming.current) map.once('zoomend', go)
     else go()

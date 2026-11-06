@@ -54,10 +54,10 @@ describe('from the intro', () => {
     accuracy: null,
     watching: false,
     dragging: false,
-    view: { center: deakTer, zoom: 15 },
+    view: { center: deakTer, zoom: 'forScreen' },
   }
 
-  it('Explore the map starts exploring at Deák Ferenc tér, zoom 15', () => {
+  it('Explore the map starts exploring at Deák Ferenc tér, at the start zoom for the screen', () => {
     expect(deakTer).toEqual({ lat: 47.4975, lon: 19.0545 })
     expect(run([{ type: 'explore' }], intro)).toEqual(atDeak)
   })
@@ -67,7 +67,7 @@ describe('from the intro', () => {
   })
 
   for (const denied of [true, false]) {
-    it(`a location error (denied: ${denied}) starts exploring at Deák Ferenc tér, zoom 15`, () => {
+    it(`a location error (denied: ${denied}) starts exploring at Deák Ferenc tér, at the start zoom for the screen`, () => {
       expect(run([{ type: 'locationError', denied }], asked)).toEqual(atDeak)
     })
   }
@@ -92,7 +92,7 @@ describe('with the permission granted but no fix yet', () => {
     expect(run([{ type: 'locationError', denied: false }], waiting)).toMatchObject({
       mode: 'exploring',
       point: deakTer,
-      view: { center: deakTer, zoom: 15 },
+      view: { center: deakTer, zoom: 'forScreen' },
     })
   })
 
