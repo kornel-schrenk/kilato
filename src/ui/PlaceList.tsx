@@ -26,7 +26,7 @@ export function PlaceList({ rows, shown, selection, onSelect, onShowMore, status
   const statusLabels = { open: t.openNow, closed: t.closedNow, unknown: null }
 
   useEffect(() => {
-    if (selection?.source === 'marker') {
+    if (selection && selection.source !== 'row') {
       list.current?.querySelector('[aria-current]')?.closest('li')?.scrollIntoView({ block: 'nearest' })
     }
   }, [selection])

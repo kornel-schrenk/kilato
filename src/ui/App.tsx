@@ -1,10 +1,13 @@
 import { useLayoutEffect, useState } from 'preact/hooks'
 import { phoneLanguage, uiLanguage, type Lang } from '../core/lang'
+import { deakTer } from '../core/point'
+import type { SearchPlace } from '../core/search'
 import { en } from '../i18n/en'
 import { hu } from '../i18n/hu'
 import { categories, CategoryChips } from './CategoryChips'
 import { MapView } from './MapView'
 import { PlaceList } from './PlaceList'
+import { SearchBox } from './SearchBox'
 import { usePlaces } from './usePlaces'
 import { usePoint } from './usePoint'
 
@@ -48,10 +51,17 @@ export function App() {
     setLang(choice)
   }
 
+  const pick = (place: SearchPlace) => {
+    dispatch({ type: 'pick', at: { lat: place.lat, lon: place.lon } })
+    places.pick(place)
+  }
+
   return (
     <>
       <header>
         <h1>Kilátó</h1>
+        {/* With no point yet, the map is at Deák Ferenc tér, so results start from there. */}
+        <SearchBox point={point.point ?? deakTer} onPick={pick} lang={lang} t={t} />
         <div class="lang-switch" role="group" aria-label={t.language}>
           <button type="button" aria-pressed={lang === 'hu'} onClick={() => choose('hu')}>
             HU

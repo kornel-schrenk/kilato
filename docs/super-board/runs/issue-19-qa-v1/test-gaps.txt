@@ -1,0 +1,53 @@
+Test-gap check for #19, on builder head e8e0f3e. Scope: the 13 files of the PR's diff.
+
+LEDGER (each AC to the test that asserts it)
+AC1 box in the header, search.json on first focus and not before
+  unit: n/a, this is the page's behaviour
+  page: e2e/search.spec.ts:84 header and first focus, :96 the intro, :107 once
+AC2 from 2 characters, ignoring case and accents, in name, names.hu and names.en
+  unit: src/core/search.test.ts:18, :22, :26, :31, :36, :40, :51 (QA), :56 (QA), :63, :67, :71, :77
+  page: e2e/search.spec.ts:258, :269, :278, :130 (QA)
+AC3 beginning first, nearest first in each group, at most 20
+  unit: src/core/search.test.ts:83, :88, :93, :98, :103 (QA), :114, :126
+  page: e2e/search.spec.ts:293, :307, :318 from the fixture, :335, :345, :361 (QA)
+AC4 a pick explores at the place, loads its cell, highlights its row
+  unit: src/core/point.test.ts:262 on, from all four modes
+  page: e2e/search.spec.ts:407, :425 (QA), :435, :446 (QA), :460, :471, :485, :498, :515, :527, :540, :557 (QA), :578, :598
+
+EDGE CASES
+boundaries     pinned: 1 and 2 characters, search.test.ts:63, :67 · 25 places to 20, :114 · 20 beginning with 1 nearer, :103 (QA)
+input          pinned: accents as separate marks, :51 (QA) · regular-expression characters, :56 (QA) · long name wraps, search.spec.ts:170 (QA) · HTML in a name, :393 (QA)
+               gap, Low: see L1
+volume         pinned: 25 places · measured: 29,969 places fold in 262 to 288 ms and answer in 12 to 51 ms on this Pi, probe.txt
+               n/a: no paging here, and an empty list is a plain filter
+error paths    pinned: abort, 404, 404 with JSON (QA), a page of HTML (QA), Retry, next focus, search.spec.ts:194 to :244
+               probed: a file with no places field shows the message and keeps the rows, probe.txt
+races          pinned: slow cell, :527 · point moved first, :540 · two picks, :557 (QA) · query typed before the file came, :374 (QA)
+               pinned at the reducer: late fix, coast's end and permission answer, point.test.ts
+UI states      error pinned · loading: none built and none asked for, see L2 · empty: nothing shows, as the PR says
+accessibility  pinned: role and name, search.spec.ts:44, :125 · focus leaves the box on a pick, :435, and on a tap that leaves it there, :446 (QA)
+               probed: Tab reaches the first result and Enter picks it, probe.txt
+auth, money    n/a: no accounts and no payments on this page
+privacy        pinned: search.spec.ts:624 · probed: 30 requests over a visit with a search, a pick and My location, 0 with the query or location, storage empty
+
+GAPS WRITTEN (each red on a mutant in mutants.txt, restored, then green)
+High   AC4 was only tested with stubs that serve one object as both search.json and cell, so the two could never differ. :425 picks from the real files
+High   a name from OpenStreetMap with HTML in it, in a result. Rows and popups had this test, results didn't. :393
+High   e2e/search.spec.ts:435 could not fail on the blur it names, as a mouse click moves the focus by itself. :446 can
+Medium the rest of the (QA) lines above. 13 mutants passed the builder's tests and go red on QA's, mutants.txt
+
+GAPS NOT WRITTEN
+These are behaviour, not missing tests, and the spec is silent on each. None blocks.
+M1 Medium. On a phone, the message for a failed search.json lies over My location and both zoom buttons, probe.txt, ac1-failure-mobile.png.
+   It stays until a Retry or a later focus succeeds, so while offline an explorer can't get back to following.
+   Witness: 375x667, search.json aborted, focus the box. Expected: the map's buttons can be reached. Rung: page.
+   This is on the PR as a question for Kornel.
+M2 Medium. Results stay open when the box loses focus. On a phone, 6 results are 264 px tall over a map of 300 px, note-results-cover-map-mobile.png.
+   A tap on the map moves the point and leaves them open. The only way to close them without picking is to clear the box.
+   Witness: 375x667, type abba, tap the map below the result. This is on the PR as a question for Kornel.
+L1 Low. Letters Unicode doesn't split into a letter and an accent stay as they are: lodz doesn't find Łódź, soren doesn't find Søren, strasse doesn't find Straße, probe.txt.
+   All Hungarian letters work. The fixture holds no such name, and the real count isn't known here.
+L2 Low. While search.json is on its way, a typed query shows nothing, with no sign that anything is loading. It is 681 KB, so on a slow line this can last seconds.
+L3 Low. Nothing announces the results to a screen reader. There is no live region.
+L4 Low. The results are checked for height and order only in Chromium. No Safari or real phone here, so the 16 px rule is pinned as CSS, not as Safari's behaviour.
+L5 Low. Three mutants survive, and mutants.txt says why for each.

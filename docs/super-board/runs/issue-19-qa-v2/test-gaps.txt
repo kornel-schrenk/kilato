@@ -1,0 +1,51 @@
+Test-gap check for #19, round 2, on 741affd. Scope: what the merge with develop 81b6dc1 changed, and the reviewer's R3 and R4.
+
+LEDGER (each AC to the test that asserts it)
+AC1 box in the header, search.json on first focus and not before
+  unit: n/a, this is the page's behaviour
+  page: e2e/search.spec.ts:86 header and first focus, :98 the intro, :109 once, :124 once while the file is on its way (new)
+AC2 from 2 characters, ignoring case and accents, in name, names.hu and names.en
+  unit: src/core/search.test.ts:18, :22, :26, :31, :36, :40, :51, :56, :63, :67, :71, :77
+  page: e2e/search.spec.ts:150, :278, :289, :298
+AC3 beginning first, nearest first in each group, at most 20
+  unit: src/core/search.test.ts:83, :88, :93, :98, :103, :114, :126
+  page: e2e/search.spec.ts:313, :327, :349 from the fixture, :366 the intro (changed), :377, :393
+AC4 a pick explores at the place, loads its cell, highlights its row
+  unit: src/core/point.test.ts:262 on, from all four modes
+  page: e2e/search.spec.ts:432, :450, :460, :471, :485, :496, :510, :523, :540, :552, :563, :580, :600, :613, :630, :651, :671
+
+WHAT THE MERGE TOUCHED
+scroll on a pick, the whole li  pinned: :540, :552 · M1, M2 red
+line under a result             pinned: :338 · M3 red
+Most relevant, rows showing     pinned: :563 · M4 red
+a pick whose chip is off        pinned: :580 · M5, M6 red · probed: 4 more orders of events, probe.txt
+manifest stub, wikiLangs        without it :496 fails and the check in verify.txt goes red · with it, 0 uncaught errors over the 44 search tests
+
+EDGE CASES
+boundaries     pinned: search.test.ts:63, :67, :103, :114
+input          pinned: :51, :56, e2e/search.spec.ts:190, :418
+               gap, Low: L1
+volume         measured: 29,969 places, probe.txt
+error paths    pinned: e2e/search.spec.ts:214 to :264, :651
+races          pinned: :124 focus while loading (new), :406 query before the file came, :600, :613, :630
+UI states      error pinned · loading: none built and none asked for, L2 · empty: nothing shows, as the PR says
+accessibility  pinned: role and name, :145 · focus, :460, :471 · probed: Tab and Enter, probe.txt
+auth, money    n/a: no accounts and no payments on this page
+privacy        pinned: :697 · probed: 30 requests over a visit, 0 with the query or the location, storage empty, probe.txt
+
+GAPS WRITTEN (each red on a mutant in mutants.txt, then green on today's code)
+Medium R3: :366 could not tell Deák Ferenc tér from a point south of the places. It now has a place south of the square
+Medium R4: :109 could not see a second request while the first was on its way. :124 holds the answer and focuses again
+
+GAPS NOT WRITTEN
+None blocks. Each is behaviour, or outside this card, and the spec is silent.
+Q1 Medium, R1. On a phone, the message for a failed search.json lies over My location and both zoom buttons, probe.txt, q1-failure-mobile.png.
+Q2 Medium, R2. Results stay open when the box loses focus, and a tap on the map leaves them open, probe.txt, q2-results-cover-map-mobile.png.
+Q3 Medium. A pick whose category chip is off moves the point and shows no row, with nothing saying why, q3-pick-chip-off-mobile.png.
+   :580 pins it. The orders probed in probe.txt: a tap on the map clears it, a second pick replaces it, and a row tapped first loses its highlight when the chip comes back.
+M1 Medium, outside this card. e2e/fixtures.ts doesn't fail a test on an uncaught page error, which is how the stale manifest stub hid in the rebase pass. The check in verify.txt shows none in the search tests.
+   Witness: add context.on('weberror') to the fixture. It wasn't run over the other page tests.
+L1 Low, R5. Letters Unicode doesn't split keep their form: lodz doesn't find Łódź. search.ts is unchanged since round 1, so ../issue-19-qa-v1/probe.txt still holds.
+L2 Low. Nothing shows while search.json is on its way.
+L3 Low. Nothing announces the results to a screen reader.
+L4 Low. Only Chromium here, so the 16 px rule is pinned as CSS, not as Safari's behaviour.

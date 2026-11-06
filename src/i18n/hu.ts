@@ -1,6 +1,7 @@
 export const hu = {
   intro: 'A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad.',
   language: 'Nyelv',
+  search: 'Keresés',
   useMyLocation: 'A helyzetem használata',
   exploreTheMap: 'A térkép felfedezése',
   exploreNote: 'Koppints a térképre, húzd el, vagy keress.',

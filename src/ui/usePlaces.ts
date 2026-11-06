@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks'
 import { listRadius, nearby, type LatLon } from '../core/geo'
 import { openStatus } from '../core/hours'
 import { sortRows, type Order, type Row } from '../core/rank'
+import type { SearchPlace } from '../core/search'
 import type { CategoryId, Place } from '../core/types'
 import { wikiLink } from '../core/wiki'
 import { placeLoader } from '../data/places'
@@ -12,7 +13,7 @@ const statusInterval = 60_000
 /** The place last tapped, and where. A new object is a new tap, even on the same place. */
 export interface Selection {
   place: Place
-  source: 'row' | 'marker'
+  source: 'row' | 'marker' | 'search'
 }
 
 /**
@@ -32,6 +33,8 @@ export function usePlaces(point: LatLon | null, phone: string) {
   )
   const [shown, setShown] = useState(pageSize)
   const [selection, setSelection] = useState<Selection | null>(null)
+  // A search result that was picked, until its row is there.
+  const [picked, setPicked] = useState<SearchPlace | null>(null)
   const [categoriesOff, setCategoriesOff] = useState<ReadonlySet<CategoryId>>(new Set())
   const [order, setOrder] = useState<Order>('nearest')
 
@@ -66,6 +69,16 @@ export function usePlaces(point: LatLon | null, phone: string) {
     setShown((current) => Math.max(current, (Math.floor(rank / pageSize) + 1) * pageSize))
   }
 
+  // The picked place has no row until its cell arrives, or while its category is off. A point that moved on
+  // first leaves the row unhighlighted.
+  useEffect(() => {
+    if (!picked) return
+    const pointStayed = point?.lat === picked.lat && point.lon === picked.lon
+    const row = rows.find(({ place }) => place.id === picked.id)
+    if (pointStayed && row) select(row.place, 'search')
+    if (row || !pointStayed) setPicked(null)
+  }, [point, rows, picked])
+
   const toggleCategory = (id: CategoryId) =>
     setCategoriesOff((current) => {
       const next = new Set(current)
@@ -85,6 +98,7 @@ export function usePlaces(point: LatLon | null, phone: string) {
     showMore: () => setShown((current) => current + pageSize),
     selection,
     select,
+    pick: setPicked,
     statusOf,
     failed: loader.failed,
     retry: loader.retry,

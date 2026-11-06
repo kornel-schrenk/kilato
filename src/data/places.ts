@@ -2,7 +2,7 @@ import { cellsWithin } from '../core/cells'
 import { listRadius, type LatLon } from '../core/geo'
 import type { CellFile, Manifest, Place, WikiLangFile } from '../core/types'
 
-const dataFolder = `${import.meta.env.BASE_URL}data/`
+export const dataFolder = `${import.meta.env.BASE_URL}data/`
 
 /**
  * Loads the manifest, then the cells around the point and the article titles in the phone
