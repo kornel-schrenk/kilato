@@ -2,7 +2,7 @@
 
 What we saw running super-board 3.3.0 (`d0b7d5a`) on Kilátó, a 17-card test project, with the workflow backend on a Raspberry Pi. [local-patches.md](local-patches.md) lists what we changed in response. Where a finding may come from our setup or the host rather than super-board, it says so.
 
-This is the status as of wave 9, on 2026-11-04. The numbers stay fixed, so PRs and later notes can refer to them.
+This is the status at the end of the run, on 2026-11-06. The numbers stay fixed, so PRs and later notes can refer to them. All 17 cards merged, along with one card added for a flaky test (#49). That took 24 waves, 137 agents, about 24M agent tokens and about 29 hours of wave time, with 8 bounces, 4 blocks and 1 failed lane. The [run log](runs/2026-11-03-kilato.md) has every card and wave.
 
 ## Halts
 
@@ -28,6 +28,12 @@ This is the status as of wave 9, on 2026-11-04. The numbers stay fixed, so PRs a
 
 **32. A failed status-block update halts the whole run.** `super-board-pr-body.sh` halted on any PATCH failure and sent `gh`'s error to `/dev/null`, so no cause was recorded. In wave 13, #47's status block failed this way, as the fourth of seven rapid writes. Reading the body back showed the write had never landed, and the comments posted just before and after it succeeded. One GET settles the outcome, so a halt is more than this write needs. *Patched in PR #50, which reads the body back and retries once. `--resume` still refuses a halt record with no saved operation, and the docs give no command for archiving one.*
 
+**38. `gh issue edit` can fail and exit 0.** During the restart, `gh issue edit 15 --add-label loop:rebase` printed `Post "https://api.github.com/graphql": dial tcp 140.82.121.5:443: connect: no route to host`, and a script under `set -e` carried on, so only a read-back showed the label was missing. The run's claim step verifies its result, but lanes' label writes aren't read back. The network errors lasted seconds and aren't explained: Wi-Fi logs show nothing then, or around #47's failed PATCH, so a connection to that PATCH is possible but unproven. This is `gh`'s behaviour, seen once. *Open.*
+
+**Measured after finding 38.** A rapid burst of 25 connections to GitHub, mid-wave: 4 failed, all among the last 7, each within 8 to 15 ms. Ping to the router and to GitHub lost 0 of 20. Then one connection about every 2 seconds: 0 of 30 failed. GitHub is about 28 ms away, so that refusal comes from nearer: this machine or the router, not GitHub. All three failures seen so far came during bursts of calls, including #47's PATCH, the fourth of seven rapid writes. So bursts are the likely trigger, and the router's connection limit is one guess. Neither is proven. The burst itself was a risk to the running lane, so it won't be repeated during a wave. This is our network, not super-board, though its one-try PATCH turns a blip into a halt.
+
+**33. A lane kept writing after the halt.** #21's Reviewer chained seven GitHub writes in one shell with no stop on failure. Two went out after exit 79, so #21 and PR #47 say bounced while the card stays in Review. The lane reported this itself. The write helpers could call `--check` first. *Open.*
+
 ## Lanes sharing a machine
 
 **4. Lanes share the session scratchpad.** A QA lane's `notes/*.json` glob picked up 20 drafts left by an earlier lane and posted them as duplicate author notes on PR #24. With parallel cards, one card's drafts could land on another card's PR. *Patched in the prompts only, in PR #25, which gives each lane its own temp folder. A lane in wave 9 still wrote one file directly in the shared folder, so a per-lane `TMPDIR` would be stronger.*
@@ -38,6 +44,12 @@ This is the status as of wave 9, on 2026-11-04. The numbers stay fixed, so PRs a
 
 **15. Parallel cards conflict on `package-lock.json`.** #13 passed review, then lost the merge to #9, which landed during that review, and that costs a further lane. The merge gate caught it correctly with exit 5, but the planner doesn't consider two cards that both add dependencies. *Open.*
 
+**34. Six parallel cards, one merge.** This extends finding 15. The planner launched all six free cards from `7cc1db7`. Pre-flight found no open PRs to compare, because they all started together, and the planner doesn't look at files. #43 merged first. #45, #44 and #47 then hit gate exit 5 after a whole Build, QA and Review, and each report says the rebased head needs QA and Review again. So the wave spent 4.9M tokens on one merge, and each further merge can make the rest conflict again. `max_workers` is the only control, and the wave-plan script calls it a safety valve. A file-overlap check in the planner would catch this. *Open.*
+
+**35. Parallel load makes a test time out.** `test/playwright-config.test.ts:13` has a 5 s limit and passes alone in 2.3 s by #47's Reviewer's measure. It timed out at load averages from 9 to 14.6: in #21's QA, twice in #21's Review, and once in #20's Review. In a gate's verify that reads as exit 2, and sends a good card to a rebase pass. The test is ours and the machine is small, so this is partly our setup. Six lanes on a Pi is what triggers it. *Open.*
+
+**37. A server left running again.** PID 1252783, a `vite preview` from `issue-16-build`, outlived its worktree, as in finding 11. PID 520505, from finding 11, is also still running. Both were idle and still running when the board drained. *Open.*
+
 ## Handoffs and resuming
 
 **6. A halted lane leaves no handoff.** The next QA lane starts from the Tester lifecycle's first step, even when the halted lane had pushed its evidence. A hand-written handoff can make this worse: ours named 20 duplicate notes, and the next lane went to inspect them and ran the probe in finding 7. A handoff needs to say what to leave alone. *Open.*
@@ -45,6 +57,12 @@ This is the status as of wave 9, on 2026-11-04. The numbers stay fixed, so PRs a
 **10. A wave stopped at the usage limit stays idle after the limit clears.** Both lanes hit the 5-hour limit and went idle at 12:26, and were still idle at 13:40 with the readings back near 0%. It took a manual stop and a `resumeFromRunId`. Lanes lose their context on resume, so uncommitted work relies on the next lane noticing it. The usage check runs between waves, so it doesn't catch this. This may be the host rather than super-board. *Open.*
 
 **12. The host's permission check can refuse a required step.** On PR #30, a QA lane's batch of 23 author notes was refused. It said so in its result and on the PR, and the next Builder posted them. *Open, and it recovered by itself.*
+
+**31. A lane ended its turn to wait for its own background job.** #15's QA lane started a background wait on its mutant run, then replied "I'm waiting on its results". The host read that as the end of the turn and forced its structured result at once, so the lane returned `failed` after 23 minutes with no verdict. The mutant run didn't finish, and `src/core/hours.ts` was left mutated in the worktree. QA mutates files in place, so anything that kills it leaves a broken file for the next lane in that folder. The lane's result warned about this, and the file is uncommitted. The first half is partly the host's behaviour. *Open.*
+
+**28. Nothing clears `loop:rebase`.** No script in `.claude/bin` or the wave script mentions it. #13's Builder removed the label by hand after the rebase pass. *Open.*
+
+**39. The planner can't see claims.** `super-board-wave-plan.sh:151` skips cards with assignees, but on its default path the items come from `super-board-card.sh items`, whose rows have no assignee field. So the filter never removes anything: mid-wave 14, the plan offered #15, which the bot holds. It does no harm with one orchestrator, because claims are released between waves. *Open.*
 
 ## Review and merge
 
@@ -55,6 +73,20 @@ This is the status as of wave 9, on 2026-11-04. The numbers stay fixed, so PRs a
 **9. A non-blocking Reviewer note has no home.** Notes on PRs #24, #27, #30 and #33 exist only as comments, so later builders can't see them. One became an `AGENTS.md` rule only because a person moved it (PR #29). A Backlog issue for each note, or a list the Builder reads, would fix this. *Open.*
 
 **13. A Reviewer deleted a local branch ref by mistake.** It restored the ref to the same commit as origin and reported it. No harm done. *Open.*
+
+**27. Reviewers override the "any not fixed bounces" rule.** The wave script's Reviewer prompt says "any not fixed → bounce again". On PR #32 (R4) and PR #30 (R1, R2), the Reviewer merged anyway and disclosed it. Both calls look right: R4's wording is the product owner's, and R1 and R2 are nits no AC or spec line asks for. So the rule can't be followed for a non-blocking or owner-held note, and an agent's judgement replaces it. It could count only blocking findings owned by the Builder. It keeps costing: on 2026-11-06, the Reviewers of #19 and #20 merged past open rows owned by the product owner (PR #44 R1, R2, R5, PR #46 R5), and #21's Reviewer, an hour later and on the same rule, stopped on such rows (PR #47 R1, R5) and sent the card to Blocked. Whether a card merges depends on which reading its Reviewer takes. *Open.*
+
+**36. A QA lane passed with no evidence.** PR #46's QA reported a pass with no evidence folder, screenshots, `visual` block, issue comment or `Local tests:` line. The Reviewer caught it as a blocker (R3), so the gate held, but nothing stopped QA reporting the pass. *Open.*
+
+**30. A spec's setup step isn't checked at merge.** The spec's setup list asks for GitHub Pages before the deploy issue merges, while #12's text and `pre-flight.md` say before the first run. PR #39's Reviewer noticed `has_pages` was false and merged anyway, reasoning that the workflow runs only on `main`. Part of this is our own mismatch between spec and card. *Open.*
+
+**42. A merged PR can keep a report that says blocked.** After merging PR #51, wave 17's Reviewer tried to PATCH its round 1 report, and the host refused the command as "External System Writes". So comment 6667480561 still reads "🛑 blocked · round 1 · review clean, merge not run", while the status block at the top of the PR says merged. The Reviewer didn't retry, and flagged it in its result. Anyone reading the comment alone gets the wrong state. The same command chained the halt check with a heredoc, as in finding 40, so it may be the same cause, but that isn't proven. *Open.*
+
+**43. The merge gate's cleanup removes other merged worktrees, not only the card's.** #19's gate also removed the worktree and local branch of `chore/super-board-plain-writes`, because its PR had merged. It kept branches with open PRs and worktrees under 24 hours old, and it wrote a recovery file, `.git/cleanup-wt/2026-11-06-05-56-20.tsv`, so nothing was lost here. It's still a surprise if someone is working in a finished branch's worktree, and it isn't what a card's merge suggests. *Open, harmless so far.*
+
+**45. The gate's `--dry-run` isn't a cheap check.** The script's header says "`--dry-run` reports both and runs neither", meaning the merge policy and migrations. It still takes the merge lock and runs every verify command (`super-board-merge-gate.sh:283`), and only the merge is skipped (`:341`). So a dry run holds up other cards' merges for a whole verify. #21's Reviewer found this mid-run and stopped its own process by PID, and the lock and scratch worktree were gone afterwards. *Open.*
+
+**46. A relayed answer counted as the product owner's.** #21's Block noted that all 90 comments were the bot's, so neither question had an answer, and it asked for a comment on the issue. The product owner answered in the orchestrator's session, and the orchestrator posted that from the board's account, quoting them and saying so. The next Reviewer accepted it. An agent could write the same comment, because nothing ties it to a person, so on a one-account board a human gate rests on trusting that account. *Worth a look.*
 
 ## Prompts, scope and setup
 
@@ -68,6 +100,20 @@ This is the status as of wave 9, on 2026-11-04. The numbers stay fixed, so PRs a
 
 **23. The usage check is blind without a status line.** `super-board-usage.sh check` had no reading until we added a status line that records plan usage (PR #23). *Worked around.*
 
+**29. A Reviewer ran a second live build.** PR #36's Reviewer repeated the real `data:build` with the Hungary extract and 152 calls to the live Wikipedia API, as #11's Builder had (finding 20). It confirmed the numbers, and no rule forbids it. *Open.*
+
+**41. The orchestrator's own acceptance criterion on #49 didn't discriminate.** AC1 runs the one test file under 12 busy processes, and #51's Reviewer found that the old file passes that too, 3 of 3. The failure needs the whole unit suite: under the same load, the old file timed out (case 7,769 ms) and the PR's passed (case 7,425 ms). So the fix is real, but the card's AC would have passed with no fix. The Reviewer's own check caught it. The card was written by the orchestrator, not the factory. *Lesson for writing cards.*
+
+**44. The host refuses a lane's `Write` to a file named `report.md`.** #19's Reviewer tried to keep the body of its PR comment in `report.md` in its temp folder, and the host answered "Subagents should return findings as text, not write report files". `refactor-body.md`, in the same folder, was accepted, so the name seems to be what trips it, though that's one case. The lane wrote the file from Bash instead and posted the comment normally. This is the host, not super-board, but it matters more now that PR #53 asks lanes to keep a write's text in a file. *Open.*
+
 **40. A permission refusal can land on an allow-listed step.** `Bash(gh pr ready:*)` and `Bash(gh api:*)` are on the allow list that onboarding wrote, yet the host's auto-mode classifier refused those writes in some lanes, as "Unrequested Commit in a Connected App" or "External System Writes". Across every lane transcript through wave 20, plain `gh` writes were allowed 102 times of 102, and compound ones (with `&&`, `;`, a loop, `$(...)` or a heredoc) 136 of 151. All 21 refusals of any kind were on compound commands, though 6 of them weren't recognisably `gh` writes. The closest case is `gh pr ready 46; echo "ready-exit=$?"`. One likely mechanism: a plain command matches its allow rule and never reaches the classifier, while a compound one gets judged. That isn't proven. Nobody controlled what else those commands did, the "compound" test is a broad regex, and the same mutation went both ways: #8's `for` loop was refused after a `cd` and passed without it.
 
-All three of the run's blocked cards, #49, #19 and #20, were finished work stopped by a refused write. A Block's "add a permission" advice can't help, because the rules already exist. Lanes handled a refusal differently: those three stopped, and others re-ran the write as a plain command, which passed. The skills show these writes as plain commands, so the chains are the lanes' own. Part of this is the host, not super-board. *Patched in the prompts only, in PR #53, with a rule of one plain command per `gh` write. Its effect isn't measured yet.*
+All three of the run's blocked cards, #49, #19 and #20, were finished work stopped by a refused write. A Block's "add a permission" advice can't help, because the rules already exist. Lanes handled a refusal differently: those three stopped, and others re-ran the write as a plain command, which passed. The skills show these writes as plain commands, so the chains are the lanes' own. Part of this is the host, not super-board. *Patched in the prompts only, in PR #53, with a rule of one plain command per `gh` write. In waves 21 to 24, the first with the rule, 8 agents made 77 plain `gh` writes and 2 compound ones, one of them a `grep` the regex caught, with no refusal of any kind. Through wave 20, 15 of 253 were refused. That's encouraging, not proof, because those four waves ran one card at a time and wave 13 ran six.*
+
+## What worked
+
+**What worked in wave 10.** Three cards merged in one wave with no bounce and no halt. Each gate ran against the latest `develop`: #30 against `47c60ae`, #36 against `7d2d759`. The fallback's first real use resolved a two-file conflict, with verify green. A Reviewer noticed the missing Leaflet and Preact licence notices, which no card or spec line asked for.
+
+**What worked in wave 13.** No conflict reached `develop`: the gate stopped three, and a Reviewer's trial merge found the fourth. (`develop` has no CI runs, so the gate's verify is the only check on `4a13ed5`.) Reviewers' own mutants found real test gaps QA had missed, on PRs #44, #45, #46 and #47. Each report says plainly what wasn't done, such as no real phone and one reader's truth score. A Reviewer flagged the flaky test as out of its PR's scope and asked for a ticket, instead of hiding it with a rerun. #21's Reviewer reported its own mistake.
+
+**What worked in waves 21 to 24.** Two finished PRs that the host had blocked merged in about 25 minutes each with no rebase. #21's rebase over 7 conflicting files passed QA and Review. The Reviewer read the product owner's answer and wrote "R1's throw stays in the code, as Kornel chose" instead of dropping it.
