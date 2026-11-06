@@ -10,14 +10,45 @@
         font-family: system-ui, sans-serif;
       }
       header {
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 0.5rem;
         padding: 0 0.5rem;
       }
       h1 {
         margin: 0;
         font-size: 1.25rem;
+      }
+      .search {
+        flex: 1;
+        min-width: 0;
+      }
+      .search input {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 44px;
+        /* Below 16 px, Safari on a phone zooms the page when the box gets focus. */
+        font-size: 1rem;
+      }
+      /* Over the map, so that the results don't push it down under the finger. */
+      .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 2;
+        max-height: 50vh;
+        margin: 0;
+        padding: 0 0.5rem;
+        overflow-y: auto;
+        list-style: none;
+        background: #fff;
+        box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
+      }
+      p.search-results {
+        padding: 0.5rem;
       }
       .lang-switch button {
         min-width: 44px;
@@ -52,21 +83,52 @@
       }
       .intro-buttons button,
       .load-error button,
+      .all-off button,
+      .go-to-budapest,
       .show-more {
         min-height: 44px;
+      }
+      .order,
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin: 0.5rem 0;
+      }
+      .order button,
+      .chip {
+        min-height: 44px;
+        padding: 0 0.75rem;
+        border: 2px solid var(--chip-color, #555);
+        border-radius: 22px;
+        background: none;
+        color: #555;
+        font: inherit;
+      }
+      .order button[aria-pressed='true'] {
+        background: #555;
+        color: #fff;
+      }
+      .chip[aria-pressed='true'] {
+        background: var(--chip-color);
+        color: var(--chip-text-color);
       }
       .places {
         margin: 0.5rem 0;
         padding: 0;
         list-style: none;
       }
-      .place {
+      .places li,
+      .search-results li {
+        border-bottom: 1px solid #ddd;
+      }
+      .place,
+      .search-result {
         display: block;
         width: 100%;
         min-height: 44px;
         padding: 0.25rem;
         border: 0;
-        border-bottom: 1px solid #ddd;
         background: none;
         color: inherit;
         font: inherit;
@@ -81,12 +143,19 @@
         font-weight: 600;
       }
       .place-other,
-      .place-meta {
+      .place-meta,
+      .place-status {
         display: block;
         font-size: 0.875rem;
       }
       .place-meta {
         color: #555;
+      }
+      .place-wiki {
+        display: inline-block;
+        padding: 0 0.25rem;
+        font-size: 0.875rem;
+        line-height: 44px;
       }
       .link {
         min-height: 44px;

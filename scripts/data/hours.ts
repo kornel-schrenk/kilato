@@ -1,9 +1,8 @@
 import opening_hours, { type nominatim_object } from 'opening_hours'
+import { hoursWindowMinutes } from '../../src/core/hours.ts'
 import type { Place } from '../../src/core/types'
 
 const MINUTE = 60_000
-/** 14 × 24 hours of real time, so `24/7` is `[0, 20160]` even when a clock change falls inside. */
-const WINDOW_MINUTES = 14 * 24 * 60
 
 /**
  * Hungary for the public holidays, Budapest's position for sunrise and sunset.
@@ -30,7 +29,7 @@ export function windowStartOn(now: Date): Date {
  * The library reads local time, so this needs a process running with `TZ=Europe/Budapest`.
  */
 export function hoursInWindow(windowStart: Date, value: string): Place['hours'] {
-  const windowEnd = new Date(windowStart.getTime() + WINDOW_MINUTES * MINUTE)
+  const windowEnd = new Date(windowStart.getTime() + hoursWindowMinutes * MINUTE)
   const minutesSinceStart = (date: Date) => (date.getTime() - windowStart.getTime()) / MINUTE
   try {
     const intervals = new opening_hours(value, BUDAPEST).getOpenIntervals(windowStart, windowEnd)

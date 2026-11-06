@@ -3,10 +3,11 @@ import 'leaflet/dist/leaflet.css'
 import { useEffect, useRef } from 'preact/hooks'
 import { listRadius, type LatLon } from '../core/geo'
 import { deakTer, startZoom, type PointEvent, type PointState } from '../core/point'
+import type { Row } from '../core/rank'
 import type { Place } from '../core/types'
 import type { en } from '../i18n/en'
 import { categoryColors } from './categoryColors'
-import type { Row, Selection } from './usePlaces'
+import type { Selection } from './usePlaces'
 
 const pointColor = '#1a56c4'
 const markerStyle: L.CircleMarkerOptions = { radius: 5, color: '#fff', weight: 1 }
@@ -44,6 +45,9 @@ export function MapView({ state, onEvent, rows, selection, onSelect, t }: Props)
   const zooming = useRef(false)
   const canvas = useRef<L.Canvas>(null)
   const markers = useRef(new Map<string, L.CircleMarker>())
+  // The markers outlive a render, and the list's order can change under them.
+  const select = useRef(onSelect)
+  select.current = onSelect
   const { point, mode, accuracy, view } = state
 
   useEffect(() => {
@@ -146,7 +150,7 @@ export function MapView({ state, onEvent, rows, selection, onSelect, t }: Props)
           // A tap on a marker picks the place. Reaching the map, it would also move the point.
           bubblingMouseEvents: false,
         })
-          .on('click', () => onSelect(place, 'marker'))
+          .on('click', () => select.current(place, 'marker'))
           .addTo(group),
       ]),
     )

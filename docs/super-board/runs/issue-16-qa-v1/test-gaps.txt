@@ -1,0 +1,44 @@
+Test-gap check for #16, on the diff of develop...a28755c, with QA's tests from aed58ae. The repo has no component rung: page tests drive the components, so that column is n/a for all four.
+
+Ledger
+AC1 phone language, and the UI switch changes nothing
+  unit: src/core/lang.test.ts:5 the primary subtag of the first language
+  e2e:  e2e/list.spec.ts:276 the switch to HU keeps DE · QA's :303 the page opens again in the saved UI language
+AC2 phone language, then Hungarian, then English, and wiki/<lang>.json once if listed
+  unit: src/core/wiki.test.ts:8, :17, :24, :28, :36, :40 · src/data/places.test.ts:157 once, QA's :177 the file of the phone language, :207 on its way, :223 says when they arrive, :239 not listed, :251 failed and retried
+  e2e:  e2e/list.spec.ts:288 de.json once, :296 no German article, :329 Hungarian phone, :338 English phone
+AC3 the label, the URL and the new tab
+  unit: src/core/wiki.test.ts:8 label and URL, :53, :57, :62, :66 the title in the URL
+  e2e:  e2e/list.spec.ts:276 label, href and target, :354 the new tab opens that URL, QA's :366 no Referer
+AC4 fr-FR with no fr in wikiLangs
+  unit: src/data/places.test.ts:239 · src/core/wiki.test.ts:24
+  e2e:  e2e/list.spec.ts:317
+
+Edge cases
+boundaries: pinned at src/core/wiki.test.ts:44 no wiki, {} and { q } · src/core/lang.test.ts:12 no language · an empty title file, in the probe only, gives the fallback, no message and one request
+money and dates: n/a
+input: pinned at src/core/wiki.test.ts:53 accents and spaces, :57 ? and %, :62 /, :66 # · very long: n/a, MediaWiki limits a title · CSV: n/a
+volume: 0 links pinned at e2e/list.spec.ts:346 · 308 rows on six locales in oracle.txt, 0 wrong
+auth: n/a, the page has no accounts
+error paths: pinned at src/data/places.test.ts:251 404 and Retry, :292 dropped, :299 not JSON · the page, with a 404 and a broken file, in the probe only
+idempotency and races: pinned at src/data/places.test.ts:157 moves and Retry, :207 on its way, :223 late arrival
+UI states: empty pinned at e2e/list.spec.ts:346 · loading and error below · disabled: n/a
+accessibility: role and name pinned by getByRole('link') with toHaveText at e2e/list.spec.ts:276 · the keyboard in the probe only: Tab from a row lands on its link, Enter opens it, the row stays untapped
+
+Test the tests: mutants.txt. 3 of the 4 that passed a28755c's tests are now red.
+
+Rank
+High: none. Every AC has a test at some rung.
+Medium, written:
+- a saved UI language taking the phone language's place: QA's e2e/list.spec.ts:303
+- always asking for de.json: QA's src/data/places.test.ts:177
+- rel="noreferrer" dropped: QA's e2e/list.spec.ts:366
+
+Test gaps (not written), none of them block.
+- Low, the phone: a row with a link is 89 px tall, or 104 px with a second name, where a row without a link is 45 px or 60 px, measured at 375x667 before any wrapping. The link has a 44 px line of its own. At 375x667 about 3 rows show under the map, where about 6 did (before-develop-mobile.png, after-mobile.png). The spec doesn't set a row's height.
+- Low, loading: a German phone shows the Hungarian link until the title file arrives, and a tap in that moment opens the Hungarian article. The probe sees the link turn over with the row moved 0 px. The spec doesn't say what a row shows meanwhile.
+- Low, a page test of a failed title file: the probe sees the message, Hungarian links and Retry bringing the German one. src/data/places.test.ts:251 holds the loader, and e2e/list.spec.ts covers the message and Retry for a failed manifest and cell.
+- Low, unreachable: wikiLink({ q: 'Q1' }, 'de', { Q1: 'Titel' }) wants DE, and no test holds it. The build can't write such a place, because an article always has a Hungarian or an English title (scripts/data/wikipedia.ts:179, scripts/data/merge.ts:20).
+- Low, a mistagged title: a wikipedia tag of hu:De%C3%A1k gives .../wiki/De%25C3%25A1k, which is a wrong link. MediaWiki doesn't allow %XX in a title, so only a wrong tag can carry one.
+- Low, a language code that differs from Wikipedia's: a phone on nb-NO has the subtag nb, and Norway's edition is no. fil and tl are another such pair. The AC and the spec say primary subtag, so such a phone gets the Hungarian link. Not checked against the live API, as tests never call Wikipedia.
+- Low, the CSS: no test holds the link's 44 px or the divider on the li. The probe measures 109 x 44 px at all three viewports, 0 px of sideways scroll and no overlap with the row's button.

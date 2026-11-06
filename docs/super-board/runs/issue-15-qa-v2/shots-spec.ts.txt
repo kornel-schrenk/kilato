@@ -1,0 +1,80 @@
+// QA's screenshots for #15. Not part of the suite: it writes them to QA_OUT.
+import { mkdirSync } from 'node:fs'
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { expect, test } from './fixtures'
+import { button, expectNear, mapCentre } from './map-helpers'
+
+const out = process.env.QA_OUT!
+const before = process.env.QA_BEFORE === '1'
+mkdirSync(out, { recursive: true })
+const deakTer = { lat: 47.4975, lon: 19.0545 }
+const row = (page: Page, name: string) => page.locator('.place', { has: page.getByText(name, { exact: true }) })
+const status = (page: Page, name: string) => row(page, name).locator('.place-status')
+
+async function explore(page: Page, name = 'Explore the map') {
+  await page.goto('/kilato/')
+  await button(page, name).click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+  await expectNear(() => mapCentre(page), deakTer)
+  await expect(page.locator('.place').first()).toBeVisible()
+}
+
+for (const [name, width, height] of [
+  ['desktop', 1920, 1080],
+  ['tablet', 1024, 768],
+  ['mobile', 375, 667],
+] as const) {
+  const shot = (page: Page, file: string) => page.screenshot({ path: join(out, `${file}-${name}.png`) })
+
+  test.describe(name, () => {
+    test.use({ viewport: { width, height } })
+
+    if (before) {
+      test('before', async ({ page }) => {
+        await page.clock.install({ time: '2026-11-02T20:50:00Z' })
+        await explore(page)
+        await row(page, 'Minta Kávézó').scrollIntoViewIfNeeded()
+        await shot(page, 'before-develop')
+      })
+    } else {
+      test('AC2 and AC3, in English', async ({ page }) => {
+        await page.clock.install({ time: '2026-11-02T20:50:00Z' })
+        await explore(page)
+        await expect(status(page, 'Minta Kávézó')).toHaveText('Open now')
+        await row(page, 'Minta Kávézó').scrollIntoViewIfNeeded()
+        await shot(page, 'ac3-open-before-closing')
+
+        await page.clock.pauseAt('2026-11-02T20:59:59Z')
+        await page.clock.runFor(61_000)
+        await expect(status(page, 'Minta Kávézó')).toHaveText('Closed now')
+        await shot(page, 'ac3-closed-after-closing')
+
+        // The list's first screen: the rows nearest the point have no hours in the fixture.
+        await page.evaluate(() => window.scrollTo(0, 0))
+        await expect(row(page, 'Deák Ferenc tér').locator('.place-status')).toHaveCount(0)
+        await row(page, 'Deák Ferenc tér').scrollIntoViewIfNeeded()
+        await shot(page, 'ac2-unknown-no-status')
+      })
+
+      test.describe('on a Hungarian phone', () => {
+        test.use({ locale: 'hu-HU' })
+
+        test('AC2, in Hungarian, with the article link', async ({ page }) => {
+          await page.clock.setFixedTime('2026-11-02T12:00:00Z')
+          await explore(page, 'A térkép felfedezése')
+          await page.locator('.show-more').click()
+          await page.locator('.show-more').click()
+          await expect(status(page, 'Magyar Állami Operaház')).toHaveText('Most nyitva')
+          await row(page, 'Magyar Állami Operaház').scrollIntoViewIfNeeded()
+          await shot(page, 'ac2-most-nyitva-with-link')
+
+          await expect(status(page, 'Minta Múzeum')).toHaveText('Most zárva')
+          await row(page, 'Minta Múzeum').scrollIntoViewIfNeeded()
+          await shot(page, 'ac2-most-zarva')
+        })
+      })
+    }
+  })
+}

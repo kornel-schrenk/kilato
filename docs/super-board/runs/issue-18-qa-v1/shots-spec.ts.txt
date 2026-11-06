@@ -1,0 +1,78 @@
+// QA's screenshots for #18. Copied into e2e/ to run, never committed there.
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { expect, test } from './fixtures'
+import { button } from './map-helpers'
+
+const dir = process.env.QA_SHOT_DIR!
+const before = process.env.QA_BEFORE === '1'
+const viewports: [string, number, number][] = [
+  ['desktop', 1920, 1080],
+  ['tablet', 1024, 768],
+  ['mobile', 375, 667],
+]
+const time = '2026-11-03T10:00:00Z'
+const ready = async (page: Page, hu = false) => {
+  await page.clock.install({ time })
+  await page.goto('/kilato/')
+  await button(page, hu ? 'A térkép felfedezése' : 'Explore the map').click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expect(page.locator('.place')).toHaveCount(100)
+  await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+  await page.clock.runFor(600)
+  await page.waitForTimeout(600)
+}
+// On a phone the map fills the top of the screen. Scrolling down shows the controls with the first rows.
+const shot = async (page: Page, name: string, viewport: string, selector = '.order') => {
+  if (viewport === 'mobile') {
+    await page.locator(selector).evaluate((element) => element.scrollIntoView({ block: 'start' }))
+  }
+  await page.waitForTimeout(300)
+  await page.screenshot({ path: join(dir, `${name}.png`) })
+}
+
+for (const [name, width, height] of viewports) {
+  test.describe(name, () => {
+    test.use({ viewport: { width, height } })
+
+    if (before) {
+      test(`before ${name}`, async ({ page }) => {
+        await ready(page)
+        await shot(page, `before-develop-${name}`, name, '.chips')
+        await expect(page.locator('.order')).toHaveCount(0)
+      })
+    } else {
+      test(`ac1 nearest ${name}`, async ({ page }) => {
+        await ready(page)
+        await shot(page, `ac1-nearest-${name}`, name)
+        await expect(button(page, 'Nearest')).toHaveAttribute('aria-pressed', 'true')
+      })
+      test(`ac2 relevant ${name}`, async ({ page }) => {
+        await ready(page)
+        await button(page, 'Most relevant').click()
+        await shot(page, `ac2-relevant-${name}`, name)
+        await expect(button(page, 'Most relevant')).toHaveAttribute('aria-pressed', 'true')
+      })
+      test(`ac1 relevant with Notable places off ${name}`, async ({ page }) => {
+        await ready(page)
+        await button(page, 'Most relevant').click()
+        await button(page, 'Notable places').click()
+        await shot(page, `ac1-relevant-notable-off-${name}`, name)
+        await expect(button(page, 'Notable places')).toHaveAttribute('aria-pressed', 'false')
+      })
+    }
+  })
+}
+
+if (!before) {
+  test.describe('Hungarian', () => {
+    test.use({ locale: 'hu-HU', viewport: { width: 375, height: 667 } })
+
+    test('ac1 hu mobile', async ({ page }) => {
+      await ready(page, true)
+      await button(page, 'Legérdekesebb').click()
+      await shot(page, 'ac1-relevant-hu-mobile', 'mobile')
+      await expect(button(page, 'Legérdekesebb')).toHaveAttribute('aria-pressed', 'true')
+    })
+  })
+}

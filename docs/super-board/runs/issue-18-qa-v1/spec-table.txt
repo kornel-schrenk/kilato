@@ -1,0 +1,15 @@
+The numbers and labels in the code, against the spec's Order section read from the file. Command: node spec-table.mjs, from the worktree.
+
+same: Has a Wikipedia article · spec −300 m · code -300
+same: Sights · spec −200 m · code -200
+same: Notable places, Culture & leisure · spec −100 m · code -100, -100
+same: Food & drink · spec −50 m · code -50
+same: Services, Shops · spec 0 · code 0, 0
+same: Open now · spec −100 m · code -100
+same: Closed now · spec +300 m · code 300
+same: Hours unknown · spec 0 · code 0
+same: labels · spec Nearest, Legközelebbi, Most relevant, Legérdekesebb · code Nearest, Legközelebbi, Most relevant, Legérdekesebb
+0 different
+exit=0
+
+One table: the adjustments appear only in src/core/rank.ts. Every other src file reaches them through sortRows.

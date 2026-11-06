@@ -1,0 +1,272 @@
+// QA's exploratory probe for #16. Not part of the suite: it writes its results to QA_OUT.
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { expect, test } from './fixtures'
+import { button, expectNear, mapCentre } from './map-helpers'
+
+const out = process.env.QA_OUT!
+mkdirSync(out, { recursive: true })
+const log = (line: string) => appendFileSync(join(out, 'probe.txt'), `${line}\n`)
+const deakTer = { lat: 47.4975, lon: 19.0545 }
+const museum = 'Földalatti Vasúti Múzeum'
+const german = 'https://de.wikipedia.org/wiki/U-Bahn-Museum_Budapest'
+const hungarian = 'https://hu.wikipedia.org/wiki/F%C3%B6ldalatti_Vas%C3%BAti_M%C3%BAzeum'
+const english = 'https://en.wikipedia.org/wiki/Underground_Railway_Museum_(Budapest)'
+
+function watch(page: Page) {
+  const titles: string[] = []
+  const hosts = new Set<string>()
+  const errors: string[] = []
+  page.on('request', (request) => {
+    const url = new URL(request.url())
+    hosts.add(url.hostname)
+    if (url.pathname.includes('/data/wiki/')) titles.push(url.pathname)
+  })
+  page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`))
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`)
+  })
+  return { titles, hosts, errors }
+}
+
+async function explore(page: Page, name = 'Explore the map') {
+  await page.goto('/kilato/')
+  await button(page, name).click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+  await expectNear(() => mapCentre(page), deakTer)
+  await expect(page.locator('.place').first()).toBeVisible()
+}
+
+const row = (page: Page, name: string) => page.locator('li', { has: page.locator('.place-name', { hasText: new RegExp(`^${name}$`) }) })
+const link = (page: Page, name: string) => row(page, name).getByRole('link')
+
+async function showAll(page: Page, name = 'Show more') {
+  while (await button(page, name).count()) await button(page, name).click()
+}
+
+const dump = (page: Page) =>
+  page.locator('.places li').evaluateAll((items) =>
+    items.map((item) => {
+      const anchor = item.querySelector('a')
+      return {
+        name: item.querySelector('.place-name')!.textContent,
+        text: anchor?.textContent ?? null,
+        href: anchor?.getAttribute('href') ?? null,
+        target: anchor?.getAttribute('target') ?? null,
+        rel: anchor?.getAttribute('rel') ?? null,
+      }
+    }),
+  )
+
+test.describe.configure({ timeout: 120_000 })
+
+for (const [locale, uiName, otherUi] of [
+  ['de-AT', 'Explore the map', 'HU'],
+  ['fr-FR', 'Explore the map', 'HU'],
+  ['es-ES', 'Explore the map', 'HU'],
+  ['zh-Hant-TW', 'Explore the map', 'HU'],
+  ['hu-HU', 'A térkép felfedezése', 'EN'],
+  ['en-GB', 'Explore the map', 'HU'],
+] as const) {
+  test.describe(`every row, ${locale}`, () => {
+    test.use({ locale })
+
+    test('dumps its link before and after the UI switch', async ({ page }) => {
+      const seen = watch(page)
+      await explore(page, uiName)
+      await showAll(page, uiName === 'Explore the map' ? 'Show more' : 'Továbbiak megjelenítése')
+      // Let the title file arrive, if there is one.
+      if (locale === 'de-AT') await expect(link(page, museum)).toHaveText('Wikipedia · DE')
+      const before = await dump(page)
+      await button(page, otherUi).click()
+      await expect(page.locator('html')).toHaveAttribute('lang', otherUi.toLowerCase())
+      const after = await dump(page)
+      writeFileSync(join(out, `rows-${locale}.json`), JSON.stringify(before))
+      const same = JSON.stringify(before.map(({ name: _, ...rest }) => rest)) === JSON.stringify(after.map(({ name: _, ...rest }) => rest))
+      log(`${locale}: ${before.length} rows, ${before.filter((r) => r.href).length} links, the same after the switch to ${otherUi}: ${same}, title requests ${JSON.stringify(seen.titles)}, hosts ${[...seen.hosts].sort().join(' ')}, errors ${JSON.stringify(seen.errors)}`)
+      expect(same).toBe(true)
+    })
+  })
+}
+
+test.describe('a language chosen, then a reload', () => {
+  for (const [locale, name, choice, text, href] of [
+    ['de-AT', 'Explore the map', 'HU', 'Wikipedia · DE', german],
+    ['hu-HU', 'A térkép felfedezése', 'EN', 'Wikipedia · HU', hungarian],
+    ['en-GB', 'Explore the map', 'HU', 'Wikipedia · EN', english],
+  ] as const) {
+    test.describe(locale, () => {
+      test.use({ locale })
+      test(`picking ${choice} keeps ${text} after a reload`, async ({ page }) => {
+        await page.goto('/kilato/')
+        await button(page, choice).click()
+        await page.reload()
+        await expect(page.locator('html')).toHaveAttribute('lang', choice.toLowerCase())
+        await button(page, choice === 'HU' ? 'A térkép felfedezése' : 'Explore the map').click()
+        await expect(link(page, museum)).toHaveAttribute('href', href)
+        await expect(link(page, museum)).toHaveText(text)
+        log(`reload: ${locale} with ${choice} saved: ${await link(page, museum).textContent()}`)
+      })
+    })
+  }
+})
+
+test.describe('navigator.languages with more than one language', () => {
+  for (const [languages, text, titleFiles] of [
+    [['de-AT', 'fr-FR'], 'Wikipedia · DE', ['/kilato/data/wiki/de.json']],
+    [['fr-FR', 'de-DE'], 'Wikipedia · HU', []],
+    [['en-US', 'de-DE'], 'Wikipedia · EN', []],
+    [['pt-BR', 'hu-HU'], 'Wikipedia · HU', []],
+    [[], 'Wikipedia · HU', []],
+  ] as const) {
+    test(`${JSON.stringify(languages)} gives ${text}`, async ({ page }) => {
+      await page.addInitScript((list) => {
+        Object.defineProperty(navigator, 'languages', { get: () => list })
+      }, languages as readonly string[] as string[])
+      const seen = watch(page)
+      await explore(page)
+      await expect(link(page, museum)).toHaveText(text)
+      expect(seen.titles).toEqual(titleFiles)
+      expect(seen.errors).toEqual([])
+      log(`languages ${JSON.stringify(languages)}: ${await link(page, museum).textContent()}, title requests ${JSON.stringify(seen.titles)}`)
+    })
+  }
+})
+
+test.describe('the title file, on a German phone', () => {
+  test.use({ locale: 'de-AT' })
+
+  test('stays one request over moves of the point', async ({ page }) => {
+    const seen = watch(page)
+    await explore(page)
+    await expect(link(page, museum)).toHaveText('Wikipedia · DE')
+    const map = (await page.locator('.leaflet-container').boundingBox())!
+    for (const [dx, dy] of [[-120, -60], [100, 60], [40, -90]]) {
+      await page.mouse.click(map.x + map.width / 2 + dx, map.y + map.height / 2 + dy)
+      await page.waitForTimeout(300)
+    }
+    expect(seen.titles).toEqual(['/kilato/data/wiki/de.json'])
+    log(`three moves: title requests ${JSON.stringify(seen.titles)}, errors ${JSON.stringify(seen.errors)}`)
+  })
+
+  test('a 404 shows the message over a working list, links stay Hungarian, and Retry brings the German one', async ({ page }) => {
+    let broken = true
+    await page.route('**/kilato/data/wiki/de.json', (route) => (broken ? route.fulfill({ status: 404 }) : route.fallback()))
+    const seen = watch(page)
+    await explore(page)
+    await expect(page.getByRole('alert')).toContainText("Couldn't load places")
+    await expect(link(page, museum)).toHaveAttribute('href', hungarian)
+    const rows = await page.locator('.place').count()
+    broken = false
+    await button(page, 'Retry').click()
+    await expect(link(page, museum)).toHaveAttribute('href', german)
+    await expect(page.getByRole('alert')).toHaveCount(0)
+    log(`404 then Retry: ${rows} rows during the failure, title requests ${JSON.stringify(seen.titles)}`)
+    expect(seen.titles).toHaveLength(2)
+  })
+
+  test('a broken file is a failure too', async ({ page }) => {
+    await page.route('**/kilato/data/wiki/de.json', (route) => route.fulfill({ body: '<html>not json', contentType: 'text/html' }))
+    await explore(page)
+    await expect(page.getByRole('alert')).toContainText("Couldn't load places")
+    await expect(link(page, museum)).toHaveAttribute('href', hungarian)
+    log('malformed title file: the message shows, the link stays Hungarian')
+  })
+
+  test('an empty file leaves the fallback, with no message and no second request', async ({ page }) => {
+    await page.route('**/kilato/data/wiki/de.json', (route) => route.fulfill({ json: {} }))
+    const seen = watch(page)
+    await explore(page)
+    await expect(link(page, museum)).toHaveAttribute('href', hungarian)
+    const map = (await page.locator('.leaflet-container').boundingBox())!
+    await page.mouse.click(map.x + map.width / 2 - 100, map.y + map.height / 2)
+    await page.waitForTimeout(300)
+    await expect(page.getByRole('alert')).toHaveCount(0)
+    expect(seen.titles).toHaveLength(1)
+    log(`empty title file: fallback, no message, title requests ${JSON.stringify(seen.titles)}`)
+  })
+
+  test('titles that come late turn the link over, and the row stays put', async ({ page }) => {
+    let release = () => {}
+    const late = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    await page.route('**/kilato/data/wiki/de.json', async (route) => {
+      await late
+      await route.fallback()
+    })
+    await explore(page)
+    await expect(link(page, museum)).toHaveAttribute('href', hungarian)
+    const before = (await row(page, museum).boundingBox())!
+    release()
+    await expect(link(page, museum)).toHaveAttribute('href', german)
+    const after = (await row(page, museum).boundingBox())!
+    log(`late titles: Hungarian first, then German, row moved ${after.y - before.y} px`)
+  })
+
+  test('the new tab has no opener and no Referer, and Wikipedia gets nothing before the tap', async ({ page, context }) => {
+    const seen = watch(page)
+    await explore(page)
+    await expect(link(page, museum)).toHaveText('Wikipedia · DE')
+    const wikipediaBefore = [...seen.hosts].filter((host) => host.endsWith('wikipedia.org'))
+    let referer: string | undefined = 'unset'
+    await context.route('https://de.wikipedia.org/**', (route) => {
+      referer = route.request().headers().referer
+      return route.fulfill({ body: '<title>article</title>', contentType: 'text/html' })
+    })
+    const opened = context.waitForEvent('page')
+    await link(page, museum).click()
+    const tab = await opened
+    await tab.waitForLoadState()
+    const opener = await tab.evaluate(() => window.opener === null)
+    log(`new tab: url ${tab.url()}, opener null ${opener}, Referer ${referer}, Wikipedia hosts before the tap ${JSON.stringify(wikipediaBefore)}, first page still open ${!page.isClosed()}`)
+    expect(tab.url()).toBe(german)
+    expect(opener).toBe(true)
+    expect(referer).toBeUndefined()
+    expect(wikipediaBefore).toEqual([])
+    await expect(page.locator('[aria-current]')).toHaveCount(0)
+  })
+
+  test('the keyboard reaches the link after its row, and Enter opens it', async ({ page, context }) => {
+    await explore(page)
+    await expect(link(page, museum)).toHaveText('Wikipedia · DE')
+    await row(page, museum).locator('.place').focus()
+    await page.keyboard.press('Tab')
+    await expect(link(page, museum)).toBeFocused()
+    const outline = await link(page, museum).evaluate((a) => getComputedStyle(a).outlineStyle)
+    await context.route('https://de.wikipedia.org/**', (route) => route.fulfill({ body: '' }))
+    const opened = context.waitForEvent('page')
+    await page.keyboard.press('Enter')
+    expect((await opened).url()).toBe(german)
+    await expect(page.locator('[aria-current]')).toHaveCount(0)
+    log(`keyboard: Tab from the row lands on its link, outline ${outline}, Enter opens the new tab, the row stays untapped`)
+  })
+})
+
+for (const [viewportName, width, height] of [
+  ['desktop', 1920, 1080],
+  ['tablet', 1024, 768],
+  ['mobile', 375, 667],
+] as const) {
+  test.describe(`layout ${viewportName}`, () => {
+    test.use({ locale: 'de-AT', viewport: { width, height } })
+
+    test('no sideways scroll, and the tap target', async ({ page }) => {
+      await explore(page)
+      await expect(link(page, museum)).toHaveText('Wikipedia · DE')
+      await link(page, museum).scrollIntoViewIfNeeded()
+      const box = (await link(page, museum).boundingBox())!
+      const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+      const overlap = await row(page, museum).evaluate((item) => {
+        const a = item.querySelector('a')!.getBoundingClientRect()
+        const b = item.querySelector('.place')!.getBoundingClientRect()
+        return a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5
+      })
+      log(`${viewportName}: link ${Math.round(box.width)} x ${Math.round(box.height)} px, sideways scroll ${sideways} px, overlaps its button: ${overlap}`)
+      expect(sideways).toBeLessThanOrEqual(0)
+      expect(box.height).toBeGreaterThanOrEqual(44)
+    })
+  })
+}

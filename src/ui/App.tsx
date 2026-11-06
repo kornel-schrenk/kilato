@@ -1,11 +1,16 @@
 import { useLayoutEffect, useState } from 'preact/hooks'
+import { inCoverage } from '../core/coverage'
 import { phoneLanguage, uiLanguage, type Lang } from '../core/lang'
+import { deakTer } from '../core/point'
+import type { SearchPlace } from '../core/search'
 import { en } from '../i18n/en'
 import { hu } from '../i18n/hu'
+import { categories, CategoryChips } from './CategoryChips'
 import { Footer } from './Footer'
 import { MapView } from './MapView'
 import { Panel, type PanelName } from './Panel'
 import { PlaceList } from './PlaceList'
+import { SearchBox } from './SearchBox'
 import { usePlaces } from './usePlaces'
 import { usePoint } from './usePoint'
 
@@ -33,10 +38,13 @@ function saveLang(lang: Lang) {
 }
 
 export function App() {
-  const [lang, setLang] = useState(() => uiLanguage(savedLang(), phoneLanguage(navigator.languages)))
+  // Read once, because the titles the page loads are in this language.
+  const [phone] = useState(() => phoneLanguage(navigator.languages))
+  const [lang, setLang] = useState(() => uiLanguage(savedLang(), phone))
   const t = messages[lang]
   const [point, dispatch] = usePoint()
-  const places = usePlaces(point.point)
+  const places = usePlaces(point.point, phone)
+  const outside = point.point !== null && !inCoverage(point.point)
   const [panel, setPanel] = useState<PanelName | null>(null)
 
   useLayoutEffect(() => {
@@ -48,10 +56,17 @@ export function App() {
     setLang(choice)
   }
 
+  const pick = (place: SearchPlace) => {
+    dispatch({ type: 'pick', at: { lat: place.lat, lon: place.lon } })
+    places.pick(place)
+  }
+
   return (
     <>
       <header>
         <h1>Kilátó</h1>
+        {/* With no point yet, the map is at Deák Ferenc tér, so results start from there. */}
+        <SearchBox point={point.point ?? deakTer} onPick={pick} lang={lang} t={t} />
         <div class="lang-switch" role="group" aria-label={t.language}>
           <button type="button" aria-pressed={lang === 'hu'} onClick={() => choose('hu')}>
             HU
@@ -88,23 +103,53 @@ export function App() {
           </>
         )}
         {point.mode === 'exploring' && <p>{t.exploreNote}</p>}
-        {places.failed && (
-          <p role="alert" class="load-error">
-            {t.placesFailed}{' '}
-            <button type="button" onClick={places.retry}>
-              {t.retry}
+        {outside ? (
+          <>
+            <p>{t.outsideBudapest}</p>
+            <button type="button" class="go-to-budapest" onClick={() => dispatch({ type: 'explore' })}>
+              {t.goToBudapest}
             </button>
-          </p>
+          </>
+        ) : (
+          <>
+            <div class="order" role="group" aria-label={t.order}>
+              <button type="button" aria-pressed={places.order === 'nearest'} onClick={() => places.setOrder('nearest')}>
+                {t.nearest}
+              </button>
+              <button type="button" aria-pressed={places.order === 'relevant'} onClick={() => places.setOrder('relevant')}>
+                {t.mostRelevant}
+              </button>
+            </div>
+            <CategoryChips off={places.categoriesOff} onToggle={places.toggleCategory} t={t} />
+            {places.failed && (
+              <p role="alert" class="load-error">
+                {t.placesFailed}{' '}
+                <button type="button" onClick={places.retry}>
+                  {t.retry}
+                </button>
+              </p>
+            )}
+            {places.categoriesOff.size === categories.length && (
+              <p class="all-off">
+                {t.allCategoriesOff}{' '}
+                <button type="button" onClick={places.allCategoriesOn}>
+                  {t.turnAllOn}
+                </button>
+              </p>
+            )}
+            <PlaceList
+              rows={places.listRows}
+              shown={places.shown}
+              selection={places.selection}
+              onSelect={places.select}
+              onShowMore={places.showMore}
+              statusOf={places.statusOf}
+              wikiLink={places.wikiLink}
+              lang={lang}
+              t={t}
+            />
+          </>
         )}
-        <PlaceList
-          rows={places.rows}
-          shown={places.shown}
-          selection={places.selection}
-          onSelect={places.select}
-          onShowMore={places.showMore}
-          lang={lang}
-          t={t}
-        />
       </main>
       <Footer manifest={places.manifest} onOpen={setPanel} lang={lang} t={t} />
       {panel && <Panel name={panel} onClose={() => setPanel(null)} t={t} />}
