@@ -91,6 +91,14 @@ const sendFix = (page: Page, { lat, lon }: LatLon) =>
 const watchCount = (page: Page) =>
   page.evaluate(() => (window as unknown as { watches: Map<number, unknown> }).watches.size)
 
+// The spec's Start zoom: 14 below 900 px wide, 15 from there. The share is how much of the 1 km
+// circle's line that leaves on the map, worked out from its radius of 310 px at 15 and 155 px at 14.
+const startZooms = [
+  { width: 375, height: 667, zoom: 14, share: 0.84 },
+  { width: 899, height: 700, zoom: 14, share: 1 },
+  { width: 900, height: 700, zoom: 15, share: 0.67 },
+]
+
 /** Opens the page and starts exploring at Deák Ferenc tér. */
 async function explore(page: Page) {
   await page.goto('/kilato/')
@@ -357,7 +365,7 @@ test.describe('without a granted permission', () => {
     await expect.poll(() => watchCount(page)).toBe(0)
   })
 
-  const startsExploring = async (page: Page) => {
+  const startsExploring = async (page: Page, zoom = 15) => {
     await expect(page.getByText(note)).toBeVisible()
     await expect(page.getByText(intro)).toHaveCount(0)
     await expect(button(page, 'Explore the map')).toHaveCount(0)
@@ -367,7 +375,7 @@ test.describe('without a granted permission', () => {
     await expect(dot(page)).toHaveCount(0)
     await expectNear(() => pinPlace(page), deakTer)
     await expectNear(() => mapCentre(page), deakTer)
-    await expect.poll(async () => (await geography(page)).zoom).toBe(15)
+    await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
   }
 
   test('Explore the map starts exploring at Deák Ferenc tér, zoom 15', async ({ page }) => {
@@ -461,6 +469,59 @@ test.describe('without a granted permission', () => {
       await startsExploring(page)
     })
   }
+
+  for (const { width, height, zoom, share } of startZooms) {
+    test.describe(`at ${width}x${height}`, () => {
+      test.use({ viewport: { width, height } })
+
+      const startsWithTheCircleOnTheMap = async (page: Page) => {
+        await startsExploring(page, zoom)
+        await expect.poll(() => lineOnMap(page, '.km-circle')).toBeCloseTo(share, 1)
+      }
+
+      test(`Explore the map starts at zoom ${zoom}, with ${share * 100}% of the 1 km circle on the map`, async ({ page }) => {
+        await page.goto('/kilato/')
+        await button(page, 'Explore the map').click()
+        await startsWithTheCircleOnTheMap(page)
+      })
+
+      test(`a refusal starts at zoom ${zoom}, with ${share * 100}% of the 1 km circle on the map`, async ({ page }) => {
+        await page.goto('/kilato/')
+        await button(page, 'Use my location').click()
+        await startsWithTheCircleOnTheMap(page)
+      })
+
+      test(`a location error starts at zoom ${zoom}, with ${share * 100}% of the 1 km circle on the map`, async ({ page }) => {
+        await failLocation(page, 2)
+        await page.goto('/kilato/')
+        await button(page, 'Use my location').click()
+        await startsWithTheCircleOnTheMap(page)
+      })
+    })
+  }
+
+  test.describe('on a phone', () => {
+    test.use({ viewport: { width: 375, height: 667 } })
+
+    test('at least 80% of the 1 km circle is on the map in the first view', async ({ page }) => {
+      await page.goto('/kilato/')
+      await button(page, 'Explore the map').click()
+      await expect(kmCircle(page)).toBeVisible()
+
+      await expect.poll(() => lineOnMap(page, '.km-circle')).toBeGreaterThanOrEqual(0.8)
+    })
+
+    test('Explore the map goes to zoom 14, whatever the zoom was during the intro', async ({ page }) => {
+      await page.goto('/kilato/')
+      await expect(page.getByText(intro)).toBeVisible()
+      await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+      await zoomTo(page, 16)
+
+      await button(page, 'Explore the map').click()
+
+      await startsExploring(page, 14)
+    })
+  })
 
   test('a press on Use my location, once allowed, starts following', async ({ page, context }) => {
     await context.setGeolocation({ latitude: 47.51, longitude: 19.06, accuracy: 25 })
@@ -609,6 +670,7 @@ test.describe('with the permission granted', () => {
 
     await expectNear(() => mapCentre(page), next, 0.5)
     await expectNear(() => circlePlace(page, '.location-dot'), next, 0.5)
+    expect((await geography(page)).zoom).toBe(19)
   })
 
   test('two 10 m steps move the point once, measured from the point', async ({ page }) => {
@@ -754,20 +816,47 @@ test.describe('with the permission granted', () => {
     })
   }
 
+  for (const { width, height, zoom, share } of startZooms) {
+    test.describe(`at ${width}x${height}`, () => {
+      test.use({ viewport: { width, height } })
+
+      test(`My location goes back to zoom ${zoom}, whatever the zoom was`, async ({ page }) => {
+        await page.goto('/kilato/')
+        await expect(dot(page)).toBeVisible()
+        await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
+        await zoomTo(page, zoom + 1)
+        await drag(page, -60, 30)
+        await button(page, 'My location').click()
+
+        await expect(dot(page)).toBeVisible()
+        await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
+        await expect.poll(() => lineOnMap(page, '.km-circle')).toBeCloseTo(share, 1)
+      })
+    })
+  }
+
   test.describe('on a phone', () => {
     test.use({ viewport: { width: 375, height: 667 } })
 
-    test('My location goes back to zoom 14, whatever the zoom was', async ({ page }) => {
+    test('at least 80% of the 1 km circle is on the map in the first view', async ({ page }) => {
+      await page.goto('/kilato/')
+      await expect(dot(page)).toBeVisible()
+
+      await expect.poll(() => lineOnMap(page, '.km-circle')).toBeGreaterThanOrEqual(0.8)
+    })
+
+    test('a drag keeps the zoom the user chose', async ({ page }) => {
       await page.goto('/kilato/')
       await expect(dot(page)).toBeVisible()
       await expect.poll(async () => (await geography(page)).zoom).toBe(14)
       await zoomTo(page, 15)
-      await drag(page, -60, 30)
-      await button(page, 'My location').click()
 
-      await expect(dot(page)).toBeVisible()
-      await expect.poll(async () => (await geography(page)).zoom).toBe(14)
-      await expect.poll(() => lineOnMap(page, '.km-circle')).toBeCloseTo(0.84, 1)
+      await drag(page, -60, 30)
+
+      await expect(pin(page)).toBeVisible()
+      await expect.poll(async () => distanceMetres(await pinPlace(page), home)).toBeGreaterThan(100)
+      await expectNear(() => mapCentre(page), await pinPlace(page))
+      expect((await geography(page)).zoom).toBe(15)
     })
 
     test('a later walk keeps the zoom the user chose, even with the circle off the map', async ({ page }) => {
@@ -954,6 +1043,22 @@ test.describe('exploring', () => {
 
     await expect(pin(page)).toBeVisible()
     await expectNear(() => pinPlace(page), deakTer, 2)
+  })
+})
+
+test.describe('exploring on a phone', () => {
+  test.use({ viewport: { width: 375, height: 667 } })
+
+  test('a drag keeps the zoom the user chose', async ({ page }) => {
+    await explore(page)
+    await expect.poll(async () => (await geography(page)).zoom).toBe(14)
+    await zoomTo(page, 15)
+
+    await drag(page, -60, 30)
+
+    await expect.poll(async () => distanceMetres(await pinPlace(page), deakTer)).toBeGreaterThan(100)
+    await expectNear(() => mapCentre(page), await pinPlace(page))
+    expect((await geography(page)).zoom).toBe(15)
   })
 })
 

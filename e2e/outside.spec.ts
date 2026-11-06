@@ -51,6 +51,35 @@ test.describe('with the location in Vienna on a phone', () => {
   })
 })
 
+// The spec's Start zoom: 14 below 900 px wide, 15 from there, and Go to Budapest starts exploring at Deák Ferenc tér.
+for (const { width, zoom } of [
+  { width: 899, zoom: 14 },
+  { width: 900, zoom: 15 },
+]) {
+  test.describe(`with the location in Vienna at ${width} px wide`, () => {
+    test.use({
+      locale: 'en-GB',
+      geolocation: { latitude: vienna.lat, longitude: vienna.lon, accuracy: 10 },
+      permissions: ['geolocation'],
+      viewport: { width, height: 700 },
+    })
+
+    test(`Go to Budapest starts at zoom ${zoom}, whatever the zoom was`, async ({ page }) => {
+      await page.goto('/kilato/')
+      await expect(page.getByText('Kilátó covers Budapest only for now.')).toBeVisible()
+      await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
+      await zoomTo(page, zoom + 1)
+
+      await button(page, 'Go to Budapest').click()
+
+      // pinPlace throws until the pin is drawn, and expect.poll doesn't retry a throw.
+      await expect(page.locator('.pin')).toBeVisible()
+      await expectNear(() => pinPlace(page), deakTer, 3)
+      await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
+    })
+  })
+}
+
 test.describe('while exploring', () => {
   const message = 'Kilátó covers Budapest only for now.'
 
