@@ -1,0 +1,30 @@
+en leaflet: textContent 1395 chars, file 1395 chars, identical=true
+en preact: textContent 1087 chars, file 1087 chars, identical=true
+en reopen: closed again after Close and after Esc, Close in view, focus back on the footer button after Esc
+en Tab order: in:summary:Leaflet | in:summary:Preact | in:button:Close | OUT:body:
+    KilátóH | in:a:The code is  | in:summary:Leaflet | in:summary:Preact | in:button:Close
+en keyboard: Enter opens, Space shuts, Tab to Close scrolls it into view
+en both open: {"scrollHeight":1820,"clientHeight":661,"scrollTop":1159,"overflowY":"auto"}
+en What is sent where: no summary, details, pre or h3
+hu leaflet: textContent 1395 chars, file 1395 chars, identical=true
+hu preact: textContent 1087 chars, file 1087 chars, identical=true
+hu reopen: closed again after Close and after Esc, Close in view, focus back on the footer button after Esc
+hu Tab order: in:summary:Leaflet | in:summary:Preact | in:button:Bezárás | OUT:body:
+    KilátóH | in:a:A kód a GitH | in:summary:Leaflet | in:summary:Preact | in:button:Bezárás
+hu keyboard: Enter opens, Space shuts, Tab to Close scrolls it into view
+hu both open: {"scrollHeight":1839,"clientHeight":661,"scrollTop":1178,"overflowY":"auto"}
+hu What is sent where: no summary, details, pre or h3
+CR desktop: {"withReturns":{"carriageReturns":26,"height":560,"right":1248.875,"rows":35,"overflow":0},"without":{"height":560,"right":1248.875,"rows":35,"overflow":0},"innerTextLines":27}
+CR tablet: {"withReturns":{"carriageReturns":26,"height":560,"right":800.875,"rows":35,"overflow":0},"without":{"height":560,"right":800.875,"rows":35,"overflow":0},"innerTextLines":27}
+CR mobile: {"withReturns":{"carriageReturns":26,"height":768,"right":351.96875,"rows":48,"overflow":0},"without":{"height":768,"right":351.96875,"rows":48,"overflow":0},"innerTextLines":27}
+fit 375x667 en: closed scrollHeight=436 clientHeight=436 Close bottom=536 Close in view=true sideways with both open=0
+fit 375x667 hu: closed scrollHeight=455 clientHeight=455 Close bottom=545 Close in view=true sideways with both open=0
+fit 390x844 en: closed scrollHeight=436 clientHeight=436 Close bottom=624 Close in view=true sideways with both open=0
+fit 390x844 hu: closed scrollHeight=455 clientHeight=455 Close bottom=634 Close in view=true sideways with both open=0
+fit 360x640 en: closed scrollHeight=436 clientHeight=436 Close bottom=522 Close in view=true sideways with both open=0
+fit 360x640 hu: closed scrollHeight=455 clientHeight=455 Close bottom=532 Close in view=true sideways with both open=0
+fit 320x568 en: closed scrollHeight=493 clientHeight=493 Close bottom=515 Close in view=true sideways with both open=0
+fit 320x568 hu: closed scrollHeight=474 clientHeight=474 Close bottom=505 Close in view=true sideways with both open=0
+requests on toggling entries 4 times: 0
+built JS: index-CfE7GrRX.js · 191049 chars · Agafonkin=1 · Jason Miller=1
+language switch: EN phone switched to HU shows the Hungarian heading, the English licence with lang=en, on html lang=hu

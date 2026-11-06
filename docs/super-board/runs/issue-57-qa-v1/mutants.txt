@@ -1,0 +1,84 @@
+QA's mutants for #57, on 5cb3dcb. Each breaks one line, rebuilds and runs the Software used and About on a phone tests. Run alone on the machine.
+RED: the test named as "expected red" failed. RED-OTHER would mean only some other test did. SURVIVED: every test passed.
+19 mutants: 18 RED, 0 RED-OTHER, 1 SURVIVED. The survivor is the Medium gap in test-gaps.txt.
+An earlier run was thrown away: it ran under load beside verify, and its check counted a test as red when its title was only printed at its start.
+
+RED       AC1 the English heading changes · expected red: has its heading · 1 failing
+            Software used on a 375×667 phone set to en-GB › has its heading, with a Leaflet entry and a Preact entry, both closed
+RED       AC1 the Hungarian heading changes · expected red: has its heading · 1 failing
+            Software used on a 375×667 phone set to hu-HU › has its heading, with a Leaflet entry and a Preact entry, both closed
+RED       AC1 the heading is not a heading · expected red: has its heading · 2 failing
+            Software used on a 375×667 phone set to en-GB › has its heading, with a Leaflet entry and a Preact entry, both closed
+            Software used on a 375×667 phone set to hu-HU › has its heading, with a Leaflet entry and a Preact entry, both closed
+RED       AC1 the entries start open · expected red: has its heading · 10 failing
+            Software used on a 375×667 phone set to en-GB › has its heading, with a Leaflet entry and a Preact entry, both closed
+            Software used › at 375×667 › with both entries open, the panel fits the screen, nothing scrolls sideways, and Close shuts it
+            Software used on a 375×667 phone set to en-GB › Close is in view without scrolling
+            Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to en-GB › the preact entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › has its heading, with a Leaflet entry and a Preact entry, both closed
+RED       AC1 the entry names change · expected red: has its heading · 7 failing
+            Software used on a 375×667 phone set to en-GB › has its heading, with a Leaflet entry and a Preact entry, both closed
+            Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › has its heading, with a Leaflet entry and a Preact entry, both closed
+            Software used on a 375×667 phone set to hu-HU › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used › has an entry for every package in dependencies
+            Software used › opening an entry asks for nothing
+RED       AC1 Close is pushed out of view · expected red: Close is in view · 2 failing
+            Software used on a 375×667 phone set to en-GB › Close is in view without scrolling
+            Software used on a 375×667 phone set to hu-HU › Close is in view without scrolling
+RED       AC2 the two licences swap · expected red: LICENSE file · 2 failing
+            Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the leaflet entry opens to its LICENSE file, word for word, in English
+RED       AC2 one word changes in Leaflet's · expected red: leaflet entry · 2 failing
+            Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the leaflet entry opens to its LICENSE file, word for word, in English
+RED       AC2 one word changes in Preact's · expected red: preact entry · 2 failing
+            Software used on a 375×667 phone set to en-GB › the preact entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the preact entry opens to its LICENSE file, word for word, in English
+RED       AC2 the text stops early · expected red: LICENSE file · 4 failing
+            Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to en-GB › the preact entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the preact entry opens to its LICENSE file, word for word, in English
+RED       AC2 words are added after the text · expected red: LICENSE file · 4 failing
+            Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to en-GB › the preact entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the preact entry opens to its LICENSE file, word for word, in English
+RED       AC2 the text is not marked English · expected red: LICENSE file · 4 failing
+            Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to en-GB › the preact entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the preact entry opens to its LICENSE file, word for word, in English
+RED       AC2 the text stays hidden when open · expected red: LICENSE file · 6 failing
+            Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to en-GB › the preact entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the preact entry opens to its LICENSE file, word for word, in English
+            Software used › opening an entry asks for nothing
+            Software used › at 375×667 › with both entries open, the panel fits the screen, nothing scrolls sideways, and Close shuts it
+RED       AC3 Preact has no entry · expected red: every package in dependencies · 8 failing
+            Software used on a 375×667 phone set to en-GB › has its heading, with a Leaflet entry and a Preact entry, both closed
+            Software used on a 375×667 phone set to en-GB › the preact entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › has its heading, with a Leaflet entry and a Preact entry, both closed
+            Software used on a 375×667 phone set to hu-HU › the preact entry opens to its LICENSE file, word for word, in English
+            Software used › has an entry for every package in dependencies
+            Software used › opening an entry asks for nothing
+RED       AC3 dependencies gains a package with no entry · expected red: every package in dependencies · 4 failing
+            Software used on a 375×667 phone set to en-GB › the qa-fake-package entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the qa-fake-package entry opens to its LICENSE file, word for word, in English
+            Software used › has an entry for every package in dependencies
+            Software used › at 375×667 › an entry is at least 44 px tall, to tap
+RED       risk: opening an entry sends a request · expected red: asks for nothing · 6 failing
+            Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to en-GB › the preact entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the leaflet entry opens to its LICENSE file, word for word, in English
+            Software used on a 375×667 phone set to hu-HU › the preact entry opens to its LICENSE file, word for word, in English
+            Software used › opening an entry asks for nothing
+            Software used › at 375×667 › with both entries open, the panel fits the screen, nothing scrolls sideways, and Close shuts it
+RED       polish: an entry is shorter than 44 px · expected red: 44 px tall · 1 failing
+            Software used › at 375×667 › an entry is at least 44 px tall, to tap
+RED       polish: the text no longer wraps · expected red: nothing scrolls sideways · 1 failing
+            Software used › at 375×667 › with both entries open, the panel fits the screen, nothing scrolls sideways, and Close shuts it
+SURVIVED  gap: the text loses its line breaks · expected red: LICENSE file · 0 failing
