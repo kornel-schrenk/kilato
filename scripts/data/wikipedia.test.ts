@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { COVERAGE_BOX } from './osm'
+import { COVERAGE_BOX } from '../../src/core/coverage'
 import { fetchArticles, type Fetch } from './wikipedia'
 
 interface Call {
