@@ -370,6 +370,8 @@ A panel opened from the footer and from the intro. Its text:
 
 A panel opened from the footer. It says, in both languages, that Kilátó is open source under the MIT licence, with a link to the repository. Map and place data are © OpenStreetMap contributors under the Open Database License. Article titles and positions come from Wikipedia under CC BY-SA 4.0, and the map is drawn with Leaflet.
 
+Under the heading "Software used" / "Felhasznált szoftverek", About also carries the notice of every package in `dependencies`, which today means Leaflet and Preact. Each package is one entry, closed at first, that opens to the package's own `LICENSE` file word for word, in English in both languages. Both licences ask for their notice to go with copies of the software, and the built page has no other copy of it.
+
 ### Map tiles
 
 - Tiles come from `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, up to zoom 19.
@@ -461,3 +463,4 @@ The issues are cut from this list once this spec is accepted. Each one is one PR
 | 15 | ✨ [feat] search: find Kilátó's places by name | [Search](#search) | 10 |
 | 16 | ✨ [feat] map: say Budapest only outside the box | [Outside Budapest](#outside-budapest) | 10 |
 | 17 | ✨ [feat] footer: data age, what is sent where, about | [Data age](#data-age), [What is sent where](#what-is-sent-where), [About](#about) | 10 |
+| 18 | ✨ [feat] about: carry Leaflet's and Preact's notices | [About](#about) | 17 |
