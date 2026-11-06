@@ -50,4 +50,5 @@ export const en = {
     'Article titles and positions come from Wikipedia under CC BY-SA 4.0.',
     'The map is drawn with Leaflet.',
   ],
+  softwareUsed: 'Software used',
 }

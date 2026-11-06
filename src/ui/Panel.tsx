@@ -1,10 +1,19 @@
 import { useLayoutEffect, useRef } from 'preact/hooks'
+// By path, because preact's `exports` doesn't list its LICENSE.
+import leafletLicence from '../../node_modules/leaflet/LICENSE?raw'
+import preactLicence from '../../node_modules/preact/LICENSE?raw'
 import type { en } from '../i18n/en'
 
 export type PanelName = 'sentWhere' | 'about'
 
 const repository = 'https://github.com/kornel-schrenk/kilato'
 const titleId = 'panel-title'
+
+// One entry for each package in `dependencies`: e2e/footer.spec.ts fails on a package with none.
+const software = [
+  { title: 'Leaflet', licence: leafletLicence },
+  { title: 'Preact', licence: preactLicence },
+]
 
 /** A line as the spec writes it, with **bold** in it. */
 const withBold = (line: string) =>
@@ -44,6 +53,13 @@ export function Panel({ name, onClose, t }: Props) {
           </p>
           {t.aboutCredits.map((line) => (
             <p key={line}>{line}</p>
+          ))}
+          <h3>{t.softwareUsed}</h3>
+          {software.map(({ title, licence }) => (
+            <details key={title}>
+              <summary>{title}</summary>
+              <pre lang="en">{licence}</pre>
+            </details>
           ))}
         </>
       )}
