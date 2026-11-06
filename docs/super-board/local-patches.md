@@ -2,7 +2,7 @@
 
 super-board is installed at commit `d0b7d5a` (3.3.0). These changes are ours, and an upgrade overwrites them. After an upgrade, check each one and reapply it if the problem is still there.
 
-The full diffs are on the PRs: [#25](https://github.com/kornel-schrenk/kilato/pull/25), [#26](https://github.com/kornel-schrenk/kilato/pull/26), [#37](https://github.com/kornel-schrenk/kilato/pull/37) and [#50](https://github.com/kornel-schrenk/kilato/pull/50). The last column refers to [findings.md](findings.md), the list to send the super-board author. The skills we added are in [helper-skills.md](helper-skills.md).
+The full diffs are on the PRs: [#25](https://github.com/kornel-schrenk/kilato/pull/25), [#26](https://github.com/kornel-schrenk/kilato/pull/26), [#37](https://github.com/kornel-schrenk/kilato/pull/37), [#50](https://github.com/kornel-schrenk/kilato/pull/50) and [#53](https://github.com/kornel-schrenk/kilato/pull/53). The last column refers to [findings.md](findings.md), the list to send the super-board author. The skills we added are in [helper-skills.md](helper-skills.md).
 
 | File | Change | Problem it fixes | PR | Finding |
 |---|---|---|---|---|
@@ -15,6 +15,7 @@ The full diffs are on the PRs: [#25](https://github.com/kornel-schrenk/kilato/pu
 | `.agents/bin/super-board-skills-ready.py` | Declares the fallback `resolve-and-verify` for `mattpocock-skills:resolving-merge-conflicts` | Its pack removed that skill on 2026-09-24, with nothing replacing it, so a fresh install can't supply it, and any rebase with a live conflict halted the run | #37 | 17 |
 | `.agents/skills/super-build/references/decision-policy.md`, `worker-preamble.md`, `.agents/skills/super-board/references/run.md` | Add the fallback's steps under "Resolving a conflict", and point to them | A declared fallback needs instructions for the lane to follow | #37 | 17 |
 | `.agents/bin/super-board-pr-body.sh`, `.agents/skills/super-board/references/run-workflow.md` | After a failed PATCH, waits 5 seconds and reads the body back. If the edit landed, it reports success. If the body is untouched, it retries once. Otherwise it halts, and the halt record now keeps `gh`'s error | One failed status-block update halted the whole run, with the error discarded, when the write had simply never reached GitHub | #50 | 32 |
+| `.agents/workflows/super-board-wave.js` | Every agent prompt says to run each `gh` write as its own plain command, and to report `blocked`, without trying another form, if the host refuses even that | All three blocked cards of the first run were finished work stopped by a refused write, and all 21 refusals landed on compound commands | #53 | 40 |
 
 ## What still halts
 
