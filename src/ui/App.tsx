@@ -6,7 +6,9 @@ import type { SearchPlace } from '../core/search'
 import { en } from '../i18n/en'
 import { hu } from '../i18n/hu'
 import { categories, CategoryChips } from './CategoryChips'
+import { Footer } from './Footer'
 import { MapView } from './MapView'
+import { Panel, type PanelName } from './Panel'
 import { PlaceList } from './PlaceList'
 import { SearchBox } from './SearchBox'
 import { usePlaces } from './usePlaces'
@@ -43,6 +45,7 @@ export function App() {
   const [point, dispatch] = usePoint()
   const places = usePlaces(point.point, phone)
   const outside = point.point !== null && !inCoverage(point.point)
+  const [panel, setPanel] = useState<PanelName | null>(null)
 
   useLayoutEffect(() => {
     document.documentElement.lang = lang
@@ -94,6 +97,9 @@ export function App() {
                 {t.exploreTheMap}
               </button>
             </div>
+            <button type="button" class="link" onClick={() => setPanel('sentWhere')}>
+              {t.sentWhereTitle}
+            </button>
           </>
         )}
         {point.mode === 'exploring' && <p>{t.exploreNote}</p>}
@@ -145,6 +151,8 @@ export function App() {
           </>
         )}
       </main>
+      <Footer manifest={places.manifest} onOpen={setPanel} lang={lang} t={t} />
+      {panel && <Panel name={panel} onClose={() => setPanel(null)} t={t} />}
     </>
   )
 }

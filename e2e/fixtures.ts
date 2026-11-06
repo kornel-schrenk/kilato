@@ -1,8 +1,12 @@
-import { statSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { expect, test as base } from '@playwright/test'
 
 const fixtures = join(import.meta.dirname, '../test/fixtures')
+
+/** The site fixture's manifest, for a test that serves its own with a few fields changed. */
+export const siteManifest = JSON.parse(readFileSync(join(fixtures, 'site-data/manifest.json'), 'utf8'))
+
 const build = join(import.meta.dirname, '../dist')
 const basePath = '/kilato/'
 const dataPath = `${basePath}data/`

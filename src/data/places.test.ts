@@ -50,6 +50,34 @@ describe('placeLoader', () => {
     expect(loader.failed).toBe(false)
   })
 
+  it('has no manifest until it arrives, and tells when it does', async () => {
+    const { fetchData } = fakeSite()
+    const onChange = vi.fn()
+    const loader = placeLoader(fetchData, onChange)
+
+    loader.moveTo(null)
+    expect(loader.manifest).toBeNull()
+    expect(onChange).not.toHaveBeenCalled()
+    await settle()
+
+    expect(loader.manifest).toEqual(manifest)
+    expect(onChange).toHaveBeenCalled()
+  })
+
+  it('has no manifest while it fails, and has it after a retry', async () => {
+    const { fetchData, files } = fakeSite({})
+    const loader = placeLoader(fetchData, () => {})
+    loader.moveTo(null)
+    await settle()
+    expect(loader.manifest).toBeNull()
+
+    files['manifest.json'] = manifest
+    loader.retry()
+    await settle()
+
+    expect(loader.manifest).toEqual(manifest)
+  })
+
   it('asks only for the cells within 1 km that the manifest lists', async () => {
     const { asked, fetchData } = fakeSite()
     const loader = placeLoader(fetchData, () => {})

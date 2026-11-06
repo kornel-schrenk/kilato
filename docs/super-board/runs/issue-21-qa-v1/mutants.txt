@@ -1,0 +1,41 @@
+Against 7057cb5's tests: 29 red, 3 survived
+red          older date becomes the newer (src/core/dataAge.ts) :: 
+red          warning at exactly 10 days (src/core/dataAge.ts) :: 
+red          whole days round up (src/core/dataAge.ts) :: 
+red          a clock behind the data goes negative (src/core/dataAge.ts) :: 
+red          no warning look (src/ui/Footer.tsx) :: e2e/footer.spec.ts:39:3 › the data age › 11 days after the data date, the line turns into a warning 
+red          no warning words (src/ui/Footer.tsx) :: e2e/footer.spec.ts:39:3 › the data age › 11 days after the data date, the line turns into a warning 
+red          the line ignores the language (src/ui/Footer.tsx) :: e2e/footer.spec.ts:59:5 › the data age › on a Hungarian phone › 3 days after the data date, the line is in Hungarian 
+red          the footer's About opens the other panel (src/ui/Footer.tsx) :: e2e/footer.spec.ts:81:3 › the data age › with no manifest there is no line, and the links still work 
+red          the footer's sent-where link does nothing (src/ui/Footer.tsx) :: e2e/footer.spec.ts:132:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          no intro link (src/ui/App.tsx) :: e2e/footer.spec.ts:140:5 › What is sent where on a phone set to en-GB › opens from the intro with the same text 
+red          the intro link opens About (src/ui/App.tsx) :: e2e/footer.spec.ts:140:5 › What is sent where on a phone set to en-GB › opens from the intro with the same text 
+red          a word changes, English (src/i18n/en.ts) :: e2e/footer.spec.ts:132:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          a word changes, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:132:5 › What is sent where on a phone set to hu-HU › opens from the footer with the text of the spec, word for word 
+red          a line loses its bold, English (src/i18n/en.ts) :: e2e/footer.spec.ts:132:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          a line loses its bold, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:132:5 › What is sent where on a phone set to hu-HU › opens from the footer with the text of the spec, word for word 
+red          the bold takes a word more, English (src/i18n/en.ts) :: e2e/footer.spec.ts:132:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          the last line goes, English (src/i18n/en.ts) :: e2e/footer.spec.ts:132:5 › What is sent where on a phone set to en-GB › opens from the footer with the text of the spec, word for word 
+red          the Hungarian title changes (src/i18n/hu.ts) :: e2e/footer.spec.ts:132:5 › What is sent where on a phone set to hu-HU › opens from the footer with the text of the spec, word for word 
+red          no modal: Esc and the focus go (src/ui/Panel.tsx) :: e2e/footer.spec.ts:167:3 › the panels › Esc shuts a panel, and it opens again ─────────────────
+red          the repository link goes elsewhere (src/ui/Panel.tsx) :: e2e/footer.spec.ts:255:5 › About on a phone set to en-GB › links the repository, in a new tab ─
+red          About loses the MIT words, English (src/i18n/en.ts) :: e2e/footer.spec.ts:245:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+SURVIVED     About: map and place data becomes map data, English (src/i18n/en.ts) :: 
+SURVIVED     About: place data goes, Hungarian (src/i18n/hu.ts) :: 
+red          About: positions go, English (src/i18n/en.ts) :: e2e/footer.spec.ts:245:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+red          About: positions go, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:245:5 › About on a phone set to hu-HU › opens from the footer and names the licences, the sources and Leaflet 
+red          About: CC BY-SA loses its version, English (src/i18n/en.ts) :: e2e/footer.spec.ts:245:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+red          About: Open Database License goes, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:245:5 › About on a phone set to hu-HU › opens from the footer and names the licences, the sources and Leaflet 
+red          About: Leaflet goes, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:245:5 › About on a phone set to hu-HU › opens from the footer and names the licences, the sources and Leaflet 
+red          About: drawn with goes, English (src/i18n/en.ts) :: e2e/footer.spec.ts:245:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+SURVIVED     the footer stays in the left column on wide screens (index.html) :: 
+red          the Hungarian line changes (src/i18n/hu.ts) :: e2e/footer.spec.ts:59:5 › the data age › on a Hungarian phone › 3 days after the data date, the line is in Hungarian 
+red          the English singular goes (src/i18n/en.ts) :: e2e/footer.spec.ts:32:5 › the data age › 1 days after the data date, the line reads "Data from 2 Nov 2026 · 1 day old", with no warning 
+
+Against QA's e2e/footer.spec.ts at 7f23b70: the 2 real survivors, and 1 layout mutant added to check the third
+red          About: map and place data becomes map data, English (src/i18n/en.ts) :: e2e/footer.spec.ts:245:5 › About on a phone set to en-GB › opens from the footer and names the licences, the sources and Leaflet 
+red          About: place data goes, Hungarian (src/i18n/hu.ts) :: e2e/footer.spec.ts:245:5 › About on a phone set to hu-HU › opens from the footer and names the licences, the sources and Leaflet 
+red          the map spans two rows, so the footer drops under it (index.html) :: e2e/footer.spec.ts:299:5 › the layout › at 1280 px wide › the footer sits at the bottom of the right column, and the map keeps its size 
+
+Result: 32 of 33 red. The one left, the footer stays in the left column, is equivalent: without its grid-column the footer
+lands in the same grid cell, and e2e/footer.spec.ts:299 measures the same box. Moving the map's rows does go red.

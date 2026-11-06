@@ -17,10 +17,10 @@ export interface Selection {
 }
 
 /**
- * The places around the point whose category is on, nearest first for the map and in the chosen
- * order for the list, how many of them show as rows, which one is tapped, which are open, and each
- * one's article. Every category is on and the order is Nearest at the start of a visit, and neither
- * is saved.
+ * The manifest, the places around the point whose category is on, nearest first for the map and in the
+ * chosen order for the list, how many of them show as rows, which one is tapped, which are open, and
+ * each one's article. Every category is on and the order is Nearest at the start of a visit, and
+ * neither is saved.
  */
 export function usePlaces(point: LatLon | null, phone: string) {
   const [, setVersion] = useState(0)
@@ -87,6 +87,7 @@ export function usePlaces(point: LatLon | null, phone: string) {
     })
 
   return {
+    manifest: loader.manifest,
     rows,
     listRows,
     order,

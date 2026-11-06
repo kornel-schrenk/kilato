@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test'
 import { cellKey } from '../src/core/cells'
 import type { Place } from '../src/core/types'
-import { expect, test } from './fixtures'
+import { expect, siteManifest, test } from './fixtures'
 import { box, button, centre, expectNear, geography, mapCentre, pinPlace, zoomTo } from './map-helpers'
 
 const deakTer = { lat: 47.4975, lon: 19.0545 }
@@ -23,7 +23,9 @@ const cafe = (name: string, metresNorth: number, more: Partial<Place> = {}): Pla
 async function serve(page: Page, places: Place[]) {
   const inCell = (key: string) => places.filter((place) => cellKey(place.lat, place.lon) === key)
   await page.route('**/kilato/data/manifest.json', (route) =>
-    route.fulfill({ json: { cells: [...new Set(places.map((place) => cellKey(place.lat, place.lon)))], wikiLangs: [] } }),
+    route.fulfill({
+      json: { ...siteManifest, cells: [...new Set(places.map((place) => cellKey(place.lat, place.lon)))], wikiLangs: [] },
+    }),
   )
   await page.route('**/kilato/data/cells/*.json', (route) => {
     const key = new URL(route.request().url()).pathname.split('/').pop()!.replace('.json', '')

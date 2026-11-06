@@ -1,0 +1,54 @@
+Test-gap check for #21, on the diff from 7cc1db7 to 7057cb5 (Builder), with QA's test at 7f23b70
+
+Ledger: every AC, by rung
+This repo tests components through the page, so the component rung is n/a for all four.
+
+AC1 the date and the age, from the older source
+  unit  src/core/dataAge.test.ts:8 older source, either way round · :22 whole days · :35 a clock behind the data
+  e2e   e2e/footer.spec.ts:32 at 0, 1, 3 and 10 days · :46 either source older · :59 Hungarian · :72 the language switch · :81 no manifest
+AC2 over 10 days, a warning with its words
+  unit  src/core/dataAge.test.ts:28 at exactly 10 days, 10 days + 1 ms, and later
+  e2e   e2e/footer.spec.ts:39 English · :65 Hungarian · :32 no warning at exactly 10 days
+AC3 What is sent where, from the footer and the intro, word for word
+  unit  n/a: text on the page
+  e2e   e2e/footer.spec.ts:132 footer · :140 intro, each in en-GB and hu-HU, read from the spec file · :114 the spec parse holds · :192 after the switch
+  QA    probe: all 5 lines in each language, from both openers, equal the spec's lines with the bold in place
+AC4 About, in both languages
+  unit  n/a: text on the page
+  e2e   e2e/footer.spec.ts:245 the facts · :255 the repository link
+
+Edge cases, on each changed input or branch
+  boundaries   pinned: 10 days, 10 days + 1 ms, 0, the singular at 1
+  dates        pinned: the older source. Gap, Low: the phone's time zone sets the shown date (below)
+  input        gap, Medium: an unreadable or missing date (below)
+  volume       n/a: one line. The footer under a full list holds in the probe at all three viewports
+  auth         n/a: no accounts
+  error paths  pinned: a failed manifest, e2e/footer.spec.ts:81, and the retry, src/data/places.test.ts:67
+  races        pinned: reopening after Esc, :167. A modal dialog blocks a second opener, and the probe's 5 Tabs stay inside
+  UI states    pinned: no line until the manifest arrives, src/data/places.test.ts:53 and :81 above
+  a11y         pinned: role and name on every panel and link, the focus back to the footer link, :148. Intro link: probe only
+
+Test the tests
+  33 mutants, mutants.txt. Each page mutant was rebuilt and run against e2e/footer.spec.ts.
+  Against 7057cb5's tests, 2 real survivors. Both About wording: "Map data are" and "A térkép adatai".
+  The AC names "map and place data", so QA tightened the two lines in e2e/footer.spec.ts. Both go red now.
+  1 equivalent mutant: the footer without grid-column 2 lands in the same grid cell, and :299 measures the same box.
+  The expected values come from literals and the spec file, not from the code under test.
+
+High gaps: none. Every AC has a test at the rung that shows it. Nothing here needs app code changed to pass.
+
+Medium, not written, does not block
+  M1 A manifest with an unreadable or missing date throws on every render.
+     Witness: osmDataAt "not a date", or { cells } with no dates.
+     Path: src/core/dataAge.ts:11 gives an invalid date, and formatDate at src/core/lang.ts:27 throws "Invalid time value".
+     Seen: 5 s after Explore the map, 0 rows. A tap on About opens nothing, though it brings 100 rows. HU doesn't change the language. No message. probe.txt.
+     On 7cc1db7 nothing reads these dates, so the same manifest works there.
+     Reach: only our build writes the manifest, and it can't write a bad date: scripts/data/build.ts:51 and :71.
+     The Builder named this under Risk. QA adds what it stops: the list, the panels and the switch.
+     Fixed would look like: the footer leaves out the line, and the page keeps working. That is more than the AC asks.
+
+Low, not written, does not block
+  L1 At 10.5 days the line reads "10 days old · may be out of date". AC2 holds as written. Only the unit test holds a fraction of a day.
+  L2 The date is the phone's local date: a build at 03:17 UTC on 2 Nov shows "1 Nov 2026" in New York. The spec doesn't say.
+  L3 A page left open doesn't change its age until its next render. The Builder says so at src/ui/Footer.tsx:15.
+  L4 The focus going back to the intro link, and both panels at 320 x 568, where they scroll to Close: probe only.
