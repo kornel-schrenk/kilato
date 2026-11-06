@@ -1,4 +1,5 @@
 import { useLayoutEffect, useState } from 'preact/hooks'
+import { inCoverage } from '../core/coverage'
 import { phoneLanguage, uiLanguage, type Lang } from '../core/lang'
 import { deakTer } from '../core/point'
 import type { SearchPlace } from '../core/search'
@@ -41,6 +42,7 @@ export function App() {
   const t = messages[lang]
   const [point, dispatch] = usePoint()
   const places = usePlaces(point.point, phone)
+  const outside = point.point !== null && !inCoverage(point.point)
 
   useLayoutEffect(() => {
     document.documentElement.lang = lang
@@ -95,42 +97,53 @@ export function App() {
           </>
         )}
         {point.mode === 'exploring' && <p>{t.exploreNote}</p>}
-        <div class="order" role="group" aria-label={t.order}>
-          <button type="button" aria-pressed={places.order === 'nearest'} onClick={() => places.setOrder('nearest')}>
-            {t.nearest}
-          </button>
-          <button type="button" aria-pressed={places.order === 'relevant'} onClick={() => places.setOrder('relevant')}>
-            {t.mostRelevant}
-          </button>
-        </div>
-        <CategoryChips off={places.categoriesOff} onToggle={places.toggleCategory} t={t} />
-        {places.failed && (
-          <p role="alert" class="load-error">
-            {t.placesFailed}{' '}
-            <button type="button" onClick={places.retry}>
-              {t.retry}
+        {outside ? (
+          <>
+            <p>{t.outsideBudapest}</p>
+            <button type="button" class="go-to-budapest" onClick={() => dispatch({ type: 'explore' })}>
+              {t.goToBudapest}
             </button>
-          </p>
+          </>
+        ) : (
+          <>
+            <div class="order" role="group" aria-label={t.order}>
+              <button type="button" aria-pressed={places.order === 'nearest'} onClick={() => places.setOrder('nearest')}>
+                {t.nearest}
+              </button>
+              <button type="button" aria-pressed={places.order === 'relevant'} onClick={() => places.setOrder('relevant')}>
+                {t.mostRelevant}
+              </button>
+            </div>
+            <CategoryChips off={places.categoriesOff} onToggle={places.toggleCategory} t={t} />
+            {places.failed && (
+              <p role="alert" class="load-error">
+                {t.placesFailed}{' '}
+                <button type="button" onClick={places.retry}>
+                  {t.retry}
+                </button>
+              </p>
+            )}
+            {places.categoriesOff.size === categories.length && (
+              <p class="all-off">
+                {t.allCategoriesOff}{' '}
+                <button type="button" onClick={places.allCategoriesOn}>
+                  {t.turnAllOn}
+                </button>
+              </p>
+            )}
+            <PlaceList
+              rows={places.listRows}
+              shown={places.shown}
+              selection={places.selection}
+              onSelect={places.select}
+              onShowMore={places.showMore}
+              statusOf={places.statusOf}
+              wikiLink={places.wikiLink}
+              lang={lang}
+              t={t}
+            />
+          </>
         )}
-        {places.categoriesOff.size === categories.length && (
-          <p class="all-off">
-            {t.allCategoriesOff}{' '}
-            <button type="button" onClick={places.allCategoriesOn}>
-              {t.turnAllOn}
-            </button>
-          </p>
-        )}
-        <PlaceList
-          rows={places.listRows}
-          shown={places.shown}
-          selection={places.selection}
-          onSelect={places.select}
-          onShowMore={places.showMore}
-          statusOf={places.statusOf}
-          wikiLink={places.wikiLink}
-          lang={lang}
-          t={t}
-        />
       </main>
     </>
   )

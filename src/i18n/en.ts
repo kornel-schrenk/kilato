@@ -28,4 +28,6 @@ export const en = {
   showMore: 'Show more',
   openNow: 'Open now',
   closedNow: 'Closed now',
+  outsideBudapest: 'Kilátó covers Budapest only for now.',
+  goToBudapest: 'Go to Budapest',
 }

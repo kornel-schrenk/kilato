@@ -28,4 +28,6 @@ export const hu = {
   showMore: 'Továbbiak megjelenítése',
   openNow: 'Most nyitva',
   closedNow: 'Most zárva',
+  outsideBudapest: 'A Kilátó egyelőre csak Budapestet ismeri.',
+  goToBudapest: 'Irány Budapest',
 }
