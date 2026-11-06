@@ -1,0 +1,21 @@
+CI. GitHub check verify on the builder's head 8cea24f: failed, run 42286668525. 2 failed, 284 passed.
+Both failures were new tests: e2e/outside.spec.ts:67 at 899 and at 900 px wide, with "Error: .pin is not on the page".
+Local npm run verify on this machine passed the same head: 596 unit, 286 page, exit 0. So did the builder's. This machine is slower than CI's, and the race only shows on the faster one.
+
+Cause. The test read pinPlace right after the click. pinPlace throws until the pin is drawn, and expect.poll doesn't retry a throw, as e2e/map-helpers.ts:11 says. The pin draws in an effect after the next paint. The test is wrong, not the page.
+Repro. The real spec file, with requestAnimationFrame and short timers slowed 200 ms in the page, run 3 times at each width.
+- before the fix, 8cea24f: 6 of 6 failed, each with ".pin is not on the page"
+- after the fix: 5 of 6 passed at load average 15, and none has that error. The sixth timed out reading the zoom, on a page slowed on purpose. Run again at load average 9: 12 of 12 passed
+- after the fix, not slowed, --repeat-each=5: 10 of 10 passed
+Fix. e2e/outside.spec.ts waits for the pin first, as e2e/map.spec.ts:373 does. Commit 0024ab7. Test only.
+GitHub check verify on 0024ab7: success, run 42292407601, 286 passed. This is the witness that counts.
+
+pr-security-review, diff of develop...0024ab7, base f57db15, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- src/core/point.ts only changes which zoom a state asks for. It holds no html and makes no request.
+- src/ui/MapView.tsx asks for one more constant zoom, and reads one media query. No input reaches either.
+- The location stays in memory. This diff adds no storage and no request. Tile URLs still show which area is on screen, which the spec's What is sent where says and the intent allows.
+- Added lines in src: 12. 0 matches for innerHTML, dangerouslySetInnerHTML, eval, new Function, document.write, fetch, XMLHttpRequest, sendBeacon, localStorage, sessionStorage, cookie, postMessage, window.open, location.href or a URL.
+- package.json and package-lock.json are not in the diff, so there are no new packages.
+- Secret scan of the diff (GitHub, AWS, Slack and OpenAI token shapes, private keys): 0 matches.
+- e2e and unit test files are out of scope for the skill, and so are the docs and the screenshots.

@@ -1,0 +1,22 @@
+Mutants on head 0024ab7. Each one landed (the script checks the file changed), ran, and was restored. None is committed.
+14 in all. All 14 go red on at least one rung.
+Page mutants ran with vite build, then playwright test e2e/map.spec.ts e2e/outside.spec.ts -g 'at 375x667|at 899x700|at 900x700|at 899 px wide|at 900 px wide|on a phone|walking 16 m|a walk keeps' --max-failures=1, so each one names the first red test only.
+Unit mutants ran with npx vitest run src/core/point.test.ts. MapView.tsx has no unit test, so its mutants have only the page rung.
+My first unit parser read nothing, and my second read the FAIL lines from the wrong stream, so the unit counts below are vitest's own tally.
+
+AC1 AC2 breakpoint 901 px: page killed by e2e/outside.spec.ts:67 › at 900 px wide › Go to Budapest starts at zoom 15
+AC1 AC2 breakpoint 899 px: page killed by e2e/outside.spec.ts:67 › at 899 px wide › Go to Budapest starts at zoom 14
+AC1 AC2 AC4 phones get zoom 15: page killed by e2e/outside.spec.ts:67 › at 899 px wide
+AC1 AC2 phones get zoom 13: page killed by e2e/outside.spec.ts:67 › at 899 px wide
+AC1 wide screens get zoom 14: page killed by e2e/outside.spec.ts:67 › at 900 px wide
+AC1 no start zoom on any way into exploring: unit 6 failed of 51 | page killed by e2e/outside.spec.ts:67 › at 899 px wide
+AC1 Explore the map and Go to Budapest ask no zoom: unit 3 failed of 51 | page killed by e2e/outside.spec.ts:67 › at 899 px wide
+AC1 a refusal and a location error ask no zoom: unit 3 failed of 51 | page killed by e2e/map.spec.ts:488 › at 375x667 › a refusal starts at zoom 14
+AC2 AC4 following asks no start zoom: unit 3 failed of 51 | page killed by e2e/outside.spec.ts:67 › at 899 px wide
+AC3 a walk resets the zoom: unit 1 failed of 51 | page killed by e2e/map.spec.ts:665 › walking 16 m moves the point
+AC3 the end of a drag resets the zoom: unit 1 failed of 51 | page killed by e2e/map.spec.ts:848 › on a phone › a drag keeps the zoom the user chose, and alone by :1052, the same while exploring: expected 15
+AC3 every request resets the zoom in the page: page killed by e2e/map.spec.ts:665 › walking 16 m moves the point
+The opening view at 14: page killed by e2e/map.spec.ts:514 › on a phone › Explore the map goes to zoom 14, whatever the zoom was during the intro
+A start zoom asked for during a zoom is dropped: page survives the filter above, 30 passed, because it leaves out the test that guards it. e2e/map.spec.ts:400 alone: 1 failed. That test runs at 1280x720
+
+src after the last one: clean. Rebuilt the unmutated head: exit 0

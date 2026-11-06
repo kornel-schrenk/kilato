@@ -1,0 +1,20 @@
+head 0024ab79f8acde8d53ad077533fc18a942721a17  dirty tracked files: 0
+started 2026-11-06T21:18:48Z  load 3.37 5.39 7.39
+$ npm ci
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm ci exit=0
+$ npm run verify
+> kilato@0.0.0 verify
+> kilato@0.0.0 typecheck
+> kilato@0.0.0 test
+ Test Files  28 passed (28)
+      Tests  596 passed (596)
+> kilato@0.0.0 build
+✓ built in 420ms
+> kilato@0.0.0 test:e2e
+Running 286 tests using 2 workers
+  286 passed (7.7m)
+npm run verify exit=0
+finished 2026-11-06T21:27:02Z
