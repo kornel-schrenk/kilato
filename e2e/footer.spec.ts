@@ -42,6 +42,12 @@ test.describe('the data age', () => {
     await expect(ageLine(page)).not.toHaveCSS('background-color', noBackground)
   })
 
+  test('10 and a half days after the data date, the line warns, though it counts 10 whole days', async ({ page }) => {
+    await openAged(page, 10.5)
+    await expect(ageLine(page)).toHaveText('Data from 2 Nov 2026 · 10 days old · may be out of date')
+    await expect(ageLine(page)).not.toHaveCSS('background-color', noBackground)
+  })
+
   for (const older of ['osmDataAt', 'wikipediaAt']) {
     test(`takes ${older} when it is the older date`, async ({ page }) => {
       await page.route('**/kilato/data/manifest.json', (route) =>
@@ -304,6 +310,9 @@ test.describe('the layout', () => {
       expect(footerBox.x).toBe(1280 * 0.6)
       expect(footerBox.width).toBe(1280 * 0.4)
       expect(footerBox.y + footerBox.height).toBe(720)
+      // The spare height goes to the list, so the links reach that edge, not the top of a stretched footer.
+      const link = await box(page, 'footer button:last-of-type')
+      expect(720 - (link.y + link.height)).toBeLessThan(16)
       expect(await box(page, '.leaflet-container')).toEqual({ x: 0, y: 0, width: 1280 * 0.6, height: 720 })
     })
   })
