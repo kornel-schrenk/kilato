@@ -72,6 +72,8 @@ for (const { width, zoom } of [
 
       await button(page, 'Go to Budapest').click()
 
+      // pinPlace throws until the pin is drawn, and expect.poll doesn't retry a throw.
+      await expect(page.locator('.pin')).toBeVisible()
       await expectNear(() => pinPlace(page), deakTer, 3)
       await expect.poll(async () => (await geography(page)).zoom).toBe(zoom)
     })
