@@ -1,8 +1,12 @@
 import type { LatLon } from './geo'
+import type { Manifest } from './types'
 
-/** Budapest: the box the data build cuts out, and the page treats a point inside it as covered. */
-export const coverageBox = { west: 18.925, south: 47.35, east: 19.335, north: 47.62 }
+/** Budapest: west, south, east, north. The build cuts the data with it, and the page treats a point inside it as covered. */
+export const COVERAGE_BOX: Manifest['box'] = [18.925, 47.35, 19.335, 47.62]
+
+const [west, south, east, north] = COVERAGE_BOX
+export const coverageBox = { west, south, east, north }
 
 export function inCoverage({ lat, lon }: LatLon): boolean {
-  return lat >= coverageBox.south && lat <= coverageBox.north && lon >= coverageBox.west && lon <= coverageBox.east
+  return lat >= south && lat <= north && lon >= west && lon <= east
 }

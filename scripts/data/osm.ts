@@ -1,8 +1,7 @@
-import type { Manifest, Place } from '../../src/core/types'
+import { COVERAGE_BOX } from '../../src/core/coverage.ts'
+import type { Place } from '../../src/core/types'
 import { categorize, tagsFilterExpressions, type Tags } from './categories.ts'
 
-/** Budapest: west, south, east, north. */
-export const COVERAGE_BOX: Manifest['box'] = [18.925, 47.35, 19.335, 47.62]
 
 /**
  * The config file for `exportArgs`. It makes closed ways areas, unless they're tagged `area=no`.

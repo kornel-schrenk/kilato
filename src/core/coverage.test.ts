@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { coverageBox, inCoverage } from './coverage'
+import { COVERAGE_BOX, coverageBox, inCoverage } from './coverage'
 
 const { west, south, east, north } = coverageBox
 const middle = { lat: (south + north) / 2, lon: (west + east) / 2 }
@@ -7,6 +7,11 @@ const nudge = 0.0001
 
 it('is the box planning measured', () => {
   expect(coverageBox).toEqual({ west: 18.925, south: 47.35, east: 19.335, north: 47.62 })
+})
+
+it('is one box: the tuple the build cuts with and the edges the page tests against agree', () => {
+  expect(COVERAGE_BOX).toEqual([18.925, 47.35, 19.335, 47.62])
+  expect(COVERAGE_BOX).toEqual([west, south, east, north])
 })
 
 it('covers a point in the middle', () => {
