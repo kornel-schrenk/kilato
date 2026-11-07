@@ -1,0 +1,62 @@
+=== M0 unchanged config, new test
+      Tests  3 passed (3)
+vitest-exit=0
+=== M1 config never reads PREVIEW_PORT, new test
+6,7c6,7
+< process.env.PREVIEW_PORT ??= String(previewPort(process.pid))
+< const port = process.env.PREVIEW_PORT
+---
+> process.env.KILATO_PORT ??= String(previewPort(process.pid))
+> const port = process.env.KILATO_PORT
+ FAIL  test/preview-port.test.ts > keeps PREVIEW_PORT as the port when it is set, and passes it to workers
+AssertionError: expected 'http://127.0.0.1:20931' to be 'http://127.0.0.1:5060' // Object.is equality
+      Tests  1 failed | 2 passed (3)
+vitest-exit=1
+=== M1 same mutant, the old test at 1356f56 (R1: stays green)
+6,7c6,7
+< process.env.PREVIEW_PORT ??= String(previewPort(process.pid))
+< const port = process.env.PREVIEW_PORT
+---
+> process.env.KILATO_PORT ??= String(previewPort(process.pid))
+> const port = process.env.KILATO_PORT
+      Tests  3 passed (3)
+vitest-exit=0
+=== M2 port always from previewPort, new test
+7c7
+< const port = process.env.PREVIEW_PORT
+---
+> const port = String(previewPort(process.pid))
+ FAIL  test/preview-port.test.ts > keeps PREVIEW_PORT as the port when it is set, and passes it to workers
+AssertionError: expected 'http://127.0.0.1:20159' to be 'http://127.0.0.1:5060' // Object.is equality
+      Tests  1 failed | 2 passed (3)
+vitest-exit=1
+=== M3 config overwrites PREVIEW_PORT, new test
+6c6
+< process.env.PREVIEW_PORT ??= String(previewPort(process.pid))
+---
+> process.env.PREVIEW_PORT = String(previewPort(process.pid))
+ FAIL  test/preview-port.test.ts > keeps PREVIEW_PORT as the port when it is set, and passes it to workers
+AssertionError: expected '20250' to be '5060' // Object.is equality
+      Tests  1 failed | 2 passed (3)
+vitest-exit=1
+=== M4 server command ignores the port, new test
+19c19
+<     command: `npm run preview -- --host 127.0.0.1 --port ${port} --strictPort`,
+---
+>     command: `npm run preview -- --host 127.0.0.1 --port 4173 --strictPort`,
+ FAIL  test/preview-port.test.ts > keeps PREVIEW_PORT as the port when it is set, and passes it to workers
+AssertionError: expected { …(2) } to match object { command: StringContaining{…} }
+      Tests  1 failed | 2 passed (3)
+vitest-exit=1
+=== M5 baseURL ignores the port, new test
+8c8
+< const origin = `http://127.0.0.1:${port}`
+---
+> const origin = `http://127.0.0.1:4173`
+ FAIL  test/preview-port.test.ts > keeps PREVIEW_PORT as the port when it is set, and passes it to workers
+AssertionError: expected 'http://127.0.0.1:4173' to be 'http://127.0.0.1:5060' // Object.is equality
+      Tests  1 failed | 2 passed (3)
+vitest-exit=1
+=== M0 restored config, new test
+      Tests  3 passed (3)
+vitest-exit=0
