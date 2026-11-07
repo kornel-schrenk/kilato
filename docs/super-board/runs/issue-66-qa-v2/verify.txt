@@ -1,0 +1,33 @@
+Issue #66, QA v2: the rebuild for the Reviewer's R1
+
+Tree under test: 061783e, which is commit 6ca5e5a (1356f56 plus the test fix). The app and config
+are unchanged from 1356f56.
+
+Full verify
+Command:  CHROMIUM_PATH=/usr/bin/chromium npm run verify
+Exit:     0, in 1233 s, on a Raspberry Pi with 4 cores
+Load:     11 to 17 for most of the run. Another lane's page tests shared the machine
+Unit:     30 files, 603 tests passed
+Build:    passed
+Page:     298 passed, 2 workers, 19.9 min, port 20937 (PREVIEW_PORT unset, so previewPort picked it)
+Note:     11 of the 298 are test.fail() tests in e2e/fixtures.spec.ts. They fail on purpose, the
+          list reporter marks them with a cross, and Playwright counts them as passed
+Reviewer: e2e/list.spec.ts:458 and :652, which timed out in the Reviewer's run, passed here
+
+An earlier attempt on the same tree did not finish. My own 585 s limit stopped it at page test 169
+of 298, with no failure before the limit. That limit was my wrapper, and this run had none.
+
+Security pass
+Read the full diff against origin/develop, and found 0 findings. This lane has no sub-agent tool,
+so the skill's finding and false-positive sub-tasks ran inline, by one reader.
+All three code files only run during tests, which the skill excludes. The port goes into the
+webServer command as before, from an environment variable, which the skill treats as trusted.
+
+Test gaps
+AC1: test/preview-port.test.ts:18
+AC2: test/preview-port.test.ts:26
+AC3: test/preview-port.test.ts:32 for the port, and run E in port-runs.txt for the inheritance
+Medium gap from v1, now closed: the unset branch of playwright.config.ts. Run E shows the page tests
+go red when the config stops writing the variable, so no new test is needed.
+Low, not written: PREVIEW_PORT='' passes ??= and gives `--port  --strictPort`. Seen by reading the
+line, not by running it. The behaviour is older than this PR.
