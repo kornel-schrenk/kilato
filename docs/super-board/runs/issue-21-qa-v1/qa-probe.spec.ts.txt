@@ -1,0 +1,314 @@
+// QA's own walk of #21: screenshots at the standard viewports, and probes the Builder's tests don't make.
+// Copied into e2e/ to run, and never committed there. Run: QA_OUT=<folder> npx playwright test e2e/qa-probe.spec.ts
+import { appendFileSync, mkdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { expect, siteManifest, test } from './fixtures'
+
+const out = process.env.QA_OUT as string
+mkdirSync(out, { recursive: true })
+const log = (line: string) => appendFileSync(join(out, 'probe.txt'), `${line}\n`)
+
+const dataDate = '2026-11-02T03:17:00.000Z'
+const dayMs = 24 * 60 * 60 * 1000
+const viewports = {
+  desktop: { width: 1920, height: 1080 },
+  tablet: { width: 1024, height: 768 },
+  mobile: { width: 375, height: 667 },
+}
+
+test.use({ timezoneId: 'Europe/Budapest' })
+
+const footer = (page: Page) => page.getByRole('contentinfo')
+const ageLine = (page: Page) => footer(page).locator('.data-age')
+const shot = (page: Page, name: string, fullPage = false) => page.screenshot({ path: join(out, `${name}.png`), fullPage })
+
+async function openAged(page: Page, days: number) {
+  await page.clock.setFixedTime(new Date(Date.parse(dataDate) + days * dayMs))
+  await page.goto('/kilato/')
+  await expect(page.locator('.leaflet-container')).toBeVisible()
+}
+
+// A second reading of the spec, by lines, so it shares nothing with the Builder's regex.
+const specLines = readFileSync(join(import.meta.dirname, '../spec/2026-11-02-kilato-mvp.md'), 'utf8').split('\n')
+function specPanel(title: string) {
+  const start = specLines.indexOf(`**${title}**`)
+  const lines: string[] = []
+  for (const line of specLines.slice(start + 1)) {
+    if (line.startsWith('- ')) lines.push(line.slice(2))
+    else if (lines.length) break
+  }
+  return lines
+}
+
+// What the panel says, with its bold written back the way the spec writes it.
+const panelLines = (page: Page) =>
+  page
+    .getByRole('dialog')
+    .getByRole('listitem')
+    .evaluateAll((items) =>
+      items.map((item) =>
+        [...item.childNodes]
+          .map((node) => (node.nodeName === 'STRONG' ? `**${node.textContent}**` : node.textContent))
+          .join(''),
+      ),
+    )
+
+for (const [name, viewport] of Object.entries(viewports)) {
+  test.describe(`at ${name}`, () => {
+    test.use({ viewport, locale: 'en-GB' })
+
+    test('the shots', async ({ page }) => {
+      await openAged(page, 3)
+      await expect(ageLine(page)).toHaveText('Data from 2 Nov 2026 · 3 days old')
+      await ageLine(page).scrollIntoViewIfNeeded()
+      await shot(page, `ac1-age-${name}`)
+
+      await footer(page).getByRole('button', { name: 'What is sent where', exact: true }).click()
+      await expect(page.getByRole('dialog')).toBeVisible()
+      await shot(page, `ac3-sent-where-${name}`)
+      await page.keyboard.press('Escape')
+
+      await footer(page).getByRole('button', { name: 'About', exact: true }).click()
+      await expect(page.getByRole('dialog', { name: 'About' })).toBeVisible()
+      await shot(page, `ac4-about-${name}`)
+      await page.keyboard.press('Escape')
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+    })
+
+    test('the warning shot', async ({ page }) => {
+      await openAged(page, 11)
+      await expect(ageLine(page)).toHaveText('Data from 2 Nov 2026 · 11 days old · may be out of date')
+      await ageLine(page).scrollIntoViewIfNeeded()
+      await shot(page, `ac2-warning-${name}`)
+    })
+
+    test('the footer under a full list', async ({ page }) => {
+      await openAged(page, 3)
+      await page.getByRole('button', { name: 'Explore the map', exact: true }).click()
+      await expect(page.getByRole('main').getByRole('listitem').first()).toBeVisible()
+      await footer(page).scrollIntoViewIfNeeded()
+      const rects = await page.evaluate(() => {
+        const rect = (selector: string) => {
+          const { x, y, width, height } = document.querySelector(selector)!.getBoundingClientRect()
+          return { x, y, width, height }
+        }
+        return {
+          main: rect('main'),
+          footer: rect('footer'),
+          map: rect('.leaflet-container'),
+          scrollWidth: document.documentElement.scrollWidth,
+          scrollY,
+        }
+      })
+      log(`list ${name}: ${JSON.stringify(rects)}`)
+      await shot(page, `footer-under-list-${name}`)
+      expect(rects.footer.y).toBeGreaterThanOrEqual(rects.main.y + rects.main.height)
+      expect(rects.scrollWidth).toBe(viewport.width)
+    })
+  })
+}
+
+test.describe('on a Hungarian phone', () => {
+  test.use({ viewport: viewports.mobile, locale: 'hu-HU' })
+
+  test('the shots', async ({ page }) => {
+    await openAged(page, 3)
+    await expect(ageLine(page)).toHaveText('Adatok: 2026. nov. 2. · 3 napos')
+    await ageLine(page).scrollIntoViewIfNeeded()
+    await shot(page, 'ac1-age-hu-mobile')
+
+    await page.getByRole('main').getByRole('button', { name: 'Mi hová kerül', exact: true }).click()
+    await expect(page.getByRole('dialog', { name: 'Mi hová kerül' })).toBeVisible()
+    await shot(page, 'ac3-sent-where-intro-hu-mobile')
+    await page.keyboard.press('Escape')
+
+    await footer(page).getByRole('button', { name: 'Névjegy', exact: true }).click()
+    await expect(page.getByRole('dialog', { name: 'Névjegy' })).toBeVisible()
+    await shot(page, 'ac4-about-hu-mobile')
+  })
+
+  test('the warning shot', async ({ page }) => {
+    await openAged(page, 11)
+    await expect(ageLine(page)).toHaveText('Adatok: 2026. nov. 2. · 11 napos · lehet, hogy elavult')
+    await ageLine(page).scrollIntoViewIfNeeded()
+    await shot(page, 'ac2-warning-hu-mobile')
+  })
+})
+
+for (const { locale, title } of [
+  { locale: 'en-GB', title: 'What is sent where' },
+  { locale: 'hu-HU', title: 'Mi hová kerül' },
+]) {
+  test.describe(`word for word on ${locale}`, () => {
+    test.use({ locale })
+
+    for (const from of ['main', 'contentinfo'] as const) {
+      test(`from ${from}, each line is the spec's line, bold in the same place`, async ({ page }) => {
+        await page.goto('/kilato/')
+        await page.getByRole(from).getByRole('button', { name: title, exact: true }).click()
+        await expect(page.getByRole('dialog', { name: title }).getByRole('heading')).toHaveText(title)
+
+        const expected = specPanel(title)
+        const actual = await panelLines(page)
+        log(`word for word ${locale} from ${from}: ${expected.length} spec lines, ${actual.filter((line, i) => line === expected[i]).length} identical`)
+        expect(expected).toHaveLength(5)
+        expect(actual).toEqual(expected)
+      })
+    }
+  })
+}
+
+test.describe('edges', () => {
+  test.use({ locale: 'en-GB' })
+
+  test('10 and a half days old', async ({ page }) => {
+    await openAged(page, 10.5)
+    await expect(ageLine(page)).toBeVisible()
+    log(`10.5 days: "${await ageLine(page).textContent()}"`)
+    await expect(ageLine(page)).toHaveClass(/data-age-warning/)
+  })
+
+  for (const { name, manifest } of [
+    { name: 'an unreadable osmDataAt', manifest: { ...siteManifest, osmDataAt: 'not a date' } },
+    { name: 'no wikipediaAt', manifest: { ...siteManifest, wikipediaAt: undefined } },
+  ]) {
+    test(`${name}: what the page does`, async ({ page }) => {
+      const errors: string[] = []
+      page.on('pageerror', (error) => errors.push(error.message))
+      await page.route('**/kilato/data/manifest.json', (route) => route.fulfill({ json: manifest }))
+      await page.goto('/kilato/')
+      await expect.poll(() => errors.length, { timeout: 5000 }).toBeGreaterThan(0)
+      log(
+        `${name}: errors ${JSON.stringify(errors)}, footer ${await page.locator('footer').count()}, map ${await page.locator('.leaflet-container').count()}, app children ${await page.locator('#app > *').count()}`,
+      )
+      await shot(page, `edge-${name.replaceAll(' ', '-')}`)
+    })
+  }
+
+  test.describe('with the location granted', () => {
+    test.use({ geolocation: { latitude: 47.4975, longitude: 19.0545 }, permissions: ['geolocation'] })
+
+    test('there is no intro, and the footer still opens the panel', async ({ page }) => {
+      await openAged(page, 3)
+      await expect(ageLine(page)).toBeVisible()
+      await expect(page.getByRole('main').getByRole('button', { name: 'What is sent where', exact: true })).toHaveCount(0)
+      await footer(page).getByRole('button', { name: 'What is sent where', exact: true }).click()
+      await expect(page.getByRole('dialog', { name: 'What is sent where' })).toBeVisible()
+      log('following: no intro link, the footer link opens the panel')
+    })
+  })
+
+  test('the keyboard: Enter opens, Tab stays inside, Esc shuts, the focus goes back, from the intro too', async ({ page }) => {
+    await page.goto('/kilato/')
+    const intro = page.getByRole('main').getByRole('button', { name: 'What is sent where', exact: true })
+    await intro.focus()
+    await page.keyboard.press('Enter')
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    const inside = () => page.evaluate(() => document.activeElement?.closest('dialog') != null || document.activeElement === document.body)
+    const seen: boolean[] = []
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press('Tab')
+      seen.push(await inside())
+    }
+    log(`keyboard: focus stays in the dialog on 5 Tabs: ${JSON.stringify(seen)}`)
+    expect(seen).not.toContain(false)
+    await page.keyboard.press('Escape')
+    await expect(dialog).toHaveCount(0)
+    await expect(intro).toBeFocused()
+  })
+
+  for (const viewport of [
+    { width: 320, height: 568 },
+    { width: 375, height: 667 },
+  ]) {
+    for (const { locale, panelName, opener } of [
+      { locale: 'hu-HU', panelName: 'Mi hová kerül', opener: 'Mi hová kerül' },
+      { locale: 'hu-HU', panelName: 'Névjegy', opener: 'Névjegy' },
+      { locale: 'en-GB', panelName: 'What is sent where', opener: 'What is sent where' },
+    ]) {
+      test.describe(`${panelName} at ${viewport.width} x ${viewport.height}`, () => {
+        test.use({ viewport, locale })
+
+        test('fits, and its Close button can be reached', async ({ page }) => {
+          await page.goto('/kilato/')
+          await footer(page).getByRole('button', { name: opener, exact: true }).click()
+          const dialog = page.getByRole('dialog', { name: panelName })
+          await expect(dialog).toBeVisible()
+          const size = await dialog.evaluate((node) => {
+            const { x, y, width, height } = node.getBoundingClientRect()
+            return { x, y, width, height, scrollHeight: node.scrollHeight, clientHeight: node.clientHeight }
+          })
+          log(`panel ${panelName} ${viewport.width}x${viewport.height}: ${JSON.stringify(size)}`)
+          expect(size.x).toBeGreaterThanOrEqual(0)
+          expect(size.x + size.width).toBeLessThanOrEqual(viewport.width)
+          expect(size.y + size.height).toBeLessThanOrEqual(viewport.height)
+          await dialog.getByRole('button').click()
+          await expect(dialog).toHaveCount(0)
+        })
+      })
+    }
+  }
+
+  for (const width of [899, 900]) {
+    test.describe(`at ${width} px`, () => {
+      test.use({ viewport: { width, height: 700 } })
+
+      test('where the footer goes', async ({ page }) => {
+        await openAged(page, 3)
+        await expect(ageLine(page)).toBeVisible()
+        const { x, y, width: boxWidth } = await page.evaluate(() => {
+          const { x, y, width } = document.querySelector('footer')!.getBoundingClientRect()
+          return { x, y, width }
+        })
+        log(`footer at ${width} px: x ${x}, y ${y}, width ${boxWidth}`)
+        expect(x).toBe(width >= 900 ? width * 0.6 : 0)
+      })
+    })
+  }
+
+  test.describe('in New York', () => {
+    test.use({ timezoneId: 'America/New_York' })
+
+    test('the date is the phone’s own', async ({ page }) => {
+      await openAged(page, 3)
+      await expect(ageLine(page)).toBeVisible()
+      log(`New York: "${await ageLine(page).textContent()}"`)
+      await expect(ageLine(page)).toContainText('days old')
+    })
+  })
+})
+
+for (const { name, manifest } of [
+  { name: 'an unreadable date', manifest: { ...siteManifest, osmDataAt: 'not a date' } },
+  { name: 'cells only, no dates', manifest: { cells: siteManifest.cells } },
+]) {
+  test.describe(`a manifest with ${name}`, () => {
+    test.use({ locale: 'en-GB' })
+
+    test('what still works', async ({ page }) => {
+      const errors: string[] = []
+      page.on('pageerror', (error) => errors.push(error.message))
+      await page.route('**/kilato/data/manifest.json', (route) => route.fulfill({ json: manifest }))
+      await page.goto('/kilato/')
+      await expect.poll(() => errors.length).toBeGreaterThan(0)
+
+      await page.getByRole('button', { name: 'Explore the map', exact: true }).click()
+      const rows = page.getByRole('main').getByRole('listitem')
+      await page.waitForTimeout(5000)
+      log(`${name}: 5 s after Explore: rows ${await rows.count()}, pin ${await page.locator('.pin').count()}, line ${await ageLine(page).count()}, errors ${JSON.stringify([...new Set(errors)])}`)
+
+      await footer(page).getByRole('button', { name: 'About', exact: true }).click()
+      await page.waitForTimeout(1000)
+      log(`${name}: after a tap on About: dialogs ${await page.getByRole('dialog').count()}, rows ${await rows.count()}, errors ${errors.length}`)
+
+      await page.getByRole('button', { name: 'HU', exact: true }).click()
+      await page.waitForTimeout(1000)
+      log(`${name}: after HU: html lang ${await page.locator('html').getAttribute('lang')}, footer buttons ${JSON.stringify(await footer(page).getByRole('button').allTextContents())}, errors ${errors.length}`)
+      await footer(page).scrollIntoViewIfNeeded()
+      await shot(page, `edge-${name.replaceAll(' ', '-').replaceAll(',', '')}`)
+      await expect(page.locator('footer')).toHaveCount(1)
+    })
+  })
+}

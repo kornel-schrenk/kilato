@@ -1,0 +1,23 @@
+CI
+verify on builder head 45c9b31: success, https://github.com/kornel-schrenk/kilato/actions/runs/42127120839
+The result for QA's head is on the PR comment, as it can't be known before this file is pushed.
+
+MERGE
+develop is 81b6dc1, which is already in this branch. git merge-tree finds no conflict.
+
+SECURITY: pr-security-review
+Run on `git diff --merge-base origin/develop` at 741affd. Run inline, as this lane has no sub-task tool.
+So the finding pass and the false-positive pass were one reader, not separate sub-tasks.
+There were no candidates left to filter. What I checked, against the skill's categories:
+
+Injection, XSS   Names come from OpenStreetMap and Wikipedia. SearchBox.tsx renders them as JSX text. No dangerouslySetInnerHTML, innerHTML or setContent in the added lines. A pick opens no popup, as MapView.tsx opens one only for a row. e2e/search.spec.ts:418 pins the text.
+Code execution   No eval or new Function. The only regular expression is the constant in fold, and the query never goes into one. search.test.ts:56 pins that.
+Requests         The one new fetch is `${dataFolder}search.json`, a constant path on the same origin with no input in it.
+Data exposure    The query and the point stay in the page. e2e/search.spec.ts:697, and 30 requests over a whole visit in probe.txt, 0 with a body, 0 with the query or the location.
+Storage          Nothing new. Both stores are empty after that visit, probe.txt.
+Secrets          None in the diff.
+Auth             The page has none.
+Workflows        No change under .github, and none to package.json or the lockfile.
+Merge            index.html gained one CSS selector. PlaceList.tsx and usePlaces.ts changed only where a selection scrolls and where a pick waits.
+
+Result: 0 findings.

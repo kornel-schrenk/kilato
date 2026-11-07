@@ -1,0 +1,25 @@
+npm ci && npm run verify, on 13ecb2e (builder head 1c04268 plus QA's test fix). Exit 0. tsc, 494 unit, build, 154 page.
+Eleven page tests in e2e/fixtures.spec.ts print a cross in the log and still count as passed: they are expected to fail.
+
+ Test Files  22 passed (22)
+      Tests  494 passed (494)
+✓ built in 619ms
+Running 154 tests using 2 workers
+  ✓  109 e2e/list.spec.ts:778:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on (1.2s)
+  ✓  111 e2e/list.spec.ts:788:3 › the category chips › sit between the map and the list, and fit a phone in Hungarian (1.7s)
+  ✓  112 e2e/list.spec.ts:806:5 › the category chips › on a Hungarian phone › have the Hungarian names, and switching the language changes them (1.1s)
+  ✓  114 e2e/list.spec.ts:829:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again (2.3s)
+  ✓  116 e2e/list.spec.ts:847:3 › the category chips › work together: two chips off hide two categories (2.0s)
+  ✓  118 e2e/list.spec.ts:859:3 › the category chips › still show an off chip in its colour (1.2s)
+  ✓  120 e2e/list.spec.ts:868:3 › the category chips › are all on again at the next visit (2.8s)
+  ✓  123 e2e/list.spec.ts:880:3 › the category chips › close the popup and the highlight of a tapped place whose category goes off (2.6s)
+  ✓  125 e2e/list.spec.ts:896:3 › the category chips › keep the popup and the highlight of a tapped place whose category stays on (2.2s)
+  ✓  128 e2e/list.spec.ts:909:3 › the category chips › count only the rows that are on for Show more (2.4s)
+  ✓  130 e2e/list.spec.ts:924:5 › the category chips › with every chip off › the list says so, and its button turns them all back on (3.4s)
+  ✓  133 e2e/list.spec.ts:946:5 › the category chips › with every chip off › turning one chip back on leaves the message and shows its places (2.5s)
+  ✓  135 e2e/list.spec.ts:960:7 › the category chips › with every chip off › on a Hungarian phone › the message and the button are in Hungarian (2.2s)
+  154 passed (2.9m)
+VERIFY EXIT=0
+
+npx playwright test e2e/list.spec.ts -g "the category chips" --repeat-each=3, same tree:
+  39 passed (1.6m)

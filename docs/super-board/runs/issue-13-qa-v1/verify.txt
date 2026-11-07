@@ -1,0 +1,148 @@
+Tested head: a141379 plus the 5 page tests QA adds in this commit. No app file differs from a141379.
+Command: npm ci && npm run verify
+
+added 46 packages, and audited 47 packages in 4s
+
+13 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> kilato@0.0.0 verify
+> npm run typecheck && npm test && npm run build && npm run test:e2e
+
+
+> kilato@0.0.0 typecheck
+> tsc
+
+
+> kilato@0.0.0 test
+> vitest run
+
+
+ RUN  v5.1.0 /home/kornel/Projects/kilato/.claude/worktrees/issue-13-qa
+
+
+ Test Files  11 passed (11)
+      Tests  177 passed (177)
+   Start at  15:31:04
+   Duration  5.08s (tests 71%, transform 14%, import 11%, worker 4%)
+
+    Isolate  11 workers spawned · ~502ms startup each (spawn + environment, per file)
+             at least ~1.34s faster with isolate: false — reuses workers across files instead of one per file
+
+
+> kilato@0.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 18 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   1.13 kB │ gzip:  0.64 kB
+dist/assets/index-vh-t_kPv.css   15.09 kB │ gzip:  6.36 kB
+dist/assets/index-Dfke7y2y.js   169.33 kB │ gzip: 51.68 kB
+
+✓ built in 414ms
+
+> kilato@0.0.0 test:e2e
+> playwright test
+
+
+Running 87 tests using 2 workers
+
+  ✘   1 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/ fails the test (691ms)
+  ✓   2 e2e/language.spec.ts:18:5 › with the locale hu-HU › the page is in the language hu (1.3s)
+  ✘   3 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test (576ms)
+  ✘   5 e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test (395ms)
+  ✓   4 e2e/language.spec.ts:18:5 › with the locale de-AT › the page is in the language en (923ms)
+  ✘   6 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test (457ms)
+  ✓   7 e2e/language.spec.ts:18:5 › with the locale en-GB › the page is in the language en (1.0s)
+  ✘   8 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test (1.4s)
+  ✓   9 e2e/language.spec.ts:30:3 › with the phone languages de-AT, hu-HU, only the first counts (1.1s)
+  ✘  10 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test (1.2s)
+  ✓  11 e2e/language.spec.ts:30:3 › with the phone languages hu-HU, de-AT, only the first counts (1.1s)
+  ✘  12 e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test (1.2s)
+  ✘  14 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test (1.6s)
+  ✓  13 e2e/language.spec.ts:47:5 › on a phone set to hu-HU › pressing EN switches at once and survives a reload (2.4s)
+  ✘  15 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test (1.2s)
+  ✓  16 e2e/language.spec.ts:47:5 › on a phone set to en-GB › pressing HU switches at once and survives a reload (2.1s)
+  ✘  17 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test (1.4s)
+  ✓  18 e2e/language.spec.ts:73:3 › on a phone set to hu-HU › opening the page saves nothing, so a later phone language still counts (983ms)
+  ✘  19 e2e/fixtures.spec.ts:37:1 › an unexpected WebSocket fails the test (459ms)
+  ✓  21 e2e/fixtures.spec.ts:47:1 › a tile request gets the blank tile (1.2s)
+  ✓  20 e2e/language.spec.ts:79:3 › on a phone set to hu-HU › pressing back to the phone language is kept too (2.0s)
+  ✓  22 e2e/fixtures.spec.ts:61:1 › a data request gets the file from site-data (995ms)
+  ✓  23 e2e/language.spec.ts:94:3 › on a phone set to hu-HU › the name of the switch changes with the language (1.4s)
+  ✓  24 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404 (1.1s)
+  ✓  26 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404 (938ms)
+  ✓  25 e2e/language.spec.ts:103:3 › on a phone set to hu-HU › the page keeps working when the browser blocks localStorage (1.1s)
+  ✓  27 e2e/map.spec.ts:186:7 › layout › at 375 px wide › the map sits below the header, at 45% of the viewport height (848ms)
+  ✓  28 e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó (1.0s)
+  ✓  29 e2e/map.spec.ts:186:7 › layout › at 899 px wide › the map sits below the header, at 45% of the viewport height (923ms)
+  ✓  30 e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/ (913ms)
+  ✓  31 e2e/map.spec.ts:208:7 › layout › at 900 px wide › the map fills the left 60%, and the rest sits on the right (887ms)
+  ✓  32 e2e/page.spec.ts:13:1 › Preact renders into the page (875ms)
+  ✓  33 e2e/map.spec.ts:208:7 › layout › at 1280 px wide › the map fills the left 60%, and the rest sits on the right (740ms)
+  ✓  34 e2e/map.spec.ts:224:3 › layout › the header holds the name and the language switch (630ms)
+  ✓  35 e2e/map.spec.ts:232:3 › layout › the page does not scroll sideways on a phone (483ms)
+  ✓  36 e2e/map.spec.ts:249:3 › tiles › come only from tile.openstreetmap.org, for the view on screen (1.2s)
+  ✓  37 e2e/map.spec.ts:274:3 › tiles › stop at zoom 19 (2.8s)
+  ✓  38 e2e/map.spec.ts:288:3 › tiles › are attributed to OpenStreetMap, with a link to its copyright page (607ms)
+  ✓  39 e2e/map.spec.ts:298:3 › tiles › the attribution is not covered, on a phone (658ms)
+  ✓  40 e2e/map.spec.ts:311:3 › tiles › carry the default Referer, because the page sets no Referrer-Policy (609ms)
+  ✓  41 e2e/map.spec.ts:325:3 › tiles › the page registers no service worker (624ms)
+  ✓  42 e2e/map.spec.ts:341:3 › without a granted permission › the page shows the intro and both buttons, and no point yet (711ms)
+  ✓  43 e2e/map.spec.ts:357:5 › without a granted permission › on a Hungarian phone › the intro is in Hungarian (633ms)
+  ✓  44 e2e/map.spec.ts:367:3 › without a granted permission › the page does not ask for the location before a press (529ms)
+  ✓  45 e2e/map.spec.ts:383:3 › without a granted permission › a permission refused on an earlier visit still gets the intro, and a press explores (782ms)
+  ✓  46 e2e/map.spec.ts:396:3 › without a granted permission › a browser that rejects the permission question gets the intro (589ms)
+  ✓  47 e2e/map.spec.ts:405:3 › without a granted permission › a browser with no Permissions API gets the intro (604ms)
+  ✓  48 e2e/map.spec.ts:414:3 › without a granted permission › Explore the map stops a location request still waiting (879ms)
+  ✓  49 e2e/map.spec.ts:439:3 › without a granted permission › Explore the map starts exploring at Deák Ferenc tér, zoom 15 (918ms)
+  ✓  50 e2e/map.spec.ts:445:3 › without a granted permission › Explore the map goes back there after the map was moved during the intro (2.4s)
+  ✓  51 e2e/map.spec.ts:458:3 › without a granted permission › Explore the map still gets to zoom 15 when pressed while the map zooms (1.3s)
+  ✓  52 e2e/map.spec.ts:485:3 › without a granted permission › Explore the map goes there even while the map still coasts from a flick (1.4s)
+  ✓  53 e2e/map.spec.ts:499:3 › without a granted permission › moving the map during the intro starts nothing (1.0s)
+  ✓  54 e2e/map.spec.ts:513:3 › without a granted permission › a refusal starts exploring at Deák Ferenc tér, zoom 15 (892ms)
+  ✓  55 e2e/map.spec.ts:523:5 › without a granted permission › a location error, POSITION_UNAVAILABLE, starts exploring at Deák Ferenc tér, zoom 15 (894ms)
+  ✓  56 e2e/map.spec.ts:523:5 › without a granted permission › a location error, TIMEOUT, starts exploring at Deák Ferenc tér, zoom 15 (936ms)
+  ✓  57 e2e/map.spec.ts:531:3 › without a granted permission › a press on Use my location, once allowed, starts following (1.1s)
+  ✓  58 e2e/map.spec.ts:548:3 › on a Hungarian phone, exploring › the note and the map controls are in Hungarian too (775ms)
+  ✓  59 e2e/map.spec.ts:558:3 › on a Hungarian phone, exploring › switching the language keeps the pin, and renames the controls (923ms)
+  ✓  60 e2e/map.spec.ts:588:3 › with the permission granted › the page follows the location, with no intro (962ms)
+  ✓  61 e2e/map.spec.ts:602:3 › with the permission granted › it asks watchPosition for high accuracy (642ms)
+  ✓  62 e2e/map.spec.ts:619:3 › with the permission granted › the location dot sits inside its accuracy circle and the 1 km circle (1.0s)
+  ✓  63 e2e/map.spec.ts:634:3 › with the permission granted › walking 20 m moves the point, and the map with it (1.4s)
+  ✓  64 e2e/map.spec.ts:660:3 › with the permission granted › walking 14 m moves nothing but the accuracy circle (3.3s)
+  ✓  65 e2e/map.spec.ts:670:3 › with the permission granted › walking 16 m moves the point (3.4s)
+  ✓  66 e2e/map.spec.ts:680:3 › with the permission granted › two 10 m steps move the point once, measured from the point (4.1s)
+  ✓  67 e2e/map.spec.ts:691:3 › with the permission granted › a walk keeps the zoom the user chose (3.4s)
+  ✓  68 e2e/map.spec.ts:701:3 › with the permission granted › tapping the map while following changes nothing (1.0s)
+  ✓  69 e2e/map.spec.ts:715:3 › with the permission granted › a location error on load starts exploring at Deák Ferenc tér (736ms)
+  ✓  70 e2e/map.spec.ts:723:3 › with the permission granted › dragging switches to exploring, with the pin at the map centre (1.8s)
+  ✓  71 e2e/map.spec.ts:740:3 › with the permission granted › after that drag, walking moves nothing (2.4s)
+  ✓  72 e2e/map.spec.ts:761:3 › with the permission granted › a drag stops the location watch, and My location starts just one again (1.6s)
+  ✓  73 e2e/map.spec.ts:777:3 › with the permission granted › My location switches back to following, at the location now (2.0s)
+  ✓  74 e2e/map.spec.ts:796:3 › with the permission granted › following resumes after My location: the next walk moves the map (2.4s)
+  ✓  75 e2e/map.spec.ts:813:3 › exploring › the end of a slow drag moves the pin to the map centre (2.0s)
+  ✓  76 e2e/map.spec.ts:823:3 › exploring › a quick drag coasts on, and the pin ends up at the centre of where the map stopped (1.6s)
+  ✓  77 e2e/map.spec.ts:839:3 › exploring › a tap moves the pin to the tap, and leaves the map where it is (917ms)
+  ✓  78 e2e/map.spec.ts:852:3 › exploring › the 1 km circle is 1 km at any zoom (1.3s)
+  ✓  79 e2e/map.spec.ts:861:3 › exploring › a press on a zoom button does not count as a tap (1.3s)
+  ✓  80 e2e/map.spec.ts:869:3 › exploring › a press on My location does not count as a tap (1.1s)
+  ✓  81 e2e/map.spec.ts:880:3 › exploring › tapping on the pin still counts as a tap (874ms)
+  ✓  82 e2e/map.spec.ts:890:3 › exploring › tapping on the line of the 1 km circle still counts as a tap (887ms)
+  ✓  83 e2e/map.spec.ts:901:3 › exploring › My location asks for the permission when it is needed, and follows once allowed (1.5s)
+  ✓  84 e2e/map.spec.ts:913:3 › exploring › a refused My location leaves the pin where the user put it (1.2s)
+  ✓  85 e2e/map.spec.ts:929:3 › exploring › a location error on My location leaves the pin too, and it can be pressed again (969ms)
+  ✓  86 e2e/map.spec.ts:955:3 › on a touch screen › a tap moves the pin to the tap (729ms)
+  ✓  87 e2e/map.spec.ts:965:3 › on a touch screen › a finger drag moves the pin to the map centre, with no tap on top (1.3s)
+
+  87 passed (1.6m)
+VERIFY_EXIT=0
+
+===== npx playwright test e2e/map.spec.ts --repeat-each=2
+  116 passed (2.0m)
+REPEAT_EXIT=0

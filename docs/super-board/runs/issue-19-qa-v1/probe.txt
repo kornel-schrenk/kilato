@@ -1,0 +1,21 @@
+desktop: 1 request for search.json, and these cells: 4749_1269.json 4749_1270.json 4749_1271.json 4750_1269.json 4750_1270.json
+tablet: 1 request for search.json, and these cells: 4749_1269.json 4749_1270.json 4749_1271.json 4750_1269.json 4750_1270.json
+mobile: 1 request for search.json, and these cells: 4749_1269.json 4749_1270.json 4749_1271.json 4750_1269.json 4750_1270.json
+phone, search.json failed: .my-location is under the message, .leaflet-control-zoom-in is under the message, .leaflet-control-zoom-out is under the message
+phone, 20 results: smallest result 44 px, list shows 334 of 899 px
+phone: picked the 20th result, Magyar Tudományos Akadémia, and its row is highlighted
+phone: 6 results are 264 px tall from y 44, over a map of 300 px from y 44
+phone: a tap on the map below one result moves the point, and the result stays open with the query in the box
+320 px: the box is 118 px wide, and the page 320 px
+keyboard: Tab from the box goes to the first result, and Enter picks it
+a file with no places field: the message shows and the rows stay
+a visit with a search, a pick and My location: 30 requests, 0 with a body, 0 with the query or the location, and in storage: {}{}
+fold: Kávé finds Kávé
+fold: kave finds Kávé
+fold: istanbul finds İstanbul
+fold: creme finds Crème
+fold: lodz does not find Łódź
+fold: soren does not find Søren
+fold: strasse does not find Straße
+fold: oeuvre does not find Œuvre
+node, this Pi: folding 29,969 places took 208 ms · ka: 33 ms, 20 found · kav: 14 ms, 20 found · kave: 15 ms, 20 found · kavez: 9 ms, 0 found · mu: 24 ms, 20 found · zzzz: 9 ms, 0 found

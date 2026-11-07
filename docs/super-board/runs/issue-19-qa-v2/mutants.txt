@@ -1,0 +1,32 @@
+Mutants for #19, round 2. Each was applied to a scratch copy of the code, built, and run against the named tests, never on this branch.
+A line reads: the mutant | its verdict | how many tests failed of those it ran | which | how long.
+
+R3 and R4 are the reviewer's two survivors, which passed all of e2e/search.spec.ts in the reviewer's run on beb2d95 and go red now. In R4's line, the 1 test of 2 that still passes is the old one, :109.
+M1 to M6 are for what the merge with develop changed. M6 is the other answer to Question 3, so its test pins today's answer and would change with a decision.
+V1 to V10 repeat round 1's page mutants on the merged code.
+
+R3 the intro's results start from 0,0 | red | 1 failing of 1 | start from Deák Ferenc tér at the intro, with no point yet | 15 s
+R3b the intro's results start from far north | red | 1 failing of 1 | start from Deák Ferenc tér at the intro, with no point yet | 15 s
+R4 asked is set only on success | red | 1 failing of 2 | asks for search.json once when it gets focus again while the file is on its way | 13 s
+M1 a pick does not scroll to its row | red | 1 failing of 1 | shows and scrolls to its row, even past the rows showing among places at one spot | 16 s
+M2 a pick scrolls to the button, not the whole li | red | 1 failing of 1 | brings its article link into view with its row | 16 s
+M3 no line under a result | red | 1 failing of 1 | have a line under each, as the rows do | 15 s
+M4 a pick counts its rank in Nearest, whatever the order | red | 1 failing of 1 | counts the rows showing in Most relevant, when that is the order | 16 s
+M5 a pick stops waiting at once | red | 2 failing of 2 | leaves an off chip off, and highlights the row if the chip comes back on; highlights the row only once the slow cell has arrived | 25 s
+M6 a pick turns its chip back on | red | 1 failing of 1 | leaves an off chip off, and highlights the row if the chip comes back on | 16 s
+V1 loads on click, not focus (v1 E7) | red | 1 failing of 1 | sits in the header, and search.json loads only when it first gets focus | 16 s
+V2 asks on every focus (v1 E2) | red | 2 failing of 2 | asks for search.json once, however often it gets focus; asks for search.json once when it gets focus again while the file is on its way | 15 s
+V3 never asks again after a failure (v1 E3) | red | 2 failing of 2 | shows the message, and Retry loads it; the next focus asks again | 25 s
+V4 the query stays after a pick (v1 E5) | red | 1 failing of 1 | closes the results, empties the box and takes the focus out of it | 16 s
+V5 the focus stays after a pick (v1 E6) | red | 1 failing of 1 | takes the focus out of the box when the tap itself leaves it there, as Safari on a phone does | 16 s
+V6 results ignore a moved point (v1 N6) | red | 1 failing of 1 | reorder when the point moves with the query still in the box | 15 s
+V7 the first pick wins (v1 N10) | red | 1 failing of 1 | highlights only the second of two picks made while their cells were on the way | 16 s
+V8 a pick does not reach the point (v1 E14) | red | 1 failing of 1 | starts exploring with the point at the place, loads its cell and highlights its row | 15 s
+V9 a pick does not reach the places (v1 E13) | red | 1 failing of 1 | starts exploring with the point at the place, loads its cell and highlights its row | 16 s
+V10 both point checks gone (v1 E19) | red | 1 failing of 1 | leaves the row alone when the point moves on before the cell arrives | 16 s
+
+19 mutants, 19 red.
+
+NOT RUN AGAIN
+Round 1's 21 unit mutants: src/core/search.ts, src/core/search.test.ts, src/core/point.ts and src/core/point.test.ts have not changed since beb2d95. See ../issue-19-qa-v1/mutants.txt.
+Round 1's 3 survivors, E9, E16 and E18. The code they touch is the same. E19 is V10 here, and it is still red.

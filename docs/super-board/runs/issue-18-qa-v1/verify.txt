@@ -1,0 +1,21 @@
+npm ci && npm run verify, on builder head 7b28645, develop 413a833. Exit 0. tsc, 545 unit, build, 187 page. Eleven page tests in e2e/fixtures.spec.ts print a cross in the log and still count as passed: they are expected to fail.
+
+ Test Files  25 passed (25)
+      Tests  545 passed (545)
+✓ built in 449ms
+Running 187 tests using 2 workers
+  ✓  177 e2e/list.spec.ts:1345:3 › the order › reads Nearest and Most relevant, with Nearest on (649ms)
+  ✓  178 e2e/list.spec.ts:1356:5 › the order › on a Hungarian phone › reads Legközelebbi and Legérdekesebb, and switching the language chang
+  ✓  179 e2e/list.spec.ts:1367:3 › the order › sits above the chips, and both fit a phone in Hungarian (957ms)
+  ✓  180 e2e/list.spec.ts:1384:3 › the order › sorts the list by relevance, and back by distance (1.2s)
+  ✓  181 e2e/list.spec.ts:1399:3 › the order › works with the category filter, in both orders (1.5s)
+  ✓  182 e2e/list.spec.ts:1419:3 › the order › is Nearest again at the next visit (1.8s)
+  ✓  183 e2e/list.spec.ts:1431:3 › the order › stays as it is when the point moves and when the language switches (1.3s)
+  ✓  184 e2e/list.spec.ts:1444:3 › the order › moves a place down the list within a minute of its closing (1.0s)
+  ✓  185 e2e/list.spec.ts:1457:3 › the order › counts the rows showing in the order it is in, for a tapped marker (1.4s)
+  ✓  186 e2e/list.spec.ts:1477:3 › the order › leaves the markers alone (1.1s)
+  187 passed (3.7m)
+VERIFY EXIT=0
+
+npx playwright test e2e/list.spec.ts -g "the order" --repeat-each=3, same tree:
+  33 passed (46.5s)

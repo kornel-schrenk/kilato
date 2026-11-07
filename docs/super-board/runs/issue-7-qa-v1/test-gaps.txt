@@ -1,0 +1,47 @@
+Test-gap check. Tested head: c8bf1e8. Range: develop...c8bf1e8. QA's added tests are on 5c46937. There is no page in this change, so the component and e2e rungs are n/a for every AC.
+
+===== ledger, by clause of each AC
+AC1 one place per kept feature: scripts/data/osm.test.ts:35
+AC1 cat and kind, first match wins: osm.test.ts:57, scripts/data/categories.test.ts:29, :44
+AC1 ids, area ids even and odd: osm.test.ts:63, :161
+AC1 centroid of the outer ring, hole ignored: osm.test.ts:70, :76, :145
+AC1 5 decimals: osm.test.ts:52, :125
+AC2 no name, plaque, stolperstein, shop=vacant, open way, outside the box: osm.test.ts:97 · box edges :129, :141
+AC2 names only when they differ: osm.test.ts:91
+AC2 wikidata, wikipedia, opening_hours kept: osm.test.ts:80
+AC3 filter generated from the table, and a test fails on a missing tag: categories.test.ts:59, :68
+AC3 extract and export flags, linear_tags false: osm.test.ts:228, :236, :245, :254
+AC4 key 4749_1270: src/core/cells.test.ts:4
+AC4 floor of both parts: lat cells.test.ts:4, lon was none (mutant survived), now cells.test.ts:8
+AC4 the spec's six types: was none, now src/core/types.test.ts:40, checked by tsc
+AC5 fixture covers every rule and shape, within 1 km: osm.test.ts:180, :189, :194, :201, :208 · checked again separately by a Python script: all table values present, furthest vertex 759 m from Deák, only n2000002007 beyond 1 km
+AC6 scripts in the type check, TS7006: test/typecheck.test.ts:8 · checked by hand too: an implicit any in scripts/data/ gives TS7006 and exit 1, and the same file with scripts out of include gives exit 0
+
+The AC's shop=vacant against the spec's first match, which the Builder flagged: shop=vacant alone is left out (osm.test.ts:97). shop=vacant with historic=building is filed under Sights (osm.test.ts:119). The spec's table only takes vacant out of the Shops rule, its decision 4 doesn't list vacant shops as left out, and PROJECT.md says the spec wins, so there is nothing to guess. QA accepts it. The Reviewer may read it differently.
+
+===== real osmium, not a committed test
+The Builder had no osmium. QA unpacked Debian's osmium-tool 1.18.0 into a scratch folder and ran the three real command lines over a hand-written input, real-osmium.txt.
+All three exit 0, with no RS byte. Closed ways and multipolygons come out as MultiPolygon with ids a<2n> and a<2n+1>, open ways as LineString with w ids. placesFromExport gets the right place from each.
+This proves the flags and the output shape. It doesn't prove real Budapest data, or the version the deploy runner's apt gives. #12 is still the first run on those.
+
+===== edge cases
+boundaries: box edges pinned, osm.test.ts:129 · corner in and centroid out pinned, :141 · 47.619996 kept at 47.62 and 47.620004 left out, probe only
+0, null, empty: empty export pinned, osm.test.ts:170 · empty name left out, empty name:hu ignored, probe only
+money and dates: n/a, no such code
+input: unicode names, probe and real run · a line starting with an RS byte, or a null geometry, throws, probe only, so a bad export stops the build instead of losing places quietly
+volume: 0 pinned · 93 lines pinned · a real extract not run, that is #12
+auth: n/a, no accounts
+error paths: a ring with no area is left out, pinned, osm.test.ts:156
+idempotency and races: same output twice, probe only · test/typecheck.test.ts names its temp file by process id and removes it in finally
+UI states and accessibility: n/a, no page
+
+===== test the tests
+No test asserts on its own mock or recomputes its expected value: the category table is typed out again in the test (categories.test.ts:6), and the centroids are worked by hand. The left-out rows check the feature is in the fixture first (osm.test.ts:111), so they can't pass on a missing feature. 43 of 47 mutants go red, mutants.txt.
+
+===== gaps
+High, written: AC4's six types had no test. Removing SearchFile.names, widening Manifest.box and 7 other breaks turned nothing red. src/core/types.test.ts:40, 11 of 11 breaks now red.
+High, written: AC4's floor of the longitude had no test that could fail. Math.round in its place stayed green. Witness 47.509, 19.06, expected 4750_1270. src/core/cells.test.ts:8, red with either part rounded.
+Medium, not written: mutant, scripts/data/osm.ts:82 always using the first outer ring survives. Witness: a multipolygon with the small ring first and the large ring second, expected the large ring's centroid. It's right today: 47.515, 19.065 from a probe, and r304 in real-osmium.txt.
+Low, not written: mutant, osm.ts:75 dropping Math.abs survives. Witness: two clockwise rings, largest second. osmium wrote every outer ring counter-clockwise in real-osmium.txt, even from clockwise input, so a real export can't reach it.
+Low, not written: mutant, scripts/data/categories.ts:44 letting later values overwrite 'any' survives. It changes nothing on today's table, where no list comes after an 'any' rule for the same key.
+Low, not written: shop=no and historic=no become places of kind `no`, and amenity=cafe;bar matches no rule. This is what the spec's table says ("any historic value"), so it isn't a defect. A real extract in #12 would show how many there are.

@@ -1,0 +1,50 @@
+Probes on head 0024ab7, and the same first views on develop f57db15. They ran in a throwaway spec beside e2e/fixtures.ts, so the fixture stubbed every request. None is committed.
+Screenshots use labelled stub tiles, z/x/y, because tests never call OpenStreetMap.
+Each read is QA's own, not lineOnMap: it walks the real SVG path of the 1 km circle at 720 points, in percent of them.
+- inWindow: inside the browser window
+- onMap: inside the map, which is what AC4's page test counts
+- unCovered: inside the map, with the map itself owning that pixel
+- coveredBy: what sits on the rest of the map's share of the line
+- radiusPx: half the width of the circle. The spec says 310 px at zoom 15 and 155 px at zoom 14
+All 23 probes pass on the head. A first run failed one, and it was my mistake: the probe read the pin's place once, before the drag ended and the pin moved. With a poll, as the page tests do, it passes. These numbers are from that run.
+
+===== head 0024ab7
+exploring desktop 1920x1080, Explore the map: zoom 15 (want 15) · {"radiusPx":310,"inWindow":100,"onMap":100,"unCovered":100,"coveredBy":{}}
+exploring desktop 1920x1080, refusal: zoom 15 (want 15) · {"radiusPx":310,"inWindow":100,"onMap":100,"unCovered":100,"coveredBy":{}}
+following desktop 1920x1080, on load: zoom 15 (want 15) · {"radiusPx":310,"inWindow":100,"onMap":100,"unCovered":100,"coveredBy":{}}
+exploring tablet 1024x768, Explore the map: zoom 15 (want 15) · {"radiusPx":310,"inWindow":95.7,"onMap":91.4,"unCovered":91.4,"coveredBy":{}}
+exploring tablet 1024x768, refusal: zoom 15 (want 15) · {"radiusPx":310,"inWindow":95.7,"onMap":91.4,"unCovered":91.4,"coveredBy":{}}
+following tablet 1024x768, on load: zoom 15 (want 15) · {"radiusPx":310,"inWindow":95.4,"onMap":91.4,"unCovered":91.4,"coveredBy":{}}
+exploring mobile 375x667, Explore the map: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":83.6,"unCovered":73.9,"coveredBy":{"attribution":5.7,"My location":4}}
+exploring mobile 375x667, refusal: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":83.6,"unCovered":73.9,"coveredBy":{"attribution":5.7,"My location":4}}
+following mobile 375x667, on load: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":83.6,"unCovered":78.1,"coveredBy":{"attribution":5.6}}
+exploring 320x568: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":61.9,"unCovered":46.8,"coveredBy":{"attribution":2.9,"My location":6.1,"zoom buttons":6.1}}
+exploring 360x640: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":75.6,"unCovered":65.3,"coveredBy":{"attribution":3.8,"My location":5.8,"zoom buttons":0.7}}
+exploring 667x375: zoom 14 (want 14) · {"radiusPx":155,"inWindow":81.3,"onMap":36.7,"unCovered":34.6,"coveredBy":{"attribution":2.1}}
+exploring 768x1024: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":100,"unCovered":100,"coveredBy":{}}
+exploring 899x700: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":100,"unCovered":100,"coveredBy":{}}
+exploring 900x700: zoom 15 (want 15) · {"radiusPx":310,"inWindow":83.8,"onMap":67.5,"unCovered":67.5,"coveredBy":{}}
+exploring 901x700: zoom 15 (want 15) · {"radiusPx":310,"inWindow":83.8,"onMap":67.5,"unCovered":67.5,"coveredBy":{}}
+exploring 1024x1366: zoom 15 (want 15) · {"radiusPx":310,"inWindow":95.7,"onMap":91.4,"unCovered":91.4,"coveredBy":{}}
+a. refused at 375x667, first view: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":83.6,"unCovered":73.9,"coveredBy":{"attribution":5.7,"My location":4}}
+b. zoomed in by the user: zoom 15 (want 15) · {"radiusPx":310,"inWindow":20.7,"onMap":0,"unCovered":0,"coveredBy":{}}
+c. allowed, My location pressed at zoom 15: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":83.6,"unCovered":78.1,"coveredBy":{"attribution":5.6}}
+d. the user zooms in again while following: zoom 15 (want 15) · {"radiusPx":310,"inWindow":20.7,"onMap":0,"unCovered":0,"coveredBy":{}}
+e. walked 15.5 m: zoom 15 (want 15) · {"radiusPx":310,"inWindow":20.7,"onMap":0,"unCovered":0,"coveredBy":{}}
+f. dragged: zoom 15 (want 15) · {"radiusPx":310,"inWindow":20.7,"onMap":0,"unCovered":0,"coveredBy":{}}
+Explore pressed during a zoom animation, 375x667: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":83.6,"unCovered":73.9,"coveredBy":{"attribution":5.7,"My location":4}}
+search pick from the intro, 375x667: outside this ticket: zoom 15 (want 15) · {"radiusPx":310,"inWindow":20.7,"onMap":0,"unCovered":0,"coveredBy":{}}
+location error on load at 899x700: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":100,"unCovered":100,"coveredBy":{}}
+location error on load at 900x700: zoom 15 (want 15) · {"radiusPx":310,"inWindow":83.8,"onMap":67.5,"unCovered":67.5,"coveredBy":{}}
+Go to Budapest at 375x667: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":83.9,"unCovered":74.2,"coveredBy":{"attribution":5.8,"My location":3.9}}
+
+===== develop f57db15: what the ticket reported
+exploring desktop 1920x1080, Explore the map: zoom 15 · {"radiusPx":310,"inWindow":100,"onMap":100,"unCovered":100}
+exploring desktop 1920x1080, refusal: zoom 15 · {"radiusPx":310,"inWindow":100,"onMap":100,"unCovered":100}
+following desktop 1920x1080, on load: zoom 15 (want 15) · {"radiusPx":310,"inWindow":100,"onMap":100,"unCovered":100}
+exploring tablet 1024x768, Explore the map: zoom 15 · {"radiusPx":310,"inWindow":95.7,"onMap":91.4,"unCovered":91.4}
+exploring tablet 1024x768, refusal: zoom 15 · {"radiusPx":310,"inWindow":95.7,"onMap":91.4,"unCovered":91.4}
+following tablet 1024x768, on load: zoom 15 (want 15) · {"radiusPx":310,"inWindow":95.4,"onMap":91.4,"unCovered":91.4}
+exploring mobile 375x667, Explore the map: zoom 15 · {"radiusPx":310,"inWindow":20.7,"onMap":0,"unCovered":0}
+exploring mobile 375x667, refusal: zoom 15 · {"radiusPx":310,"inWindow":20.7,"onMap":0,"unCovered":0}
+following mobile 375x667, on load: zoom 14 (want 14) · {"radiusPx":155,"inWindow":100,"onMap":83.6,"unCovered":78.1}

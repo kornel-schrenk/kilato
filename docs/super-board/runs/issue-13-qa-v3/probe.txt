@@ -1,0 +1,36 @@
+Probes on head 46b674f. They ran in a throwaway spec beside e2e/fixtures.ts, so the fixture failed on any unknown request, and 0 tripped it. None is committed.
+21 probes, all pass on the first run, with their own helpers and their own distance formula. They reuse no helper from e2e/map.spec.ts.
+Screenshots use labelled stub tiles, z/x/y, because tests never call OpenStreetMap.
+linePercent is the share of the 1 km circle's line on the map, read at 360 points along it. One pixel is 3.2 m at zoom 15 and 6.5 m at zoom 14 here, so a distance under those is a rounding of the read.
+Lines marked new cover what v1, v2, the Reviewer and the committed tests don't: the attribution link, and a reload while granted.
+
+AC1 desktop 1920x1080: {"mapShareOfWidth":60,"mapShareOfHeight":100,"map":"0,0 1152x1080","header":"Kilátó\nHU | EN","headerBottom":44,"sideways":1920}
+AC3 desktop: {"zoom":15,"linePercent":100,"dot":1,"accuracy":1,"km":1,"dotFromHome":0.6}
+AC4 desktop: {"zoom":15,"pinFromDeak":1.3,"note":1,"introGone":true}
+AC1 tablet 1024x768: {"mapShareOfWidth":60,"mapShareOfHeight":100,"map":"0,0 614.390625x768","header":"Kilátó\nHU | EN","headerBottom":44,"sideways":1024}
+AC3 tablet: {"zoom":15,"linePercent":91,"dot":1,"accuracy":1,"km":1,"dotFromHome":0.6}
+AC4 tablet: {"zoom":15,"pinFromDeak":1.3,"note":1,"introGone":true}
+AC1 mobile 375x667: {"mapShareOfWidth":100,"mapShareOfHeight":45,"map":"0,44 375x300.140625","header":"Kilátó\nHU | EN","headerBottom":44,"sideways":375}
+AC3 mobile: {"zoom":14,"linePercent":84,"dot":1,"accuracy":1,"km":1,"dotFromHome":4.1}
+AC4 mobile: {"zoom":15,"pinFromDeak":1.3,"note":1,"introGone":true}
+AC2 tiles at load: {"requested":6,"badShape":[],"outsideView":[],"viewNotRequested":[],"referers":["http://127.0.0.1:5117/"]}
+AC2 attribution: {"text":" Leaflet | © OpenStreetMap contributors","linkText":"© OpenStreetMap contributors","href":"https://www.openstreetmap.org/copyright"}
+AC2 no referrer policy: {"metaReferrer":0,"responseHeader":null,"serviceWorkers":0}
+AC2 zoom limit: {"highestTile":19,"plusDisabled":true,"badShape":0}
+AC3 watch options: [{"enableHighAccuracy":true}]
+AC3 a 14 m walk: {"dotFromHome":0.6,"mapFromHome":0.6}
+AC3 a 16 m walk: {"dotFromHome":16,"dotFromNewPlace":0.6}
+AC4 refusal: {"zoom":15,"pinFromDeak":1.3,"note":1}
+AC4 location error 2: {"zoom":15,"pinFromDeak":1.3,"note":1}
+AC4 location error 3: {"zoom":15,"pinFromDeak":1.3,"note":1}
+AC5 drag while following: {"dots":0,"pinFromCentre":3.3,"pinFromHome":524.6,"myLocation":1,"note":1}
+AC5 tap: {"pinFromTap":3.3,"mapMoved":0}
+AC5 My location: {"zoom":14,"pins":0,"dotFromHome":4.1,"linePercent":84,"myLocation":0}
+AC5 journey page errors: []
+AC5 asks: {"before":0,"after":1}
+language switch while exploring, which e2e/map.spec.ts:577 also pins: {"pinMoved":0,"zoomControls":1,"zoomInTitle":"Nagyítás","myLocation":1,"mapLabel":"Térkép"}
+new, a press on the attribution link, then on a zoom button, which :954 also pins: {"afterLink":0,"afterZoom":0,"zoom":14}
+new, a reload with the permission granted: {"intro":0,"zoom":14,"dotFromHome":4.1}
+privacy, repeated from v2: {"requests":15,"carrying":[],"stored":{"cookie":""}}
+AC5 coast, right after the tap: {"pinFromTap":1}
+AC5 coast, once the map stopped: {"pinFromTap":1,"pinFromCentre":290.6,"mapCoastedAfterTap":533}

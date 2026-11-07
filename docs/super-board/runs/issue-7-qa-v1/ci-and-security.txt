@@ -1,0 +1,19 @@
+Tested head: 5c46937 (c8bf1e8 plus QA's two test changes).
+
+===== CI
+GitHub Actions run 41812728940, job 126515738311: check `verify` on c8bf1e8, conclusion success.
+This file can't record CI on its own commit. The PR comment gives the state at handoff.
+
+===== merge with develop
+develop moved from 91f3b2d to 1b74610, which adds one line to AGENTS.md.
+git merge-tree --write-tree origin/develop 5c46937: exit 0, no conflicts.
+
+===== pr-security-review
+Diff of develop...5c46937, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- scripts/data/osm.ts and categories.ts run only in the data build, and nothing under src/ imports them. They shell out to nothing: extractArgs, tagsFilterArgs and exportArgs return argument arrays, and #12 is what will run them. The filter expressions come from a fixed table.
+- placesFromExport reads osmium's own output with JSON.parse. Tag strings are community-edited, so they are untrusted, but this diff only copies them into place fields and has no HTML sink. Tags are read by fixed key names, and a rule's values are arrays, so a tag named __proto__, or shop=constructor, is plain data. Probed: no extra fields appear on the place.
+- src/core/cells.ts and types.ts do arithmetic and declare types.
+- test/typecheck.test.ts runs npx tsc with fixed arguments and no shell, and writes a file named after its own process id. It only runs in tests, so the skill's exclusion for test files applies.
+- No dependency changes: the diff doesn't touch package.json or package-lock.json. No workflow changes: the diff doesn't touch .github/.
+- Secret scan of the diff and this evidence folder (GitHub, AWS, Slack and OpenAI token shapes, private keys, password, secret, token, api key): 0 matches.

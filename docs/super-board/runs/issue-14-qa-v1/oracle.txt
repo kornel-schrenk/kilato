@@ -1,0 +1,3 @@
+cells in manifest: 5 ['4749_1269', '4749_1270', '4749_1271', '4750_1269', '4750_1270']
+places in those cells: 311, unique ids: 311, within 1000 m: 308
+nearest: Deák Ferenc tér metróállomás at 16.5 m; farthest listed: Pollack Mihály tér at 981.2 m

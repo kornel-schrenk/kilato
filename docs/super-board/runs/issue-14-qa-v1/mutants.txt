@@ -1,0 +1,51 @@
+QA's mutants. Each one landed (the script checks the file changed), ran and was restored. None is committed.
+Unit mutants ran vitest on src/core, src/data and src/ui. Page mutants ran vite build, then playwright test e2e/list.spec.ts --max-failures=1 -g <the AC's group>, so each names only its first red test.
+
+===== round 1, on builder head 4f23a24: 31 mutants, 25 red, 6 past the tests
+AC1 a loaded cell asked for again: unit killed by 6: src/data/places.test.ts > placeLoader > asks for nothing when the point moves among loaded cells · src/data/places.test.ts > placeLoader > asks only for the new cells when the point moves, and keeps the loaded ones in memory
+AC1 a cell on its way asked for again: unit killed by 1: src/data/places.test.ts > placeLoader > waits for a manifest still on its way, then loads the cells for the latest point
+AC1 a failed fetch not reported: unit killed by 6: src/data/places.test.ts > placeLoader > when a fetch fails > reports a manifest that is not there, and Retry fetches it again · src/data/places.test.ts > placeLoader > when a fetch fails > reports a request the network dropped
+AC1 reach of 1,500 m in cellsWithin: unit killed by 10: src/core/cells.test.ts > cellsWithin > leaves out a corner the circle misses, though its row and its column are in reach · src/core/cells.test.ts > cellsWithin > finds at most 3 × 3 cells from anywhere in the box
+AC1 a cell has no north half: unit killed by 2: src/core/cells.test.ts > cellsWithin > finds all nine cells from the middle of a cell · src/core/cells.test.ts > cellsWithin > leaves out a corner the circle misses, though its row and its column are in reach
+AC1 a cell ends 75 m short in the east, so a point east of it can lose places: unit killed by 1: src/core/cells.test.ts > cellsWithin > leaves out a corner the circle misses, though its row and its column are in reach
+AC1 a cell ends 110 m short in the north, so a point north of it can lose places: SURVIVED unit tests
+AC1 a cell starts 75 m late in the west, so a point west of it can lose places: SURVIVED unit tests
+AC1 a cell starts 110 m late in the south, so a point south of it can lose places: unit killed by 1: src/core/cells.test.ts > cellsWithin > leaves out a corner the circle misses, though its row and its column are in reach
+AC2 a place at exactly the distance dropped: unit killed by 1: src/core/geo.test.ts > nearby > keeps a place exactly at the distance
+AC2 no sort: unit killed by 1: src/core/geo.test.ts > nearby > sorts the places nearest first, with each distance
+AC2 distances floored, not rounded: unit killed by 2: src/core/lang.test.ts > formatDistance > rounds to 10 m · src/core/lang.test.ts > formatDistance > formats the number in the UI language
+AC2 distance not rounded on the row: page killed by e2e/list.spec.ts:198:3 › the list › shows the fixture around Deák Ferenc tér, and adds 100 rows with each Show more
+AC2 second name always English: page killed by e2e/list.spec.ts:142:5 › a row › on a Hungarian phone › is in Hungarian, and switching the language changes it
+AC3 Show more stays at exactly the end: page killed by e2e/list.spec.ts:217:3 › the list › has no Show more for 100 rows or fewer ────────────────────
+AC3 Show more adds 50: page killed by e2e/list.spec.ts:198:3 › the list › shows the fixture around Deák Ferenc tér, and adds 100 rows with each Show more
+AC4 one colour for every marker: page killed by e2e/list.spec.ts:414:3 › the markers › take the colour of their category, six in all ──────────
+AC4 markers only for the rows showing: page killed by e2e/list.spec.ts:383:3 › the markers › are one circle for each listed place, on a canvas, and none past 1,000 m
+AC4 markers on SVG, not canvas: page killed by e2e/list.spec.ts:383:3 › the markers › are one circle for each listed place, on a canvas, and none past 1,000 m
+AC4 the highlighted marker stays under its neighbours: SURVIVED page tests -g "tapping|on a walk": 16 passed
+AC4 the highlighted row looks like any other: SURVIVED page tests -g "tapping|on a walk": 16 passed
+AC4 row tap always pans: page killed by e2e/list.spec.ts:446:3 › tapping a row › highlights its marker and opens a popup with the name, and nothing moves
+AC4 row tap never pans: page killed by e2e/list.spec.ts:510:3 › tapping a row › pans the map to a marker off screen, and leaves the point
+AC4 Leaflet's own popup pan back on: page killed by e2e/list.spec.ts:494:3 › tapping a row › does not pan for a marker on screen, even when its popup would not fit
+AC4 the popup outlives its selection: page killed by e2e/list.spec.ts:684:3 › tapping a marker › a place the point moves away from loses its highlight and its popup, for good
+AC4 a marker tap reaches the map and moves the point: page killed by e2e/list.spec.ts:584:3 › tapping a marker › highlights its row, and the point stays with no popup
+AC4 a marker tap does not scroll: page killed by e2e/list.spec.ts:611:3 › tapping a marker › scrolls its row into view, and shows it first if it is past the rows showing
+AC4 a marker past the rows showing does not grow the list: page killed by e2e/list.spec.ts:611:3 › tapping a marker › scrolls its row into view, and shows it first if it is past the rows showing
+AC5 the location in a data URL: page killed by e2e/list.spec.ts:738:3 › with the location at 47.49791, 19.05439 › no request URL or body holds the location
+AC5 the location in a POST body: SURVIVED page tests -g "with the location at": 1 passed
+AC5 the location in a tile URL: SURVIVED page tests -g "with the location at": 1 passed
+
+The 6 that got past:
+- 4 are real gaps: two cell edges, and two highlights. QA wrote a test for each, below.
+- 2 are QA's own bad mutants, both AC5. They read the point in a closure made on the first render, when it was still null, so they never sent the location. Round 2 replaces them with mutants that do.
+
+===== round 2, on QA's tests commit 5a3c583: the 4 real gaps, and AC5 again
+AC1 a cell ends 110 m short in the north, so a point north of it can lose places: unit killed by 1: src/core/cells.test.ts > cellsWithin > holds the cell of every place within 1 km, from anywhere in the box
+AC1 a cell starts 75 m late in the west, so a point west of it can lose places: unit killed by 1: src/core/cells.test.ts > cellsWithin > holds the cell of every place within 1 km, from anywhere in the box
+AC4 the highlighted marker stays under its neighbours: page killed by e2e/list.spec.ts:481:3 › tapping a row › draws the highlighted marker over a neighbour that hid it
+AC4 the highlighted row looks like any other: page killed by e2e/list.spec.ts:612:3 › tapping a marker › makes its row look different from the others ──────
+AC5 the location in a data URL: page killed by e2e/list.spec.ts:763:3 › with the location at 47.49791, 19.05439 › no request URL or body holds the location
+AC5 the location in a POST body on a data file: page killed by e2e/list.spec.ts:763:3 › with the location at 47.49791, 19.05439 › no request URL or body holds the location
+AC5 the location in a tile URL: page killed by e2e/list.spec.ts:763:3 › with the location at 47.49791, 19.05439 › no request URL or body holds the location
+AC5 the location in a POST body to the tile server: page killed by e2e/list.spec.ts:763:3 › with the location at 47.49791, 19.05439 › no request URL or body holds the location
+
+src after the last one: clean

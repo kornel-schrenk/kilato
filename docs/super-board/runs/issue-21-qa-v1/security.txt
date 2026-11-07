@@ -1,0 +1,21 @@
+pr-security-review on PR #47, diff from origin/develop (7cc1db7) to 7057cb5, plus QA's 2 test lines at 7f23b70
+
+How it ran: inline, in this lane. The skill asks for a sub-task to find and one per finding to filter.
+This lane has no sub-task tool: a search for Agent and Task returned no match. There were no findings to filter.
+
+Read: all 14 changed files. The git status, name list, log and diff commands from the skill were run.
+Grep of the added lines in src/ and index.html for dangerouslySetInnerHTML, innerHTML, outerHTML, eval, new Function,
+document.write, localStorage, sessionStorage, fetch, XMLHttpRequest, sendBeacon, cookie, http:// and https://:
+  - the words "no cookies" in the panel text
+  - the constant repository URL in src/ui/Panel.tsx:6
+
+Checked by category:
+  Injection and XSS  withBold builds <strong> vnodes from the translation files, with no raw HTML.
+                     The footer shows formatDate output and a number, never a string from the manifest.
+  Links              one constant https URL, with target=_blank and rel=noopener.
+  Data exposure      no new request. The footer reads the manifest placeLoader already holds, and the point goes nowhere new.
+                     e2e/footer.spec.ts:203 shows opening both panels asks for nothing.
+  Auth, crypto, secrets  none of these in the diff.
+  Test files         read a repo file by a fixed path. Excluded by the skill's filter in any case.
+
+Result: 0 findings.

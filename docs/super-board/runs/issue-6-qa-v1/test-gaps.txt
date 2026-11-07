@@ -1,0 +1,39 @@
+Test-gap check. Tested head: a7ab0f3. Range: develop...a7ab0f3, merge base 91f3b2d. Written from this round's own runs.
+Component column: n/a for every AC. The repo has no component test harness, and the page tests drive src/ui/App.tsx.
+
+===== ledger
+AC1 unit src/core/lang.test.ts:5 first language and primary subtag, :18 Hungarian phone and any other · e2e e2e/language.spec.ts:18 hu-HU, de-AT, en-GB, :30 a list of two languages (QA)
+AC2 unit src/core/lang.test.ts:25 saved choice wins, :30 invalid saved value · e2e e2e/language.spec.ts:47 both directions, at once, survives a reload, :79 press back (QA), :94 name of the switch (QA), :73 opening saves nothing, :103 blocked localStorage
+AC3 unit src/i18n/i18n.test.ts:5 · e2e n/a: a rule about two files
+AC4 unit src/core/names.test.ts:7 hu, :11 en, :15 missing in the UI language, :20 no names at all · e2e n/a: no caller until #14
+AC5 unit src/core/lang.test.ts:37 number, :47 date · e2e n/a: no caller yet, as the ticket's Risk says
+
+===== edge cases
+boundaries: empty language list pinned, src/core/lang.test.ts:12 · one-part and three-part tags pinned, :5
+dates: gap, Low. Witness: TZ=Pacific/Auckland makes src/core/lang.test.ts:47 fail, "2026. nov. 3." for "2026. nov. 2.". UTC, Europe/Budapest, America/Los_Angeles, Pacific/Honolulu and Asia/Tokyo pass 7/7. The test's comment says "nearly every"
+input: saved "de" and "" pinned, src/core/lang.test.ts:30 · saved "<img src=x onerror=alert(1)>" probe only: Hungarian page, 0 errors, probe.txt · list ["HU-hu"] gap, Low: gives English. Browsers report the primary subtag in lower case, so no real phone sends it
+volume: list of 0 and 1 pinned · list of 2 pinned, e2e/language.spec.ts:30 (QA)
+auth, money: n/a, no such code
+error paths: read and write blocked pinned, e2e/language.spec.ts:103 · only setItem throwing, probe only: switch works, 0 errors, probe.txt
+idempotency and races: press on the language already shown, double press, probe only: 0 errors, probe.txt
+UI states: n/a, nothing loads yet
+accessibility: role and name pinned, e2e/language.spec.ts:8 buttons, :94 group · aria-pressed pinned, :47 · keyboard Enter and Space, focus stays on the button, probe only · 44 x 44 px buttons and 0 px sideways scroll at 375 and 320 wide, probe only
+
+===== test the tests
+Expected values are literals from the spec and the ticket, not recomputed with the code.
+31/31 mutants killed, mutants.txt.
+4 mutants survived the builder's tests, and QA wrote a test for each:
+- App reads the last language: e2e/language.spec.ts:30. Playwright's locale gives a list of one, so first and last were the same
+- App looks for hu anywhere in the list: e2e/language.spec.ts:30
+- A press back to the phone language is not saved: e2e/language.spec.ts:79
+- The switch's group name stays English: e2e/language.spec.ts:94
+Each new test was seen red on its mutant, then green on the restored code. All 11 tests in the spec fail on the base build 91f3b2d, verify.txt.
+
+===== rank
+High: none. Every AC has a test, and no auth, money, security or data-loss code changed.
+Medium: the 4 above, now written.
+Low, not written:
+- src/core/lang.test.ts:47 fails in a time zone at UTC+12 or more
+- ["HU-hu"] gives English
+- src/i18n/i18n.test.ts:5 compares top-level keys only. Both files are flat today
+- keyboard use, the 44 px size and the setItem-only failure are checked by the probe only

@@ -1,6 +1,6 @@
 # Spec: Kilátó MVP
 
-Intent: [Kilátó, a pocket lookout tower](../intent/2026-10-25-kilato-mvp.md) · Author: Claude, from the accepted intent · Status: draft
+Intent: [Kilátó, a pocket lookout tower](../intent/2026-10-25-kilato-mvp.md) · Author: Claude, from the accepted intent · Status: accepted
 
 This spec says how to build the accepted intent. It settles the stack, the data files, the rules the page follows and the tests, so each issue cut from it can be built without guessing. The product constraints stay in the intent, and this spec doesn't repeat them.
 
@@ -15,7 +15,7 @@ Kilátó has two halves, and they meet in static files.
 
 In these places the spec chooses between real options. Each one is easy to change in review and harder to change once the issues exist.
 
-1. **Data by area, not one file for the city.** The page loads the places in squares about 1.1 km wide, at most nine at a time. We skipped measuring the whole city. Planning counted about 500 places within 1 km of Újpest centre, and central Budapest has several times more. One city file would likely be 1–2 MB compressed on every first visit, while nine squares should be tens of KB. The cost is that GitHub Pages sees which squares you load, which the intent already allows.
+1. **Data by area, not one file for the city.** The page loads the places in squares about 1.1 km wide, at most nine at a time. On the extract of 2026-11-03, the nine squares around Deák Ferenc tér in the city centre hold 6,515 places and come to 287 KB compressed. One file with all 29,969 places would be about 1.3 MB at that rate, on every first visit. `search.json` is 681 KB compressed, and loads only when the search box first gets focus. The cost is that GitHub Pages sees which squares you load, which the intent already allows.
 2. **Opening hours are worked out in the build.** The phone gets ready-made open times for the next 14 days instead of a parser for the full `opening_hours` syntax. The cost: if the build stalls for two weeks, open status disappears, by which time the data age warning has been showing for four days.
 3. **One Wikipedia link per place:** the phone's language, then Hungarian, then English.
 4. **What is left out:** places without a name, memorial plaques and stolpersteine, and offices.
@@ -230,7 +230,9 @@ On load:
 
 1. If the location permission is already granted, the page starts following.
 2. Otherwise it shows a short intro with two buttons, Use my location and Explore the map, and a link to "What is sent where".
-3. Explore the map, a refused permission or a location error starts exploring at Deák Ferenc tér (47.4975, 19.0545) at zoom 15. A one-line note says the user can tap or drag the map, or search.
+3. Explore the map, a refused permission or a location error starts exploring at Deák Ferenc tér (47.4975, 19.0545). A one-line note says the user can tap or drag the map, or search.
+
+**Start zoom.** The map goes to zoom 14 on screens narrower than 900 px, and zoom 15 on wider ones, whenever following starts, including with My location, and whenever exploring starts at Deák Ferenc tér. In Budapest the 1 km circle has a radius of 310 px at zoom 15, which doesn't fit on a phone, and 155 px at zoom 14. Otherwise the map keeps the user's zoom, including when a walk moves the point.
 
 Intro text: "Kilátó shows what's interesting within 1 km of you. Your location stays on your phone." / "A Kilátó megmutatja, mi érdekes 1 km-en belül körülötted. A helyzeted a telefonodon marad."
 
@@ -368,6 +370,8 @@ A panel opened from the footer and from the intro. Its text:
 
 A panel opened from the footer. It says, in both languages, that Kilátó is open source under the MIT licence, with a link to the repository. Map and place data are © OpenStreetMap contributors under the Open Database License. Article titles and positions come from Wikipedia under CC BY-SA 4.0, and the map is drawn with Leaflet.
 
+Under the heading "Software used" / "Felhasznált szoftverek", About also carries the notice of every package in `dependencies`, which today means Leaflet and Preact. Each package is one entry, closed at first, that opens to the package's own `LICENSE` file word for word, in English in both languages. Both licences ask for their notice to go with copies of the software, and the built page has no other copy of it.
+
 ### Map tiles
 
 - Tiles come from `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, up to zoom 19.
@@ -438,7 +442,7 @@ These steps are for the product owner, not for issues.
 
 ## Build order
 
-The issues are cut from this list once this spec is accepted. Each one is one PR under 400 changed lines, and each one cites the sections it builds.
+The issues are cut from this list once this spec is accepted. Each one is one PR, and each one cites the sections it builds.
 
 | # | Issue | Builds | Blocked by |
 |---|---|---|---|
@@ -459,3 +463,4 @@ The issues are cut from this list once this spec is accepted. Each one is one PR
 | 15 | ✨ [feat] search: find Kilátó's places by name | [Search](#search) | 10 |
 | 16 | ✨ [feat] map: say Budapest only outside the box | [Outside Budapest](#outside-budapest) | 10 |
 | 17 | ✨ [feat] footer: data age, what is sent where, about | [Data age](#data-age), [What is sent where](#what-is-sent-where), [About](#about) | 10 |
+| 18 | ✨ [feat] about: carry Leaflet's and Preact's notices | [About](#about) | 17 |

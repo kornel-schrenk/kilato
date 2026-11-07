@@ -1,0 +1,277 @@
+// QA's own walk of #57: screenshots at the standard viewports, and probes the Builder's tests don't make.
+// Copied into e2e/ to run, and never committed there. Run: QA_OUT=<folder> npx playwright test e2e/qa-probe.spec.ts
+import { appendFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { expect, test } from './fixtures'
+
+const out = process.env.QA_OUT as string
+mkdirSync(out, { recursive: true })
+const log = (line: string) => appendFileSync(join(out, 'probe.txt'), `${line}\n`)
+
+const root = join(import.meta.dirname, '..')
+const licence = (name: string) => readFileSync(join(root, 'node_modules', name, 'LICENSE'), 'utf8')
+const viewports = {
+  desktop: { width: 1920, height: 1080 },
+  tablet: { width: 1024, height: 768 },
+  mobile: { width: 375, height: 667 },
+}
+const languages = [
+  { tag: 'en', locale: 'en-GB', about: 'About', close: 'Close', heading: 'Software used' },
+  { tag: 'hu', locale: 'hu-HU', about: 'Névjegy', close: 'Bezárás', heading: 'Felhasznált szoftverek' },
+]
+const shot = (page: Page, name: string) => page.screenshot({ path: join(out, `${name}.png`) })
+const footerButton = (page: Page, name: string) =>
+  page.getByRole('contentinfo').getByRole('button', { name, exact: true })
+
+async function openAbout(page: Page, about: string) {
+  await page.goto('/kilato/')
+  await footerButton(page, about).click()
+  const panel = page.getByRole('dialog', { name: about })
+  await expect(panel).toBeVisible()
+  return panel
+}
+const summary = (page: Page, name: string) => page.locator('dialog summary', { hasText: name })
+const pre = (page: Page, name: string) =>
+  page.locator('dialog details').filter({ has: page.locator('summary', { hasText: name }) }).locator('pre')
+
+for (const [viewName, viewport] of Object.entries(viewports)) {
+  for (const { tag, locale, about, close, heading } of languages) {
+    test.describe(`${viewName} ${tag}`, () => {
+      test.use({ viewport, locale })
+
+      test('screenshots: closed, one open, both open', async ({ page }) => {
+        const panel = await openAbout(page, about)
+        await expect(panel.getByRole('heading', { level: 3 })).toHaveText(heading)
+        await shot(page, `ac1-closed-${tag}-${viewName}`)
+
+        await summary(page, 'Leaflet').click()
+        await expect(pre(page, 'Leaflet')).toBeVisible()
+        await shot(page, `ac2-leaflet-open-${tag}-${viewName}`)
+        await summary(page, 'Leaflet').click()
+        await expect(pre(page, 'Leaflet')).toBeHidden()
+
+        await summary(page, 'Preact').click()
+        await expect(pre(page, 'Preact')).toBeVisible()
+        await shot(page, `ac2-preact-open-${tag}-${viewName}`)
+
+        await panel.getByRole('button', { name: close, exact: true }).click()
+        await expect(page.getByRole('dialog')).toHaveCount(0)
+      })
+    })
+  }
+}
+
+for (const { tag, locale, about, close } of languages) {
+  test.describe(`probes ${tag}`, () => {
+    test.use({ locale, viewport: { width: 375, height: 667 } })
+
+    test('the text on the page equals the file byte for byte, not just with white space collapsed', async ({ page }) => {
+      await openAbout(page, about)
+      for (const [title, file] of [['Leaflet', 'leaflet'], ['Preact', 'preact']]) {
+        await summary(page, title).click()
+        const text = await pre(page, title).evaluate((element) => element.textContent)
+        const expected = licence(file)
+        log(`${tag} ${file}: textContent ${text!.length} chars, file ${expected.length} chars, identical=${text === expected}`)
+        expect(text).toBe(expected)
+      }
+    })
+
+    test('a reopened About starts closed again, after Close and after Esc', async ({ page }) => {
+      const panel = await openAbout(page, about)
+      await summary(page, 'Leaflet').click()
+      await expect(pre(page, 'Leaflet')).toBeVisible()
+      await panel.getByRole('button', { name: close, exact: true }).click()
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+
+      await footerButton(page, about).click()
+      await expect(panel.locator('summary')).toHaveCount(2)
+      await expect(panel.locator('details[open]')).toHaveCount(0)
+      expect(await panel.evaluate((dialog) => dialog.scrollTop)).toBe(0)
+      await expect(panel.getByRole('button', { name: close, exact: true })).toBeInViewport({ ratio: 1 })
+
+      await summary(page, 'Preact').click()
+      await page.keyboard.press('Escape')
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+      await expect(footerButton(page, about)).toBeFocused()
+      await footerButton(page, about).click()
+      await expect(panel.locator('details[open]')).toHaveCount(0)
+      log(`${tag} reopen: closed again after Close and after Esc, Close in view, focus back on the footer button after Esc`)
+    })
+
+    test('the keyboard opens and shuts an entry, and the focus stays in the panel', async ({ page }) => {
+      const panel = await openAbout(page, about)
+      const visited: string[] = []
+      for (let i = 0; i < 8; i++) {
+        await page.keyboard.press('Tab')
+        visited.push(await page.evaluate(() => {
+          const element = document.activeElement
+          const inside = element?.closest('dialog') ? 'in' : 'OUT'
+          return `${inside}:${element?.tagName.toLowerCase()}:${(element?.textContent ?? '').slice(0, 12)}`
+        }))
+      }
+      log(`${tag} Tab order: ${visited.join(' | ')}`)
+      expect(visited.every((stop) => !stop.startsWith('OUT:') || stop.startsWith('OUT:body'))).toBe(true)
+
+      await summary(page, 'Leaflet').focus()
+      await page.keyboard.press('Enter')
+      await expect(pre(page, 'Leaflet')).toBeVisible()
+      await page.keyboard.press('Space')
+      await expect(pre(page, 'Leaflet')).toBeHidden()
+
+      // With an entry open, tabbing to Close brings it into view.
+      await summary(page, 'Leaflet').focus()
+      await page.keyboard.press('Enter')
+      await expect(pre(page, 'Leaflet')).toBeVisible()
+      await page.keyboard.press('Tab')
+      await page.keyboard.press('Tab')
+      const closeButton = panel.getByRole('button', { name: close, exact: true })
+      await expect(closeButton).toBeFocused()
+      await expect(closeButton).toBeInViewport({ ratio: 1 })
+      log(`${tag} keyboard: Enter opens, Space shuts, Tab to Close scrolls it into view`)
+    })
+
+    test('with both open, the panel scrolls by itself, Close can be reached, and the page behind stays put', async ({ page }) => {
+      const panel = await openAbout(page, about)
+      const before = await page.evaluate(() => window.scrollY)
+      await summary(page, 'Leaflet').click()
+      await summary(page, 'Preact').click()
+      await expect(pre(page, 'Preact')).toBeVisible()
+      const sizes = await panel.evaluate((dialog) => {
+        dialog.scrollTop = dialog.scrollHeight
+        return { scrollHeight: dialog.scrollHeight, clientHeight: dialog.clientHeight, scrollTop: dialog.scrollTop, overflowY: getComputedStyle(dialog).overflowY }
+      })
+      log(`${tag} both open: ${JSON.stringify(sizes)}`)
+      await expect(panel.getByRole('button', { name: close, exact: true })).toBeInViewport({ ratio: 1 })
+      await shot(page, `probe-both-open-scrolled-to-close-${tag}-mobile`)
+      expect(await page.evaluate(() => window.scrollY)).toBe(before)
+    })
+
+    test('What is sent where has no such section', async ({ page }) => {
+      await page.goto('/kilato/')
+      const name = tag === 'en' ? 'What is sent where' : 'Mi hová kerül'
+      await page.getByRole('contentinfo').getByRole('button', { name, exact: true }).click()
+      const panel = page.getByRole('dialog', { name })
+      await expect(panel).toBeVisible()
+      await expect(panel.locator('summary, details, pre, h3')).toHaveCount(0)
+      log(`${tag} What is sent where: no summary, details, pre or h3`)
+    })
+  })
+}
+
+test.describe('the carriage returns in Leaflet\'s file', () => {
+  for (const [viewName, viewport] of Object.entries(viewports)) {
+    test.describe(viewName, () => {
+      test.use({ viewport, locale: 'en-GB' })
+
+      test('draw nothing: the text has the same size and the same lines with them taken out', async ({ page }) => {
+        await openAbout(page, 'About')
+        await summary(page, 'Leaflet').click()
+        await expect(pre(page, 'Leaflet')).toBeVisible()
+        const measured = await pre(page, 'Leaflet').evaluate((element) => {
+          const measure = () => {
+            const range = document.createRange()
+            range.selectNodeContents(element)
+            const rects = [...range.getClientRects()]
+            return {
+              height: element.getBoundingClientRect().height,
+              right: Math.max(...rects.map((rect) => rect.right)),
+              rows: new Set(rects.map((rect) => Math.round(rect.top))).size,
+              overflow: element.scrollWidth - element.clientWidth,
+            }
+          }
+          const text = element.textContent as string
+          const withReturns = { carriageReturns: (text.match(/\r/g) ?? []).length, ...measure() }
+          element.textContent = text.replace(/\r/g, '')
+          const without = measure()
+          element.textContent = text
+          return { withReturns, without, innerTextLines: element.innerText.split('\n').length }
+        })
+        log(`CR ${viewName}: ${JSON.stringify(measured)}`)
+        expect(measured.withReturns.height).toBe(measured.without.height)
+        expect(measured.withReturns.rows).toBe(measured.without.rows)
+      })
+    })
+  }
+})
+
+test.describe('how much room is left', () => {
+  for (const { width, height } of [
+    { width: 375, height: 667 },
+    { width: 390, height: 844 },
+    { width: 360, height: 640 },
+    { width: 320, height: 568 },
+  ]) {
+    for (const { tag, locale, about, close } of languages) {
+      test.describe(`${width}x${height} ${tag}`, () => {
+        test.use({ viewport: { width, height }, locale })
+
+        test('Close, and no sideways scroll with both open', async ({ page }) => {
+          const panel = await openAbout(page, about)
+          const closeButton = panel.getByRole('button', { name: close, exact: true })
+          const room = await panel.evaluate((dialog) => ({
+            scrollHeight: dialog.scrollHeight,
+            clientHeight: dialog.clientHeight,
+            spare: dialog.clientHeight - dialog.scrollHeight,
+          }))
+          const closeBox = await closeButton.boundingBox()
+          const inView = await closeButton.evaluate((element) => {
+            const rect = element.getBoundingClientRect()
+            const dialog = element.closest('dialog')!.getBoundingClientRect()
+            return rect.bottom <= Math.min(dialog.bottom, window.innerHeight) && rect.top >= dialog.top
+          })
+          await summary(page, 'Leaflet').click()
+          await summary(page, 'Preact').click()
+          await expect(pre(page, 'Preact')).toBeVisible()
+          const sideways = await panel.evaluate((dialog) => dialog.scrollWidth - dialog.clientWidth)
+          log(`fit ${width}x${height} ${tag}: closed scrollHeight=${room.scrollHeight} clientHeight=${room.clientHeight} Close bottom=${Math.round(closeBox!.y + closeBox!.height)} Close in view=${inView} sideways with both open=${sideways}`)
+          expect(sideways).toBe(0)
+        })
+      })
+    }
+  }
+})
+
+test.describe('requests', () => {
+  test.use({ locale: 'en-GB' })
+  test('none on opening or shutting an entry, measured once the network has settled', async ({ page }) => {
+    await page.goto('/kilato/')
+    await page.waitForLoadState('networkidle')
+    await footerButton(page, 'About').click()
+    const panel = page.getByRole('dialog', { name: 'About' })
+    await expect(panel).toBeVisible()
+    const requests: string[] = []
+    page.on('request', (request) => requests.push(request.url()))
+    for (const name of ['Leaflet', 'Preact', 'Leaflet', 'Preact']) await summary(page, name).click()
+    await expect(pre(page, 'Leaflet')).toBeHidden()
+    log(`requests on toggling entries 4 times: ${requests.length}`)
+    expect(requests).toEqual([])
+  })
+})
+
+test('both notices are in the built JS', async () => {
+  const assets = join(root, 'dist/assets')
+  const js = readdirSync(assets).filter((name) => name.endsWith('.js'))
+  const all = js.map((name) => readFileSync(join(assets, name), 'utf8')).join('')
+  const hits = (word: string) => all.split(word).length - 1
+  log(`built JS: ${js.join(', ')} · ${all.length} chars · Agafonkin=${hits('Agafonkin')} · Jason Miller=${hits('Jason Miller')}`)
+  expect(hits('Agafonkin')).toBeGreaterThan(0)
+  expect(hits('Jason Miller')).toBeGreaterThan(0)
+})
+
+test.describe('after the language switch', () => {
+  test.use({ locale: 'en-GB', viewport: { width: 375, height: 667 } })
+
+  test('About has the Hungarian heading and the licence stays in English, on a page marked Hungarian', async ({ page }) => {
+    await page.goto('/kilato/')
+    await page.getByRole('button', { name: 'HU', exact: true }).click()
+    await footerButton(page, 'Névjegy').click()
+    const panel = page.getByRole('dialog', { name: 'Névjegy' })
+    await expect(panel.getByRole('heading', { level: 3 })).toHaveText('Felhasznált szoftverek')
+    await summary(page, 'Preact').click()
+    await expect(pre(page, 'Preact')).toHaveText(licence('preact'))
+    await expect(pre(page, 'Preact')).toHaveAttribute('lang', 'en')
+    await expect(page.locator('html')).toHaveAttribute('lang', 'hu')
+    log('language switch: EN phone switched to HU shows the Hungarian heading, the English licence with lang=en, on html lang=hu')
+  })
+})

@@ -1,0 +1,64 @@
+Test-gap check for #21, round 2, on the diff from develop c6b3c6b to b5a2e17, with QA's 2 test changes
+
+Ledger: every AC, by rung
+This repo tests components through the page, so the component rung is n/a for all four.
+
+AC1 the date and the age, from the older source
+  unit  src/core/dataAge.test.ts:8 older source, either way round · :22 whole days · :35 a clock behind the data
+  e2e   e2e/footer.spec.ts:32 at 0, 1, 3 and 10 days · :52 either source older · :65 Hungarian · :78 the language switch · :87 no manifest
+AC2 over 10 days, a warning with its words
+  unit  src/core/dataAge.test.ts:28 at exactly 10 days, 10 days + 1 ms, and later
+  e2e   e2e/footer.spec.ts:39 English · :45 at 10.5 days, new in this round · :71 Hungarian · :32 no warning at exactly 10 days
+AC3 What is sent where, from the footer and the intro, word for word
+  unit  n/a: text on the page
+  e2e   e2e/footer.spec.ts:138 footer · :146 intro, each in en-GB and hu-HU, read from the spec file · :120 the spec parse holds · :198 after the switch
+  QA    probe: all 5 lines in each language, from both openers, equal the spec's lines with the bold in place
+AC4 About, in both languages
+  unit  n/a: text on the page
+  e2e   e2e/footer.spec.ts:251 the facts · :261 the repository link
+
+Edge cases, on each changed input or branch
+  boundaries   pinned: 10 days, 10 days + 1 ms in the unit test, 10.5 days on the page, 0, the singular at 1
+  dates        pinned: the older source. Gap, Low: the phone's time zone sets the shown date (L2)
+  input        gap, Medium: an unreadable or missing date (M1, the Reviewer's R1)
+  volume       n/a: one line. The footer under a full list holds in the probe at all three viewports
+  auth         n/a: no accounts
+  error paths  pinned: a failed manifest, e2e/footer.spec.ts:87, and the retry, src/data/places.test.ts:67
+  races        pinned: reopening after Esc, :173. A modal dialog blocks a second opener, and the probe's 5 Tabs stay inside
+  UI states    pinned: no line until the manifest arrives, src/data/places.test.ts:53 and :87 above
+  a11y         pinned: role and name on every panel and link, the focus back to the footer link, :154. Intro link: probe only
+
+What the merge of develop added to check
+  search       probe only: the line holds through a search and a pick, and a panel opens after it, at 375 and 1920 px
+  outside      probe only: outside Budapest the line stays under the message, and both panels open
+  test stubs   e2e/list.spec.ts:39 and e2e/search.spec.ts:27 send the fixture's dates. No other test serves a manifest without them:
+               e2e/footer.spec.ts:54 spreads siteManifest, and :88 aborts the request on purpose
+
+Test the tests
+  40 mutants, mutants.txt, each rebuilt and run against e2e/footer.spec.ts on this round's code: 39 red, 1 equivalent.
+  The expected values come from literals and the spec file, not from the code under test.
+
+The Reviewer's two findings for QA
+  R2 closed: e2e/footer.spec.ts:45, at 10.5 days. Either half of the mutant goes red, the look and the words.
+  R3 closed: e2e/footer.spec.ts:314 and :315 measure the About link against the footer's bottom edge.
+     At 1280 x 720 the gap is 8 px on today's code, the footer's padding, and 102 px with the rows as auto auto auto.
+
+High gaps: none. Every AC has a test at the rung that shows it. Nothing here needs app code changed to pass.
+
+Medium, not written, does not block
+  M1 A manifest with an unreadable or missing date throws on every render. It is the Reviewer's R1, and the choice stays Kornel's.
+     Witness: osmDataAt "not a date", or { cells } with no dates. probe.txt has what it stops on this head.
+     Path: src/core/dataAge.ts:11 gives an invalid date, and formatDate at src/core/lang.ts:27 throws "Invalid time value".
+     Reach: only our build writes the manifest, and it can't write a bad date: scripts/data/build.ts:51 and :71.
+
+Low, not written, does not block
+  L2 The date is the phone's local date: a build at 03:17 UTC on 2 Nov shows "1 Nov 2026" in New York. The spec doesn't say.
+  L3 A page left open doesn't change its age until its next render. The Builder says so at src/ui/Footer.tsx:15.
+  L4 The focus going back to the intro link, and both panels at 320 x 568, where they scroll to Close: probe only.
+  L5 The Reviewer's two survivors that no AC asks for: the age line going when a cell fails, and the links' 44 px.
+
+L1 from round 1, the 10.5 days line, is closed by R2's test.
+
+Not explained
+  A throwaway spec of QA's, measuring the wide layout for R3, failed once on its first run, and the output wasn't kept.
+  The same spec then passed 3 runs of 3. It isn't committed. Nothing committed failed in verify, the probe or the footer spec.

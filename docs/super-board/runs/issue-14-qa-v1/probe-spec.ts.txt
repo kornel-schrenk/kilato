@@ -1,0 +1,508 @@
+// QA's probes on the #14 PR: own helpers and an own oracle, kept apart from e2e/list.spec.ts. Not part of the suite.
+import { readFileSync, appendFileSync } from 'node:fs'
+import type { Page } from '@playwright/test'
+import { cellKey } from '../src/core/cells'
+import { expect, test } from './fixtures'
+
+const out = process.env.QA_OUT!
+const log = (line: string) => appendFileSync(`${out}/probe.txt`, line + '\n')
+const oracle = JSON.parse(readFileSync(`${process.env.QA_T}/oracle.json`, 'utf8')) as {
+  id: string; name: string; names: { hu?: string; en?: string }; cat: string; kind: string; lat: number; lon: number; metres: number; rounded: number
+}[]
+const deak = { lat: 47.4975, lon: 19.0545 }
+const R = 6371000
+const rad = (d: number) => (d * Math.PI) / 180
+const hav = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
+  const h = Math.sin(rad(b.lat - a.lat) / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(rad(b.lon - a.lon) / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(h))
+}
+const worldToScreen = (z: number, lat: number, lon: number) => {
+  const size = 256 * 2 ** z
+  const s = Math.sin(rad(lat))
+  return { x: ((lon + 180) / 360) * size, y: (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * size }
+}
+/** Own reading of the view: a loaded tile of the current zoom gives zoom and origin. */
+const screenOf = async (page: Page, p: { lat: number; lon: number }) => {
+  const t = await page.evaluate(() => {
+    const img = [...document.querySelectorAll<HTMLImageElement>('img.leaflet-tile-loaded')].find((i) => i.getBoundingClientRect().width === 256)!
+    const [z, x, y] = new URL(img.src).pathname.slice(1).replace('.png', '').split('/').map(Number)
+    const r = img.getBoundingClientRect()
+    return { z, x, y, left: r.left, top: r.top }
+  })
+  const w = worldToScreen(t.z, p.lat, p.lon)
+  return { x: w.x - t.x * 256 + t.left, y: w.y - t.y * 256 + t.top, z: t.z }
+}
+const pixelAt = (page: Page, x: number, y: number) =>
+  page.evaluate(([x, y]) => {
+    const c = document.querySelector<HTMLCanvasElement>('.leaflet-places-pane canvas')
+    if (!c) return 'no-canvas'
+    const a = c.getBoundingClientRect()
+    const s = c.width / a.width
+    const [r, g, b, al] = c.getContext('2d')!.getImageData((x - a.x) * s, (y - a.y) * s, 1, 1).data
+    return al === 0 ? null : `#${[r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('')}`
+  }, [x, y])
+
+async function stubTiles(page: Page) {
+  await page.route('https://tile.openstreetmap.org/**', (route) => {
+    const label = new URL(route.request().url()).pathname.slice(1).replace('.png', '')
+    route.fulfill({
+      contentType: 'image/svg+xml',
+      body: `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#eef0ea"/><path d="M0 40H256M40 0V256" stroke="#dcdfd6" stroke-width="3"/><text x="128" y="128" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#8a8d85">stub tile ${label}</text></svg>`,
+    })
+  })
+}
+const shot = (page: Page, name: string, fullPage = false) => page.screenshot({ path: `${out}/${name}.png`, fullPage })
+
+const viewports = [
+  ['desktop', 1920, 1080],
+  ['tablet', 1024, 768],
+  ['mobile', 375, 667],
+] as const
+
+async function explore(page: Page, label = 'Explore the map') {
+  await page.goto('/kilato/')
+  await page.getByRole('button', { name: label, exact: true }).click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expect(page.locator('.place').first()).toBeVisible()
+  await expect(page.locator('.place')).toHaveCount(100)
+  await page.waitForTimeout(500)
+}
+
+test.describe('oracle', () => {
+  for (const [lang, label, more] of [
+    ['en', 'Explore the map', 'Show more'],
+    ['hu', 'A térkép felfedezése', 'Továbbiak megjelenítése'],
+  ] as const) {
+    test.describe(lang, () => {
+      test.use({ locale: lang === 'hu' ? 'hu-HU' : 'en-GB' })
+      test(`every row matches QA's own haversine, in ${lang}`, async ({ page }) => {
+        await explore(page, label)
+        for (let i = 0; i < 3; i++) await page.getByRole('button', { name: more, exact: true }).click()
+        await expect(page.locator('.place')).toHaveCount(oracle.length)
+        const rows = await page.locator('.place').evaluateAll((els) =>
+          els.map((el) => ({
+            name: el.querySelector('.place-name')!.textContent,
+            other: el.querySelector('.place-other')?.textContent ?? null,
+            meta: el.querySelector('.place-meta')!.textContent!,
+          })),
+        )
+        let bad = 0
+        rows.forEach((row, i) => {
+          const o = oracle[i]
+          const metres = row.meta.split(' · ').pop()!
+          const want = `${lang === 'en' ? o.rounded.toLocaleString('en-GB') : String(o.rounded)} m`
+          const wantOther = o.names[lang] ?? null
+          if (row.name !== o.name || metres !== want || row.other !== wantOther) {
+            bad++
+            log(`MISMATCH ${lang} row ${i}: ${JSON.stringify(row)} vs ${JSON.stringify({ name: o.name, want, wantOther })}`)
+          }
+        })
+        log(`oracle ${lang}: ${rows.length} rows compared with QA's haversine (name, second name, rounded distance, order): ${bad} differ`)
+        expect(bad).toBe(0)
+        await expect(page.locator('.show-more')).toHaveCount(0)
+      })
+    })
+  }
+})
+
+test.describe('shots', () => {
+  for (const [name, width, height] of viewports) {
+    test.describe(name, () => {
+      test.use({ viewport: { width, height } })
+
+      test(`AC1-4 at ${name}`, async ({ page }) => {
+        await stubTiles(page)
+        await explore(page)
+        await shot(page, `ac2-list-${name}`)
+        // AC4: a row tap
+        await page.locator('.place').nth(4).click()
+        await expect(page.locator('.leaflet-popup-content')).toBeVisible()
+        await page.waitForTimeout(400)
+        await page.evaluate(() => window.scrollTo(0, 0))
+        await page.waitForTimeout(200)
+        await shot(page, `ac4-row-tap-${name}`)
+        // AC4: a marker tap on a marker whose row sits below the fold
+        // The first place past row 60 whose marker is on the map, clear of the popup and the zoom buttons.
+        const map = (await page.locator('.leaflet-container').boundingBox())!
+        let far = oracle[0]
+        let at = await screenOf(page, far)
+        for (let i = 60; i < 100; i++) {
+          const s = await screenOf(page, oracle[i])
+          const inside = s.x > map.x + 60 && s.x < map.x + map.width - 20 && s.y > map.y + 170 && s.y < map.y + map.height - 30
+          const lonely = oracle.every((o, j) => j === i || hav(o, oracle[i]) > 35)
+          if (inside && lonely) { far = oracle[i]; at = s; break }
+        }
+        await page.mouse.click(at.x, at.y)
+        await expect(page.locator('[aria-current]')).toBeInViewport()
+        await page.waitForTimeout(300)
+        await shot(page, `ac4-marker-tap-${name}`)
+        log(`${name}: marker tap on "${far.name}", highlighted row: "${await page.locator('[aria-current] .place-name').textContent()}"`)
+        expect(await page.locator('[aria-current] .place-name').count()).toBe(1)
+      })
+
+      test(`AC1 failure at ${name}`, async ({ page }) => {
+        await stubTiles(page)
+        await page.route('**/kilato/data/manifest.json', (route) => route.abort())
+        await page.goto('/kilato/')
+        await page.getByRole('button', { name: 'Explore the map', exact: true }).click()
+        await expect(page.getByText("Couldn't load places")).toBeVisible()
+        await shot(page, `ac1-failure-${name}`)
+      })
+
+      test(`AC3 at ${name}`, async ({ page }) => {
+        await stubTiles(page)
+        await explore(page)
+        await page.getByRole('button', { name: 'Show more', exact: true }).scrollIntoViewIfNeeded()
+        await page.waitForTimeout(200)
+        await shot(page, `ac3-show-more-before-${name}`)
+        await page.getByRole('button', { name: 'Show more', exact: true }).click()
+        await expect(page.locator('.place')).toHaveCount(200)
+        await page.getByRole('button', { name: 'Show more', exact: true }).scrollIntoViewIfNeeded()
+        await page.waitForTimeout(200)
+        await shot(page, `ac3-show-more-after-${name}`)
+      })
+    })
+  }
+
+  test.describe('hu', () => {
+    test.use({ viewport: { width: 375, height: 667 }, locale: 'hu-HU' })
+    test('Hungarian list and failure', async ({ page }) => {
+      await stubTiles(page)
+      await page.route('**/kilato/data/cells/4749_1270.json', (route) => route.abort())
+      await page.goto('/kilato/')
+      await page.getByRole('button', { name: 'A térkép felfedezése', exact: true }).click()
+      await expect(page.getByText('Nem sikerült betölteni a helyeket')).toBeVisible()
+      await page.waitForTimeout(500)
+      await shot(page, 'ac1-failure-cell-hu-mobile')
+      await page.unroute('**/kilato/data/cells/4749_1270.json')
+      await page.getByRole('button', { name: 'Újrapróbálás', exact: true }).click()
+      await expect(page.getByText('Nem sikerült betölteni a helyeket')).toHaveCount(0)
+      await expect(page.locator('.place').first()).toContainText('Deák Ferenc tér metróállomás')
+      await page.waitForTimeout(300)
+      await shot(page, 'ac2-list-hu-mobile')
+    })
+  })
+
+  test.describe('colours', () => {
+    test.use({ viewport: { width: 1024, height: 768 } })
+    test('six categories side by side', async ({ page }) => {
+      await stubTiles(page)
+      const cats = ['sights', 'notable', 'food', 'leisure', 'services', 'shops']
+      const places = cats.map((cat, i) => ({
+        id: cat, cat, kind: cat === 'notable' ? 'article' : 'cafe', name: `${cat} sample`,
+        lat: deak.lat + 0.0012, lon: deak.lon - 0.0025 * 2.5 + 0.0025 * i,
+      }))
+      const cells = new Map<string, unknown[]>()
+      for (const p of places) cells.set(cellKey(p.lat, p.lon), [...(cells.get(cellKey(p.lat, p.lon)) ?? []), p])
+      await page.route('**/kilato/data/manifest.json', (r) => r.fulfill({ json: { cells: [...cells.keys()] } }))
+      await page.route('**/kilato/data/cells/*.json', (r) =>
+        r.fulfill({ json: { places: cells.get(new URL(r.request().url()).pathname.split('/').pop()!.replace('.json', '')) ?? [] } }),
+      )
+      await page.goto('/kilato/')
+      await page.getByRole('button', { name: 'Explore the map', exact: true }).click()
+      await expect(page.locator('.place')).toHaveCount(6)
+      await page.waitForTimeout(500)
+      const seen: Record<string, string | null> = {}
+      for (const p of places) {
+        const s = await screenOf(page, p)
+        seen[p.cat] = await pixelAt(page, s.x, s.y)
+      }
+      log(`colours at each marker's centre: ${JSON.stringify(seen)}`)
+      expect(new Set(Object.values(seen)).size).toBe(6)
+      await shot(page, 'ac4-six-colours-tablet')
+    })
+  })
+})
+
+test.describe('edges', () => {
+  test.use({ viewport: { width: 1280, height: 720 } })
+
+  test('a marker tap with an open popup closes the popup, keeps the point; zoom keeps markers and highlight', async ({ page }) => {
+    await explore(page)
+    await page.locator('.place').nth(2).click()
+    await expect(page.locator('.leaflet-popup-content')).toBeVisible()
+    const o = oracle[2]
+    const anchor = await screenOf(page, o)
+    const near = oracle.slice(30).find((c) => { const dy = hav({ lat: o.lat, lon: c.lon }, c); const dx = hav({ lat: c.lat, lon: o.lon }, c); return c.lat < o.lat && dy > 150 && dy < 400 && dx < 300 && oracle.every((x) => x === c || hav(x, c) > 30) })!
+    expect(anchor.y).toBeGreaterThan(0)
+    const s = await screenOf(page, near)
+    const hit = await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y)!; return `${e.tagName}.${e.getAttribute('class')}` }, [s.x, s.y])
+    log(`element under the tap on oracle[50] ${near.name}: ${hit}`)
+    await page.mouse.click(s.x, s.y)
+    await expect(page.locator('[aria-current] .place-name')).toHaveText(near.name)
+    await expect(page.locator('.leaflet-popup-content')).toHaveCount(0)
+    await page.locator('.leaflet-control-zoom-in').click()
+    await page.waitForTimeout(800)
+    const after = await screenOf(page, near)
+    log(`zoom ${after.z}: pixel at the highlighted marker's ring ${await pixelAt(page, after.x, after.y - 8)}, at another marker ${JSON.stringify(await (async () => { const n = await screenOf(page, o); return pixelAt(page, n.x, n.y) })())}`)
+    expect(await pixelAt(page, after.x, after.y - 8)).toBe('#000000')
+  })
+
+  test('a highlighted marker sits on top of a neighbour drawn later', async ({ page }) => {
+    const a = { id: 'a', cat: 'food', kind: 'cafe', name: 'Nearer', lat: deak.lat + 0.001, lon: deak.lon }
+    const b = { id: 'b', cat: 'shops', kind: 'books', name: 'Farther', lat: deak.lat + 0.00103, lon: deak.lon }
+    await page.route('**/kilato/data/manifest.json', (r) => r.fulfill({ json: { cells: [cellKey(a.lat, a.lon)] } }))
+    await page.route('**/kilato/data/cells/*.json', (r) => r.fulfill({ json: { places: [a, b] } }))
+    await page.goto('/kilato/')
+    await page.getByRole('button', { name: 'Explore the map', exact: true }).click()
+    await expect(page.locator('.place')).toHaveCount(2)
+    await page.waitForTimeout(400)
+    const s = await screenOf(page, a)
+    log(`overlap before tap: centre of nearer ${await pixelAt(page, s.x, s.y)}`)
+    await page.locator('.place').first().click()
+    await page.waitForTimeout(300)
+    const c = await pixelAt(page, s.x, s.y)
+    log(`overlap after row tap on nearer: its centre ${c} (food is #e69f00)`)
+    expect(c).toBe('#e69f00')
+  })
+
+  test('a cell that fails on a later move shows the message and Retry brings it', async ({ page }) => {
+    const here = { id: 'h', cat: 'food', kind: 'cafe', name: 'Here', lat: deak.lat + 0.001, lon: deak.lon }
+    const east = { id: 'e', cat: 'food', kind: 'cafe', name: 'East', lat: deak.lat, lon: 19.0805 }
+    const cells = { [cellKey(here.lat, here.lon)]: [here], [cellKey(east.lat, east.lon)]: [east] }
+    await page.route('**/kilato/data/manifest.json', (r) => r.fulfill({ json: { cells: Object.keys(cells) } }))
+    let broken = true
+    await page.route('**/kilato/data/cells/*.json', (r) => {
+      const key = new URL(r.request().url()).pathname.split('/').pop()!.replace('.json', '')
+      if (broken && key === cellKey(east.lat, east.lon)) return r.fulfill({ status: 503 })
+      return r.fulfill({ json: { places: cells[key] } })
+    })
+    await page.goto('/kilato/')
+    await page.getByRole('button', { name: 'Explore the map', exact: true }).click()
+    await expect(page.locator('.place')).toHaveCount(1)
+    const box = (await page.locator('.leaflet-container').boundingBox())!
+    await page.mouse.click(box.x + box.width / 2 + 300, box.y + box.height / 2)
+    await expect(page.getByText("Couldn't load places")).toBeVisible()
+    broken = false
+    await page.getByRole('button', { name: 'Retry', exact: true }).click()
+    await expect(page.getByText("Couldn't load places")).toHaveCount(0)
+    await expect(page.locator('.place')).toHaveCount(2)
+    log('a 503 on a cell after a move: message shows, Retry brings the cell and clears it')
+  })
+
+  test('a row works from the keyboard', async ({ page }) => {
+    await explore(page)
+    await page.locator('.place').first().focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('.leaflet-popup-content')).toBeVisible()
+    await expect(page.locator('.place').first()).toHaveAttribute('aria-current', 'true')
+    log('Enter on a focused row: popup opens, the row is highlighted')
+  })
+
+  test('the highlighted row looks different', async ({ page }) => {
+    await explore(page)
+    await page.locator('.place').first().click()
+    const colours = await page.locator('.place').evaluateAll((els) => els.slice(0, 2).map((el) => getComputedStyle(el).backgroundColor))
+    log(`row backgrounds, highlighted then plain: ${JSON.stringify(colours)}`)
+    expect(colours[0]).not.toBe(colours[1])
+  })
+
+  test.describe('phone', () => {
+    test.use({ viewport: { width: 375, height: 667 }, hasTouch: true })
+    test('a long name in the popup keeps the page narrow, and a tap far down the list', async ({ page }) => {
+      await stubTiles(page)
+      const long = { id: 'l', cat: 'food', kind: 'cafe', name: 'Hosszú'.repeat(40), lat: deak.lat + 0.001, lon: deak.lon }
+      await page.route('**/kilato/data/manifest.json', (r) => r.fulfill({ json: { cells: [cellKey(long.lat, long.lon)] } }))
+      await page.route('**/kilato/data/cells/*.json', (r) => r.fulfill({ json: { places: [long] } }))
+      await page.goto('/kilato/')
+      await page.getByRole('button', { name: 'Explore the map', exact: true }).tap()
+      await expect(page.locator('.place')).toHaveCount(1)
+      await page.locator('.place').tap()
+      await expect(page.locator('.leaflet-popup-content')).toBeVisible()
+      const width = await page.evaluate(() => document.documentElement.scrollWidth)
+      const popup = (await page.locator('.leaflet-popup').boundingBox())!
+      log(`long name, 375 wide: page scrollWidth ${width}, popup ${Math.round(popup.width)} x ${Math.round(popup.height)} at x ${Math.round(popup.x)}, y ${Math.round(popup.y)}`)
+      await page.waitForTimeout(400)
+      const content = await page.locator('.leaflet-popup-content').evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }))
+      log(`long name in the popup: content scrollWidth ${content.scrollWidth}, clientWidth ${content.clientWidth}`)
+      await shot(page, 'low-long-name-popup-mobile')
+      expect(width).toBe(375)
+    })
+
+    test('a row tapped far down the list on a phone: what the visitor sees', async ({ page }) => {
+      await stubTiles(page)
+      await explore(page)
+      const row = page.locator('.place').nth(40)
+      await row.scrollIntoViewIfNeeded()
+      await row.tap()
+      await expect(page.locator('.leaflet-popup-content')).toBeAttached()
+      await page.waitForTimeout(300)
+      const map = (await page.locator('.leaflet-container').boundingBox())!
+      log(`phone, row 41 tapped: the map's bottom edge is at y ${Math.round(map.y + map.height)} of 667, so ${map.y + map.height <= 0 ? 'the map and its popup are off screen' : 'the map still shows'}. The row is highlighted: ${await row.getAttribute('aria-current')}`)
+      await shot(page, 'ac4-row-tap-far-down-mobile')
+      await expect(row).toHaveAttribute('aria-current', 'true')
+    })
+  })
+})
+
+test.describe('privacy', () => {
+  test.use({
+    geolocation: { latitude: 47.49791, longitude: 19.05439, accuracy: 10 },
+    permissions: ['geolocation'],
+    viewport: { width: 375, height: 667 },
+  })
+
+  test('own capture: URLs, bodies, headers and storage over a whole visit', async ({ page, context }) => {
+    const seen: { url: string; body: string; headers: string }[] = []
+    context.on('request', async (r) => {
+      seen.push({ url: r.url(), body: r.postData() ?? '', headers: JSON.stringify(r.headers()) })
+    })
+    await page.goto('/kilato/')
+    await expect(page.locator('.location-dot')).toBeVisible()
+    await expect(page.locator('.place')).toHaveCount(100)
+    await page.locator('.place').nth(1).click()
+    await page.getByRole('button', { name: 'Show more', exact: true }).click()
+    await expect(page.locator('.place')).toHaveCount(200)
+    // a walk, a drag, a tap, then back
+    await context.setGeolocation({ latitude: 47.5005, longitude: 19.0577, accuracy: 10 })
+    await page.waitForTimeout(600)
+    const box = (await page.locator('.leaflet-container').boundingBox())!
+    await page.mouse.move(box.x + 180, box.y + 150)
+    await page.mouse.down()
+    await page.mouse.move(box.x + 120, box.y + 90, { steps: 10 })
+    await page.mouse.up()
+    await page.waitForTimeout(800)
+    await page.mouse.click(box.x + 60, box.y + 60)
+    await page.waitForTimeout(500)
+    const needles = ['47.497', '19.054', '47.49', '19.05', '47.50', '4749791', '1905439']
+    const hits = seen.filter((s) => needles.some((n) => s.url.includes(n) || s.body.includes(n) || s.headers.includes(n)))
+    const hosts = [...new Set(seen.map((s) => new URL(s.url).host.replace(/^127\.0\.0\.1:\d+$/, 'preview')))]
+    const storage = await page.evaluate(() => ({ local: JSON.stringify(localStorage), session: JSON.stringify(sessionStorage), cookie: document.cookie }))
+    log(`privacy: ${seen.length} requests to ${hosts.join(', ')}; ${seen.filter((s) => s.body).length} with a body; ${hits.length} holding any of ${needles.join(' ')} in URL, body or headers; storage ${JSON.stringify(storage)}`)
+    for (const h of hits) log(`  HIT ${h.url}`)
+    log(`cell requests: ${seen.filter((s) => s.url.includes('/cells/')).map((s) => new URL(s.url).pathname.split('/').pop()).join(' ')}`)
+    expect(hits).toEqual([])
+  })
+})
+
+test.describe('volume', () => {
+  test.use({ viewport: { width: 375, height: 667 } })
+  for (const count of [2000, 4000]) {
+    test(`${count} places within 1 km`, async ({ page }) => {
+      test.setTimeout(120000)
+      let seed = 7
+      const rand = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296)
+      const cells = new Map<string, unknown[]>()
+      const placesList: { id: string; lat: number; lon: number }[] = []
+      const cats = ['sights', 'notable', 'food', 'leisure', 'services', 'shops']
+      for (let i = 0; i < count; i++) {
+        const b = rand() * 2 * Math.PI, d = Math.sqrt(rand()) * 990
+        const p = { id: `n${i}`, cat: cats[i % 6], kind: 'cafe', name: `Place ${i}`, lat: deak.lat + (d * Math.cos(b)) / 111195, lon: deak.lon + (d * Math.sin(b)) / 75130 }
+        placesList.push(p)
+        const k = cellKey(p.lat, p.lon)
+        cells.set(k, [...(cells.get(k) ?? []), p])
+      }
+      await page.route('**/kilato/data/manifest.json', (r) => r.fulfill({ json: { cells: [...cells.keys()] } }))
+      await page.route('**/kilato/data/cells/*.json', (r) =>
+        r.fulfill({ json: { places: cells.get(new URL(r.request().url()).pathname.split('/').pop()!.replace('.json', '')) ?? [] } }),
+      )
+      await page.goto('/kilato/')
+      const t0 = Date.now()
+      await page.getByRole('button', { name: 'Explore the map', exact: true }).click()
+      await expect(page.locator('.place')).toHaveCount(100)
+      await expect.poll(() => page.locator('.show-more').count()).toBe(1)
+      const firstRows = Date.now() - t0
+      await page.waitForTimeout(500)
+      // a tap beside markers moves the point: time to the new list
+      const t1 = Date.now()
+      await page.locator('.place').first().click()
+      await expect(page.locator('.leaflet-popup-content')).toBeVisible()
+      const rowTap = Date.now() - t1
+      // long tasks during a walk-like move: measured in the page
+      const move = await page.evaluate(async () => {
+        const c = document.querySelector('.leaflet-container')!
+        const r = c.getBoundingClientRect()
+        const t = performance.now()
+        const opts = { bubbles: true, clientX: r.x + 40, clientY: r.y + 40, button: 0 }
+        return { started: t, x: opts.clientX, y: opts.clientY }
+      })
+      const t2 = Date.now()
+      await page.mouse.click(move.x, move.y)
+      await page.waitForFunction(() => document.querySelector('.place') !== null)
+      await page.waitForTimeout(0)
+      const moved = Date.now() - t2
+      log(`volume ${count}: Explore to first rows ${firstRows} ms, row tap to popup ${rowTap} ms, tap on the map back to a list ${moved} ms (Pi, 4 cores, other lanes may be running)`)
+      await expect(page.locator('.place').first()).toBeVisible()
+    })
+  }
+})
+
+test.describe('more edges', () => {
+  test.use({ viewport: { width: 1280, height: 720 } })
+
+  test('a double click on a marker selects it and does not zoom; beside a marker it zooms', async ({ page }) => {
+    await explore(page)
+    const lonely = oracle.find((c) => oracle.every((x) => x === c || hav(x, c) > 40) && hav(c, deak) < 500)!
+    const s = await screenOf(page, lonely)
+    await page.mouse.dblclick(s.x, s.y)
+    await page.waitForTimeout(700)
+    const after = await screenOf(page, deak)
+    log(`double click on a marker: zoom ${s.z} then ${after.z}, highlighted "${await page.locator('[aria-current] .place-name').textContent()}"`)
+    await expect(page.locator('[aria-current]')).toHaveCount(1)
+  })
+
+  test('a row tapped while the map coasts after a flick', async ({ page }) => {
+    await explore(page)
+    const box = (await page.locator('.leaflet-container').boundingBox())!
+    const x = box.x + box.width / 2, y = box.y + box.height / 2
+    await page.mouse.move(x, y)
+    await page.mouse.down()
+    for (let i = 1; i <= 6; i++) { await page.mouse.move(x - i * 30, y); await page.waitForTimeout(8) }
+    await page.mouse.up()
+    await page.locator('.place').first().click()
+    await page.waitForTimeout(900)
+    await expect(page.locator('[aria-current]')).toHaveCount(1)
+    const pin = (await page.locator('.pin').boundingBox())!
+    const mapBox = (await page.locator('.leaflet-container').boundingBox())!
+    log(`row tap during a coast: pin tip at ${Math.round(pin.x + pin.width / 2 - mapBox.x)}, ${Math.round(pin.y + pin.height - mapBox.y)} on a map ${mapBox.width} x ${mapBox.height}; popup count ${await page.locator('.leaflet-popup-content').count()}; ${await page.locator('.place').count()} rows`)
+    await expect(page.locator('.place').first()).toBeVisible()
+  })
+
+  test('a language switch keeps the highlight, the popup and the markers', async ({ page }) => {
+    await explore(page)
+    await page.locator('.place').nth(1).click()
+    await expect(page.locator('.leaflet-popup-content')).toBeVisible()
+    await page.getByRole('button', { name: 'HU', exact: true }).click()
+    await expect(page.locator('.place').nth(1)).toHaveAttribute('aria-current', 'true')
+    await expect(page.locator('.leaflet-popup-content')).toBeVisible()
+    await expect(page.locator('.place-meta').first()).toContainText('Wikipédia-szócikk')
+    const s = await screenOf(page, oracle[1])
+    log(`language switch: row and popup stay, ring pixel ${await pixelAt(page, s.x, s.y - 8)}`)
+    expect(await pixelAt(page, s.x, s.y - 8)).toBe('#000000')
+  })
+
+  test('zero places: an empty manifest gives no rows, no markers, no failure', async ({ page }) => {
+    await page.route('**/kilato/data/manifest.json', (r) => r.fulfill({ json: { cells: [] } }))
+    await page.goto('/kilato/')
+    await page.getByRole('button', { name: 'Explore the map', exact: true }).click()
+    await expect(page.locator('.pin')).toBeVisible()
+    await page.waitForTimeout(400)
+    log(`empty manifest: ${await page.locator('.place').count()} rows, ${await page.locator('.show-more').count()} Show more, ${await page.locator('.load-error').count()} failure messages`)
+    await expect(page.locator('.load-error')).toHaveCount(0)
+  })
+
+  for (const [what, body] of [['a manifest with no cells field', '{}'], ['a cell with no places field', '{}']] as const) {
+    test(`malformed data: ${what}`, async ({ page }) => {
+      const errors: string[] = []
+      page.on('pageerror', (e) => errors.push(e.message))
+      if (what.startsWith('a manifest')) {
+        await page.route('**/kilato/data/manifest.json', (r) => r.fulfill({ contentType: 'application/json', body }))
+      } else {
+        await page.route('**/kilato/data/cells/4749_1270.json', (r) => r.fulfill({ contentType: 'application/json', body }))
+      }
+      await page.goto('/kilato/')
+      await page.getByRole('button', { name: 'Explore the map', exact: true }).click()
+      await expect(page.locator('.pin')).toBeVisible()
+      await page.waitForTimeout(500)
+      const first = await page.locator('.load-error').count()
+      let afterRetry = 'no Retry to press'
+      if (first) {
+        await page.locator('.load-error button').click()
+        await page.waitForTimeout(500)
+        afterRetry = `${await page.locator('.load-error').count()} messages after Retry, ${await page.locator('.place').count()} rows`
+      }
+      log(`malformed, ${what}: ${first} message, ${afterRetry}, page errors ${JSON.stringify(errors)}`)
+      await expect(page.locator('.pin')).toBeVisible()
+    })
+  }
+})

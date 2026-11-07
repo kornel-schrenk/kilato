@@ -1,0 +1,73 @@
+// QA's screenshots for #17. Copied into e2e/ to run, never committed there.
+import { join } from 'node:path'
+import type { Page } from '@playwright/test'
+import { expect, test } from './fixtures'
+import { button } from './map-helpers'
+
+const dir = process.env.QA_SHOT_DIR!
+const before = process.env.QA_BEFORE === '1'
+const viewports: [string, number, number][] = [
+  ['desktop', 1920, 1080],
+  ['tablet', 1024, 768],
+  ['mobile', 375, 667],
+]
+const shot = (page: Page, name: string) => page.screenshot({ path: join(dir, `${name}.png`) })
+const ready = async (page: Page, hu = false) => {
+  await page.goto('/kilato/')
+  await button(page, hu ? 'A térkép felfedezése' : 'Explore the map').click()
+  await expect(page.locator('.pin')).toBeVisible()
+  await expect(page.locator('.place').first()).toBeVisible()
+  await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+  await page.waitForTimeout(600)
+}
+const settle = (page: Page) => page.waitForTimeout(400)
+const allChips = ['Sights', 'Notable places', 'Food & drink', 'Culture & leisure', 'Services', 'Shops']
+
+for (const [name, width, height] of viewports) {
+  test.describe(name, () => {
+    test.use({ viewport: { width, height } })
+
+    if (before) {
+      test(`before ${name}`, async ({ page }) => {
+        await ready(page)
+        await shot(page, `before-develop-${name}`)
+        await expect(page.locator('.chips')).toHaveCount(0)
+      })
+    } else {
+      test(`ac1 ${name}`, async ({ page }) => {
+        await ready(page)
+        await shot(page, `ac1-all-on-${name}`)
+        await expect(page.locator('.chip[aria-pressed="true"]')).toHaveCount(6)
+      })
+      test(`ac2 ${name}`, async ({ page }) => {
+        await ready(page)
+        await button(page, 'Notable places').click()
+        await settle(page)
+        await shot(page, `ac2-notable-off-${name}`)
+        await expect(button(page, 'Notable places')).toHaveAttribute('aria-pressed', 'false')
+      })
+      test(`ac3 ${name}`, async ({ page }) => {
+        await ready(page)
+        for (const chip of allChips) await button(page, chip).click()
+        await settle(page)
+        await shot(page, `ac3-all-off-${name}`)
+        await expect(page.getByText('All categories are off.')).toBeVisible()
+      })
+    }
+  })
+}
+
+if (!before) {
+  test.describe('Hungarian phone', () => {
+    test.use({ viewport: { width: 375, height: 667 }, locale: 'hu-HU' })
+    test('ac1 and ac3', async ({ page }) => {
+      await ready(page, true)
+      await shot(page, 'ac1-all-on-hu-mobile')
+      for (const chip of ['Látnivalók', 'Nevezetes helyek', 'Étel és ital', 'Kultúra és szabadidő', 'Szolgáltatások', 'Üzletek'])
+        await button(page, chip).click()
+      await settle(page)
+      await shot(page, 'ac3-all-off-hu-mobile')
+      await expect(page.getByText('Minden kategória ki van kapcsolva.')).toBeVisible()
+    })
+  })
+}

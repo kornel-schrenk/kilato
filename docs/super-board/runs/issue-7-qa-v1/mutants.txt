@@ -1,0 +1,77 @@
+Mutants. Tested head: c8bf1e8, the Builder's head, before QA added tests. Each break was made on a scratch copy and never reached a commit. A mutant is killed when vitest or tsc goes red.
+
+KILLED         cells: lat floor to round failed=2
+SURVIVED       cells: lon floor to round 
+KILLED         cells: lon floor to ceil failed=2
+KILLED         cells: lon 200/3 to 66 failed=2
+SURVIVED       osm: signed ring area 
+SURVIVED       osm: always the first outer ring 
+KILLED         osm: always the last outer ring failed=1
+KILLED         osm: lon not rounded failed=3
+KILLED         osm: lat not rounded failed=4
+KILLED         osm: floor instead of round failed=2
+KILLED         osm: area parity swapped failed=2
+KILLED         osm: relation id off failed=2
+KILLED         osm: stolperstein kept failed=3
+KILLED         osm: plaque kept failed=3
+KILLED         osm: memorial:type ignored failed=3
+KILLED         osm: memorial ignored failed=3
+KILLED         osm: west edge failed=1
+KILLED         osm: east edge failed=1
+KILLED         osm: south edge failed=1
+KILLED         osm: north edge failed=1
+KILLED         osm: same name kept failed=1
+KILLED         osm: names.en dropped failed=1
+KILLED         osm: names.hu dropped failed=1
+KILLED         osm: empty names kept failed=2
+KILLED         osm: wikidata dropped failed=1
+KILLED         osm: wikipedia dropped failed=1
+KILLED         osm: opening_hours dropped failed=1
+KILLED         osm: unnamed kept failed=3
+KILLED         osm: Polygon branch gone failed=3
+KILLED         osm: MultiPolygon branch gone failed=8
+KILLED         osm: extract strategy gone failed=1
+KILLED         osm: unique id gone failed=1
+KILLED         osm: RS flag gone failed=1
+KILLED         osm: config flag gone failed=1
+KILLED         osm: linear_tags true failed=1
+KILLED         osm: blank lines parsed 
+KILLED         osm: box north widened failed=2
+KILLED         categories: vacant allowed failed=3
+KILLED         categories: kind is the key failed=74
+KILLED         categories: historic rule gone failed=10
+KILLED         categories: value typo failed=4
+KILLED         categories: filter loses first value failed=2
+KILLED         categories: filter nodes only failed=3
+KILLED         categories: any-filter nodes only failed=3
+SURVIVED       categories: 'any' overwritten by later values 
+KILLED         tsconfig: scripts out of the type check failed=1
+KILLED         tsconfig: strict off failed=1
+
+Killed 43 of 47. Survivors, with what happened to each, are in test-gaps.txt.
+One more mutant was left out: its search string matched nothing, so it never ran.
+
+===== the two tests QA added
+
+Red check for the two tests QA added. Each break was made on a scratch copy of the tested head, c8bf1e8, and never reached a commit.
+
+tsc exit=1 errors=5 in ['scripts/data/categories.ts', 'src/core/types.test.ts'] :: CategoryId: a category renamed
+tsc exit=1 errors=1 in ['src/core/types.test.ts'] :: Manifest: version widened to number
+tsc exit=1 errors=1 in ['src/core/types.test.ts'] :: Manifest: box no longer a tuple
+tsc exit=1 errors=1 in ['src/core/types.test.ts'] :: Manifest: wikiLangs removed
+tsc exit=1 errors=1 in ['src/core/types.test.ts'] :: CellFile: places made optional
+tsc exit=1 errors=2 in ['src/core/types.test.ts'] :: Place: hours made required
+tsc exit=1 errors=2 in ['src/core/types.test.ts'] :: Place: wiki.en removed
+tsc exit=1 errors=5 in ['scripts/data/osm.ts', 'src/core/types.test.ts'] :: Place: names.en removed
+tsc exit=1 errors=1 in ['src/core/types.test.ts'] :: WikiLangFile: values changed to number
+tsc exit=1 errors=1 in ['src/core/types.test.ts'] :: SearchFile: names dropped
+tsc exit=1 errors=1 in ['src/core/types.test.ts'] :: SearchFile: no longer exported
+vitest exit=1  :: cellKey: lon floor to round
+vitest exit=1  :: cellKey: lat floor to round
+
+Restored:
+tsc exit=0
+ Test Files  2 passed (2)
+      Tests  4 passed (4)
+
+9 of the 11 type breaks turn only src/core/types.test.ts red, so nothing caught them before it.

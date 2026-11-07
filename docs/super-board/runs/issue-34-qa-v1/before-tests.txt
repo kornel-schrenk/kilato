@@ -1,0 +1,26 @@
+The PR's tests at 0024ab79f8acde8d53ad077533fc18a942721a17, with src/core/point.ts and src/ui/MapView.tsx from develop f57db15.
+
+$ npx vitest run src/core/point.test.ts
+ FAIL  src/core/point.test.ts > from the intro > a location error (denied: false) starts exploring at Deák Ferenc tér, at the start zoom for the screen
+ FAIL  src/core/point.test.ts > from the intro > a location error (denied: true) starts exploring at Deák Ferenc tér, at the start zoom for the screen
+ FAIL  src/core/point.test.ts > from the intro > Explore the map also stops a location request still waiting
+ FAIL  src/core/point.test.ts > from the intro > Explore the map starts exploring at Deák Ferenc tér, at the start zoom for the screen
+ FAIL  src/core/point.test.ts > from the intro > the end of a drag that began during the intro does not move the point
+ FAIL  src/core/point.test.ts > with the permission granted but no fix yet > a location error starts exploring at Deák Ferenc tér
+ Test Files  1 failed (1)
+      Tests  6 failed | 45 passed (51)
+
+vite build exit=0
+$ npx playwright test e2e/map.spec.ts e2e/outside.spec.ts -g 'at 375x667|at 899x700|at 900x700|at 899 px wide|at 900 px wide|on a phone|walking 16 m|a walk keeps'
+  10) e2e/map.spec.ts:1052:3 › exploring on a phone › a drag keeps the zoom the user chose
+  10 failed
+  1) e2e/outside.spec.ts:67:5 › with the location in Vienna at 899 px wide › Go to Budapest starts at zoom 14, whatever the zoom was 
+  20 passed (4.5m)
+  2) e2e/map.spec.ts:482:7 › without a granted permission › at 375x667 › Explore the map starts at zoom 14, with 84% of the 1 km circle on the map 
+  3) e2e/map.spec.ts:488:7 › without a granted permission › at 375x667 › a refusal starts at zoom 14, with 84% of the 1 km circle on the map 
+  4) e2e/map.spec.ts:494:7 › without a granted permission › at 375x667 › a location error starts at zoom 14, with 84% of the 1 km circle on the map 
+  5) e2e/map.spec.ts:482:7 › without a granted permission › at 899x700 › Explore the map starts at zoom 14, with 100% of the 1 km circle on the map 
+  6) e2e/map.spec.ts:488:7 › without a granted permission › at 899x700 › a refusal starts at zoom 14, with 100% of the 1 km circle on the map 
+  7) e2e/map.spec.ts:494:7 › without a granted permission › at 899x700 › a location error starts at zoom 14, with 100% of the 1 km circle on the map 
+  8) e2e/map.spec.ts:506:5 › without a granted permission › on a phone › at least 80% of the 1 km circle is on the map in the first view 
+  9) e2e/map.spec.ts:514:5 › without a granted permission › on a phone › Explore the map goes to zoom 14, whatever the zoom was during the intro 

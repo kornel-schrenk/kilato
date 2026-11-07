@@ -1,0 +1,45 @@
+Test-gap check, round 1. Tested head: 4c3b1c0. Range: fb6dc0d...4c3b1c0, which is the merge base with develop. There is no page in this change, so the component and e2e rungs are n/a for every AC. All file:line below are in scripts/data/hours.test.ts unless named.
+
+===== ledger, by clause of each AC
+AC1 [start, end] pairs in minutes since the window start: :26, and every expected list below it
+AC1 clipped at both ends of the window: :33
+AC1 24/7 gives [[0, 20160]]: :22, and :134 with a clock change inside the window
+AC1 minutes are real minutes: :128
+AC2 no interval on 2026-12-25 with the window from 2026-12-21: :42
+AC2 Hungary's holidays and not another country's: :55
+AC3 a value that doesn't parse: :75
+AC3 a value that only fails when the times are worked out: :79
+AC3 an interval marked unknown inside the window: :86, :93
+AC3 unknown outside the window doesn't count: :97
+AC4 tests run with TZ=Europe/Budapest: :18, set by vite.config.ts:7
+AC4 08:00 local on both sides of 2027-03-28: :104
+Beyond the ACs: autumn clock change :117, sunrise and sunset in Budapest :66, always closed gives [] :141
+
+===== edge cases, by class
+boundaries: clipping pinned by :33. 0 and empty pinned: off gives [] at :141, the empty string gives no hours at :75. Gap, Low: an unknown day at the window edges (below)
+dates and time zones: both clock changes pinned for fixed times by :104, :117, :128, :134. Gap, Medium: sunrise and dawn values at the autumn change (below). Gap, Low: a time inside the changed hour (below)
+input: not parsing pinned by :75. Unicode, whitespace and a 5000-character value give no hours in probe.txt C, not pinned, Low
+volume: 0 pairs :141, 14 pairs :104
+error paths: the one catch pinned by :75, :79
+idempotency and races: n/a, each call builds its own library object and shares only the constant BUDAPEST
+auth, money, UI states, accessibility: n/a, no page and no account in this change
+
+===== test the tests
+Expected minutes are literals. I worked out the expected lists at :27, :35, :43, :58, :107, :120, :130, :131 by hand from the calendar, and they match.
+localTime at :14 reads the instant with an explicit time zone, so it doesn't use the code under test.
+14 of 15 mutants go red, in mutants.txt. The survivor is M14, below.
+
+===== rank
+High: none. Every AC has a test, and this change has no auth, money, security or data-loss path.
+
+Medium, not written:
+- A value that starts at sunrise or dawn gives no hours in every window that reaches the autumn clock change. Witness: hoursInWindow(new Date('2027-10-25T00:00:00+02:00'), 'Mo-Su sunrise-sunset') gives undefined, and 14 pairs are expected, as the value parses and has nothing unknown. That's 15 window starts a year, 2027-10-17 to 2027-10-31, so 2 or 3 weekly builds. A value that uses sunrise, sunset, dawn or dusk but doesn't start at sunrise or dawn fails only when the window starts on the change day. Fixed times aren't affected.
+  The library throws RangeError at opening_hours.esm.mjs:16181, hours.ts:32 catches it, and the library logs nothing, so the build gives no sign. The page shows no open status, not a wrong one. Spring is fine.
+  This is in the library's day lookup and not in hours.ts, so a fix probably means an upstream change or a patched copy. I didn't try one. probe.txt A has the cause.
+
+Low, not written:
+- An unknown day at the window edges. Dec 25 unknown gives [] with the window from 2026-12-11, no hours from 2026-12-12 and 2026-12-25, and [] from 2026-12-26. All four are right, in probe.txt B, and :97 only tests a day far outside.
+- A time inside the changed hour. Su 00:00-02:30 on 2027-03-28 gives [8640, 8790], which closes at 03:30 local time, as 02:30 doesn't exist that night. The library's own getState disagrees with its intervals only in this hour, 120 of 129024 instants in probe.txt E, and in none of the 290304 for other values.
+- M14: state: 'Budapest' can go without a test failing. The library gives the same 13 holidays in 2027 without it.
+- Nothing stops src/ importing opening_hours. Vite would bundle it, and the devDependencies entry wouldn't prevent that. Today dist/ and src/ have 0 matches.
+- hoursInWindow gives wrong times without TZ=Europe/Budapest and doesn't check. The PR's Risk block names this, and #11's AC sets the variable.

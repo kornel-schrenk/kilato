@@ -1,0 +1,22 @@
+The rebase pass, checked on its own. Tested head: 46b674f, a merge of 0b0933b (QA v2's head) and 47c60ae (develop).
+origin/develop is still 47c60ae, so the branch has nothing left to merge.
+
+===== a replay of the merge
+git merge-tree --write-tree 0b0933b 47c60ae conflicts in 2 files only: package-lock.json and tsconfig.json.
+git diff <that tree> 46b674f changes the same 2 files and no other. So the commit holds no hand edit outside the conflicts.
+
+===== what the merge changed on this branch, against v2's head
+git diff 0b0933b 46b674f on e2e/, index.html, playwright.config.ts, src/core/point.ts, src/core/geo.ts, src/ui/, src/i18n/en.ts and src/i18n/hu.ts: empty.
+So the app and test code QA v2 and the Reviewer checked is byte for byte the code on this head.
+Lines from develop that reach this card's code: none. develop added src/i18n/kinds.ts and scripts/data/, which nothing in src/ui/ or src/core/point.ts imports, and TZ for the unit tests in vite.config.ts.
+
+===== tsconfig.json
+Keeps both sides: "allowImportingTsExtensions": true from #10, and "vite/client" in types from this branch. Both lines are load-bearing: without either one, tsc goes red, see mutants.txt.
+
+===== package-lock.json, entry by entry
+develop has 91 entries, and this head has 94.
+Entries of develop that are missing or differ on this head, by version, integrity and resolved URL: 0.
+Entries only on this head: node_modules/leaflet, node_modules/@types/leaflet, node_modules/@types/geojson.
+Entries of v2's lockfile that are missing or differ on this head: 0.
+All 3 resolve to registry.npmjs.org with the same integrity hash they had on 0b0933b.
+npm ci exit 0, see verify.txt.

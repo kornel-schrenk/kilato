@@ -1,0 +1,45 @@
+Test-gap check. Tested head: 5a3c583, on builder head 4f23a24. Range: develop...4f23a24, base 258ce9e. Written from this round's own runs.
+Component column: n/a for every AC. The repo has no component test harness, and the page tests drive src/ui/.
+No project verifier: .agents/skills/verify-* doesn't exist. target.url is null, so there is no health check.
+
+===== ledger
+AC1 unit src/data/places.test.ts:41 manifest and no cell yet, :53 listed cells, :65 a manifest on its way, :78 nothing new, :91 only new cells and memory, :110 no second request, :155 :174 :181 :188 :206 :219 :233 failures · src/core/cells.test.ts:22 :28 :35 :40 :45 which cells, :51 every place's cell (QA), :80 at most 3 x 3 · e2e e2e/list.spec.ts:255 manifest, :263 five cells once, :280 unlisted cell, :288 a move, :312 :329 :348 Retry, :369 Hungarian
+AC2 unit src/core/geo.test.ts nearby at :29 :36 :42 :47 :53, src/core/lang.test.ts:43 formatDistance, src/core/names.test.ts:7 :11 :15 :20 · e2e :129 a row, :142 Hungarian and the switch, :156 no second line, :163 HTML in a name, :175 a long name, :185 1,000 m and order, :198 fixture, :224 a tap, :241 a walk
+AC3 unit n/a: a count in a hook, driven through the page · e2e :198 100, 200, 300, 308, :217 none at 100
+AC4 unit src/ui/categoryColors.test.ts:4 six colours · e2e :383 one per place on a canvas, :397 none past 1,000 m, :414 six colours, :427 markers follow, :446 row tap, :463 the next row, :481 over a neighbour (QA), :493 popup again, :506 no pan on screen, :522 and :546 pan off screen, :576 on a walk, :596 marker tap, :612 the row looks different (QA), :625 through the pin, :636 and :652 scrolls, :665 keeps the rows, :678 beside a marker, :693 a drag, :709 a place left behind, :739 touch
+AC5 unit n/a: only a browser's requests show it · e2e :763
+
+===== edge cases
+boundaries: pinned. 1,000 m src/core/geo.test.ts:36 :42. 100 rows e2e/list.spec.ts:217. A cell's edge, every side, src/core/cells.test.ts:51. Rounding src/core/lang.test.ts:43.
+input: pinned. HTML in a name :163. A long name in a row :175. Accents and Hungarian names: oracle.py and :142.
+volume: pinned for 0, :427, 1, :156, and many, :198, :636. 2,000 and 4,000 markers: measured, see probe.txt, no committed test.
+error paths: pinned for a 404, a dropped request and a file that isn't JSON, src/data/places.test.ts:155 :174 :181. A 503 on a cell after a move: probe.txt.
+races: pinned for a request on its way, places.test.ts:65 :110. Double presses add one page each, by reading.
+UI states: error is pinned. The spec asks for no loading or empty state, and an empty manifest gives no rows and no message, probe.txt.
+accessibility: rows are buttons with text, and Enter on a focused row works, probe.txt. The row's aria-current is pinned. role="alert" isn't.
+auth, money, dates: n/a.
+
+===== test the tests
+QA's mutants: mutants.txt. 4 real ones got past the tests on 4f23a24, and all 4 go red now.
+Oracle: oracle.py reads the site fixture with its own haversine. All 308 rows match the page in order, name, second name and rounded distance, in English and in Hungarian. It finds what :198 says: 311 places, 308 within 1 km, the nearest at 16.5 m.
+Tautology check: :383 builds its list of places with nearby() from the code under test, but pins the count to the literal 308, which oracle.py confirms. :636 and :652 use nearby() only to pick a target.
+Every page test ends with an assertion after its last action, as AGENTS.md asks: checked by script over all 41 test blocks in e2e/list.spec.ts. In 3 the last line isn't the expect itself: :263 and :288 end in an expect over several lines, and :763 in a loop of expects.
+e2e/map.spec.ts changes only by importing its helpers, in the diff. All of its tests pass.
+
+===== rank
+High, written by QA, each seen red on a mutant and green on the code:
+- src/core/cells.test.ts:51 a place in the outer 110 m of a cell's north side or the outer 75 m of its west side could go missing with no test failing. Witness for the north side: point 47.5185, 19.0545, place 47.5097, 19.0545. It is 978 m away in row 4750, and the row's edge at 47.51 is 945 m away
+- e2e/list.spec.ts:612 AC4 says a tapped marker highlights its row. The tests read aria-current, and deleting the row's background passed them all
+- e2e/list.spec.ts:481 AC4 says a tapped row highlights its marker. In a dense area a neighbour can cover it. Dropping bringToFront passed every test
+
+Medium, not written:
+- on a phone, a row below the first few opens its popup on a map scrolled out of view, so only the row's highlight shows. Measured: map's bottom edge at y -1615 of 667 after row 41. The PR's Risk says so, and neither the spec nor the AC asks the page to scroll back. See the question on the PR
+
+Low, not written:
+- a manifest with no cells field throws in the effect that moves the point: 1 page error, no message, no rows. A cell with no places field counts as loaded, so its places stay missing after Retry clears the message. Only our own build writes these files, and it has a type for them. probe.txt
+- a single word longer than the popup is clipped: scrollWidth 1732, clientWidth 301, at 240 letters with no space. The row wraps it. low-long-name-popup-mobile.png
+- a marker takes taps within 5.5 px of its centre, so 11 px across, with no extra margin, against the 44 px of the page's buttons. The spec sets no size for it
+- exactly 101 rows has no test of its own. :217 pins 100, and :739 runs 111
+- the rows showing stay as they are when the point moves, and the spec doesn't say
+- Retry disappears when pressed, so focus falls back to the page
+- not run on a real phone or in any browser but Chromium

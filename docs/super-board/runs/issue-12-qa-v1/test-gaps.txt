@@ -1,0 +1,52 @@
+Test-gap check. Tested code: 92022c1. Range: develop...92022c1. This change has no page, so the component and e2e rungs are n/a for every AC. It touches no auth or money code. All lines below are in test/deploy-workflow.test.ts unless named.
+
+===== ledger, by clause of each AC
+AC1 triggers: push to main, 17 3 * * 1, workflow_dispatch with boolean rebuild_data: :46 · parsed as YAML: step-walk.txt
+AC1 permissions, all four: :60 · parsed as YAML: step-walk.txt
+AC1 concurrency group pages, no cancel: :70 · parsed as YAML: step-walk.txt
+AC1 a unit test reads deploy.yml: :8, and every test below
+AC2 cache key data-<ISO week> from date -u +%G-W%V: :77 runs the real step · around the new year: run-steps.txt
+AC2 on a miss or with rebuild_data, installs osmium-tool with apt: :92
+AC2 downloads the Hungary extract: :121 runs the real step with a stand-in curl · with the real curl, on Monaco: live-download.txt
+AC2 checks it against its .md5: :130 · with the real curl and real md5sum: live-download.txt
+AC2 runs npm run data:build: :136 · the command itself: scripts/data/build.test.ts, from #11
+AC2 saves the cache: :142, and :149 for the rebuild that finds one
+AC2 which of these steps run, for each event, cache state and tick of the box: :92, :121, :136, :142 compare the `if:` with a literal · what the literal does: step-walk.txt, 14 cases
+AC3 runs npm run build: :157 · really run: run-steps.txt
+AC3 copies the data into dist/data/: :157 · really run, and read back at /kilato/data/: run-steps.txt
+AC3 uploads with actions/upload-pages-artifact: :166 · the action's own tar command, really run: run-steps.txt
+AC3 deploys with actions/deploy-pages: :166 · in the spec's order: :182
+AC4 the last step calls PUT .../deploy.yml/enable with the workflow's token: :175
+
+===== edge cases
+boundaries: ISO week at the new year, Dec 31 to Jan 4, probe only, run-steps.txt. The format is pinned at :79, and mutants.txt shows %Y and %U fail it · empty: inputs.rebuild_data on a push or a schedule, GitHub's docs say a missing property is an empty string, and that is falsy, step-walk.py uses that · no data folder at all: the copy fails and stops the run, probe only, run-steps.txt
+dates: the UTC flag is pinned at :79
+input: n/a. The one input is a boolean, and it reaches only `if:`
+volume: n/a. The real extract and the full Wikipedia fetch first run on GitHub, after the first promotion
+auth: the workflow's token is pinned at :152 and :178. GitHub Pages still being off is below, under "not testable here"
+error paths: a download that fails its .md5 pinned at :130 · a failed data build, download, npm ci or deploy: step-walk.txt, with the enable call still running after each · a cancelled run makes no enable call: step-walk.txt, and pinned by the literal at :179
+idempotency and races: a rebuild over this week's cache replaces it, pinned at :149, and after a good build only, pinned by the order at :182 · a second build into the same folder drops old files: scripts/data/write.test.ts:103 · runs don't overlap: the group is pinned at :70
+UI states, accessibility: n/a, no page
+
+===== test the tests
+mutants.txt: 80 changes to deploy.yml, one at a time, 70 fail a test. 2 behaviour-preserving changes, a renamed step and a changed comment, pass as they should.
+The builder's 42 of 42 is a different list: the 10 below pass the same tests, so none of them was on it.
+The tests don't assert on their own stand-ins: the curl stand-in only saves files and refuses a call with no --location, and the real step's md5sum makes the verdict.
+
+===== written by QA
+None. No AC is without a test, and none of the gaps below is in auth, money, security or data loss.
+
+===== test gaps, not written
+Medium: nothing fails if the deploy stops happening. These 3 changes pass all 15 tests: `if:` with the rebuild condition on the Upload step, the same on the Deploy step, and a job-level `if: github.ref != 'refs/heads/main'`. :157 asserts no `if:` on the build and copy steps, but not on these two, and nothing reads the job's own keys. Today's file has none of them: step-walk.txt checks there's no job-level `if`, and its table has the deploy in every case. A code push mid-week would go unpublished, with a green run. Witness: mutants.txt, "upload: only on a rebuild", "deploy: only on a rebuild", "deploy: never on main".
+Medium: nothing fails if a failure is ignored. `continue-on-error: true` on the data build or on the deploy passes all 15 tests. On a rebuild over this week's cache, the first would drop the cache, save the old data back and republish it, with a green run. The spec says "the build fails, and nothing deploys". Today's file has no such key: step-walk.txt checks it. Witness: mutants.txt, "build: failure ignored", "deploy: failure ignored".
+Medium: `fail-on-cache-miss: true` on the restore step passes all 15 tests, and it would fail the first run of every week. Witness: mutants.txt, "restore: a miss fails the run".
+Low: restore-keys on the restore step passes. Harmless: it isn't an exact match, so cache-hit stays false and the data is rebuilt anyway.
+Low: no --fail on the first curl passes. Harmless: an error page saved as the extract fails the .md5 check. The stand-in doesn't check for the flag.
+Low: no `cache: npm` passes. Harmless: only slower.
+Low: `runs-on: macos-latest` passes. No criterion names the runner, and apt would fail at the first rebuild.
+Low: the extract and its .md5 are two calls. If Geofabrik replaces the file between them, the check fails and the run stops, and the old site stays. Geofabrik's Hungary file is dated Nov 3 at this check, and the next run tries again. Not tested.
+Low: a by-hand run started from `develop` once it has this file would run develop's copy. On a rebuild over a cache from main, the drop step's ref wouldn't match. The github-pages environment doesn't exist yet, because Pages is off, so I can't read its branch rule. The issue says the product owner runs it on main. Not tested.
+
+===== not testable here
+No run on GitHub. The workflow only runs on main, so these wait for the first promotion: osmium-tool from apt on the runner, the full Hungary extract, the full Wikipedia fetch, the cache actions, the Pages deploy, and the enable call. The issue's Context a. to c. and Risk block say so.
+GitHub Pages is off: GET /repos/{owner}/{repo}/pages answers 404 on Nov 5. The deploy step fails until the product owner turns it on. The spec's setup list asks for that before this issue merges, the issue and pre-flight.md ask for it before the first run, and merging to develop runs nothing. For the reviewer to weigh.

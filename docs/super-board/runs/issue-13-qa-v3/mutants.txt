@@ -1,0 +1,15 @@
+Mutants on head 46b674f. Each one landed (the script checks the file changed), ran, and was restored. None is committed.
+App and test files did not change since v2, so these only ask: do the tests still go red after the merge? v1, v2 and the Reviewer ran 90 others on the same code.
+Page mutants ran with vite build, then playwright test e2e/map.spec.ts --max-failures=1 -g <the AC's group>, so each one names the first red test only.
+
+merge: tsconfig without vite/client: killed by tsc, 1 errors, first: src/ui/MapView.tsx(2,8): error TS2882: Cannot find module or type declarations for side-effect import of 'leaf
+merge: tsconfig without allowImportingTsExtensions: killed by tsc, 2 errors, first: scripts/data/record-wikipedia.ts(5,31): error TS5097: An import path can only end with a '.ts' extension when 
+AC1 map 50vh, not 45vh: page killed by e2e/map.spec.ts:205:7 › layout › at 375 px wide › the map sits below the header, at 45% of the viewport height (4.3s)
+AC2 tiles up to zoom 18: page killed by e2e/map.spec.ts:293:3 › tiles › stop at zoom 19 (30.4s)
+AC3 a 25 m step, not 15: unit killed by 2: src/core/point.test.ts > following > moves the point, and the map with it, at 15 m · src/core/point.test.ts > following > measures from the point, not from the last fix | page killed by e2e/map.spec.ts:653:3 › with the permission granted › walking 20 m moves the point, and the map with it (6.1s)
+AC3 zoom 15 on a phone: page killed by e2e/map.spec.ts:832:7 › with the permission granted › at 320x568 › following starts at zoom 14, with 62% of the 1 km circle on the map (5.5s)
+AC4 a location error stays on the intro: unit killed by 3: src/core/point.test.ts > from the intro > a location error (denied: true) starts exploring at Deák Ferenc tér, zoom 15 · src/core/point.test.ts > from the intro > a location error (denied: false) starts exploring at Deák Ferenc tér, zoom 15 | page killed by e2e/map.spec.ts:402:3 › without a granted permission › a permission refused on an earlier visit still gets the intro, and a press explores (6.9s)
+AC5 a tap leaves the drag counting: unit killed by 1: src/core/point.test.ts > exploring > a tap while the map still coasts keeps the pin at the tap when the map stops | page killed by e2e/map.spec.ts:929:3 › exploring › a tap while the map coasts keeps the pin at the tap when the map stops (7.0s)
+
+src after the last one: clean
+rebuilt the clean head: exit 0

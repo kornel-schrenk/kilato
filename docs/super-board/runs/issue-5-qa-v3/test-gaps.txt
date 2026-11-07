@@ -1,0 +1,29 @@
+Test-gap check. Tested head: 07fb80a. Range: develop...07fb80a. Written from this round's own runs. The numbers agree with runs/issue-5-qa-v2/test-gaps.txt.
+
+===== ledger
+AC1 unit n/a, a shell chain in package.json:17 · component n/a · e2e n/a · proven by running: fresh clone, and a break at each step, verify.txt
+AC2 unit n/a · component n/a · e2e e2e/page.spec.ts:3 title, e2e/page.spec.ts:8 asset path
+AC3 unit n/a · component n/a · e2e e2e/fixtures.spec.ts:13 cross-origin, :30 same-origin, :37 WebSocket, :47 tile, :61 data, :70 data 404 · own files e2e/page.spec.ts:3, :8, :13
+AC4 unit test/playwright-config.test.ts:13 set, :18 unset · component n/a · e2e n/a · real runs on both browsers, chromium-path.txt
+AC5 no automated test, n/a: it is CI config. Proven by the GitHub run for pull_request. The push trigger is checked by reading only, as nothing has reached main.
+
+===== edge cases
+boundaries: /kilato with no slash fails the test, probe only · /kilato/assets/ and /kilato/data/ folders pinned, e2e/fixtures.spec.ts:27, :69
+input: encoded climb pinned, e2e/fixtures.spec.ts:28 · .%2e, %2e%2e, unencoded climbs, data-folder climbs, probe only · a query string on own files and data, and a hash on own files, probe only
+money and dates: n/a, no such code
+volume: n/a, no lists yet
+auth: n/a, no accounts
+error paths: missing data file pinned, e2e/fixtures.spec.ts:69
+idempotency and races: gap, see the Medium list · two verify runs at once both exit 0
+UI states and accessibility: n/a, the page is empty on purpose
+
+===== test the tests
+No test asserts on its own mock or recomputes its expected value. With the check at e2e/fixtures.ts:46 removed, all 11 test.fail() witnesses report "Expected to fail, but passed", fixture-guard.txt. 18 of 20 mutants go red.
+
+===== gaps, none written. None is High: this is test harness code, with no auth, money, security or data loss.
+Medium: tsconfig.json:16 leaves out scripts/. Witness: scripts/data/qa-any.ts with an implicit any gives tsc exit 0, the same file in src, e2e or test gives TS7006. The spec's data build lives in scripts/data/, and vite.config.ts:6 already lists scripts/ for tests. Nothing is there yet. Fix: add "scripts" to include, in this PR or in the first data issue.
+Medium: e2e/fixtures.ts:46 checks as soon as the test ends, so a request fired on the last line with no await can arrive after the check. Witness: fetch fired and not awaited, then the test ends. Expected: red. Actual: green in 10 of 30 runs. None reached the local server. A fetch at the load event and one 20 ms after load were each caught 30 of 30.
+Medium: the same request followed by page.close() in the test is missed in 10 of 30 runs, and all 10 reached the local server, so that shape can pass with a real request sent. No committed test closes its page.
+Medium: mutant, e2e/fixtures.ts:36 route.abort() to route.continue() survives: the test still fails, but no committed test shows the request stayed on the machine. The probes do show it today, with 0 hits on the local server.
+Medium: mutant, removing serviceWorkers: 'block' at playwright.config.ts:15 survives. The page has no service worker, and the spec forbids one.
+Low: a SharedWorker request skips Playwright's routes: the test passed and the request reached the local server. A tool limit, and nothing in the spec uses one.

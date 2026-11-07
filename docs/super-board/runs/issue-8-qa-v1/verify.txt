@@ -1,0 +1,7 @@
+head 3e5701c
+npm run typecheck: pass (tsc strict)
+npm test: 10 files, 248 tests passed
+npm run build: pass
+CHROMIUM_PATH=/usr/bin/chromium npm run test:e2e: 29 passed
+spec check: HISTORIC (12) and SHOP (32) lists in kinds.test.ts equal spec lines 105-106 verbatim
+security pass: pure constant label table, no input parsing, no network, no DOM; no findings

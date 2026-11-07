@@ -1,0 +1,18 @@
+A place whose tags name two different articles: Q1 by wikidata and Q2 by wikipedia. Q2 is on no place and is no notable place.
+  [{"id":"n1","name":"Hely n1","wiki":{"q":"Q1","hu":"Cikk"}}]
+A tag names an article that another place holds by wikidata: the link comes from the tag, with no q and no en.
+  [{"id":"n1","name":"Hely n1","wiki":{"q":"Q1","hu":"Cikk","en":"Article"}},{"id":"n2","name":"Hely n2","wiki":{"hu":"Cikk"}}]
+A tag with a section does not name the article, so the article stays notable.
+  [{"id":"n1","name":"Hely n1","wiki":{"hu":"Cikk#Szakasz"}},{"id":"Q1","name":"Cikk","wiki":{"q":"Q1","hu":"Cikk"}}]
+A tag that starts in lower case does not name the article, though MediaWiki treats the two as one title.
+  [{"id":"n1","name":"Hely n1","wiki":{"hu":"cikk"}},{"id":"Q1","name":"Cikk","wiki":{"q":"Q1","hu":"Cikk"}}]
+An article with no Hungarian title against a place tagged with the literal hu:undefined.
+  [{"id":"n1","name":"Hely n1","wiki":{"q":"Q1","en":"Article"}}]
+
+===== the command line, in a sandbox with no network
+$ npm run data:build -- --pbf x --out y --extra z
+exit=1  throw new ERR_PARSE_ARGS_UNKNOWN_OPTION(
+$ npm run data:build -- --pbf
+exit=1  throw new ERR_PARSE_ARGS_INVALID_OPTION_VALUE(`Option '${shortAndLong} <value>' argument m
+$ the same, with an osmium that prints a timestamp that does not parse
+exit=1  RangeError: Invalid time value  out folder: not written

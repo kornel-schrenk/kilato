@@ -1,0 +1,38 @@
+QA's mutants, round 2, on 4a01b5f: builder head ad236dc, develop 2ca9b0b merged, plus QA's tests. mutate.py lands each one, runs it and restores it. None reaches a commit.
+The first 7 run three times over against the test written for them, and each must go red all 3 times. The R3 line also shows 3 green, because -g "before there is a point" also matches the older test 'fetches the manifest on load, and no cell before there is a point', which this mutant doesn't touch. The other 28 are round 1's list.
+
+R1 the filter resets when the point moves, exploring: -g "stay as they are when the point moves" three times: 3 red, 0 green
+R1 the filter resets when the point moves, following: -g "stay as they are while the point follows" three times: 3 red, 0 green
+R1 the language switch turns every chip on: -g "stay as they are when the point moves" three times: 3 red, 0 green
+R2 an on chip loses its name colour: -g "are six, in the order" three times: 3 red, 0 green
+R2 an off chip hides its name: -g "still show an off chip" three times: 3 red, 0 green
+R3 the all-off message waits for a point: -g "before there is a point" three times: 3 red, 3 green
+merge: the filter outside the memo redraws every marker each minute: -g "leaves the markers alone" three times: 3 red, 0 green
+AC1 two chips swapped: page killed by e2e/list.spec.ts:1053:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 an English name differs: page killed by e2e/list.spec.ts:1053:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 a Hungarian name differs: page killed by e2e/list.spec.ts:1083:5 › the category chips › on a Hungarian phone › have the Hungarian names, and switching the language changes them
+AC1 the chips stay in English: page killed by e2e/list.spec.ts:1065:3 › the category chips › sit between the map and the list, and fit a phone in Hungarian
+AC1 every chip in one colour: page killed by e2e/list.spec.ts:1053:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 an on chip is not filled: page killed by e2e/list.spec.ts:1053:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 an off chip loses its colour: page killed by e2e/list.spec.ts:1186:3 › the category chips › still show an off chip in its colour, with a name that reads
+AC1 a chip off at the start: page killed by e2e/list.spec.ts:1053:3 › the category chips › are six, in the order of the spec, each in its marker colour, and all on
+AC1 the filter saved in sessionStorage: page killed by e2e/list.spec.ts:1197:3 › the category chips › are all on again at the next visit ─────────────
+AC1 the filter saved in localStorage: page killed by e2e/list.spec.ts:1197:3 › the category chips › are all on again at the next visit ─────────────
+AC1 black name on the grey Shops chip: unit killed by src/ui/categoryColors.test.ts > keeps the name on the shops chip readable
+AC2 a chip never comes back on: page killed by e2e/list.spec.ts:1106:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 off shows only what it should hide: page killed by e2e/list.spec.ts:1106:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 the list ignores the filter: page killed by e2e/list.spec.ts:1106:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 the map ignores the filter: page killed by e2e/list.spec.ts:1106:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 the filter waits for the next move of the point: page killed by e2e/list.spec.ts:1106:3 › the category chips › hide the places of a chip that is off, in the list and on the map, until it is on again
+AC2 the selection stays when its category goes off: page killed by e2e/list.spec.ts:1209:3 › the category chips › close the popup and the highlight of a tapped place whose category goes off
+AC2 any chip clears the selection: page killed by e2e/list.spec.ts:1225:3 › the category chips › keep the popup and the highlight of a tapped place whose category stays on
+AC2 the filter resets when the point moves: page killed by e2e/list.spec.ts:1144:3 › the category chips › stay as they are when the point moves and when the language switches
+AC3 the message shows with five off: page killed by e2e/list.spec.ts:1290:5 › the category chips › with every chip off › turning one chip back on leaves the message and shows its places
+AC3 no message: page killed by e2e/list.spec.ts:1253:5 › the category chips › with every chip off › the list says so, and its button turns them all back on
+AC3 the button does nothing: page killed by e2e/list.spec.ts:1253:5 › the category chips › with every chip off › the list says so, and its button turns them all back on
+AC3 the button turns on only one: page killed by e2e/list.spec.ts:1253:5 › the category chips › with every chip off › the list says so, and its button turns them all back on
+AC3 the Hungarian message in English: page killed by e2e/list.spec.ts:1304:7 › the category chips › with every chip off › on a Hungarian phone › the message and the button are in Hungarian
+AC3 the Hungarian button in English: page killed by e2e/list.spec.ts:1304:7 › the category chips › with every chip off › on a Hungarian phone › the message and the button are in Hungarian
+layout: the chips do not wrap on a phone: page killed by e2e/list.spec.ts:1065:3 › the category chips › sit between the map and the list, and fit a phone in Hungarian
+layout: a chip under 44 px: SURVIVED page tests -g "the category chips": 16 passed
+layout: the turn-all-on button under 44 px: SURVIVED page tests -g "the category chips": 16 passed

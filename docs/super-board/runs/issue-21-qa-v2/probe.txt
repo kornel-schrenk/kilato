@@ -1,0 +1,31 @@
+list desktop: {"main":{"x":1152,"y":-7057,"width":768,"height":8061},"footer":{"x":1152,"y":1004,"width":768,"height":76},"map":{"x":0,"y":0,"width":1152,"height":1080},"scrollWidth":1920,"scrollY":7101}
+list tablet: {"main":{"x":614.390625,"y":-7436,"width":409.59375,"height":8128},"footer":{"x":614.390625,"y":692,"width":409.59375,"height":76},"map":{"x":0,"y":0,"width":614.390625,"height":768},"scrollWidth":1024,"scrollY":7480}
+list mobile: {"main":{"x":0,"y":-7586.859375,"width":375,"height":8178},"footer":{"x":0,"y":591.140625,"width":375,"height":76},"map":{"x":0,"y":-7903,"width":375,"height":300.140625},"scrollWidth":375,"scrollY":7947}
+word for word en-GB from main: 5 spec lines, 5 identical
+word for word en-GB from contentinfo: 5 spec lines, 5 identical
+word for word hu-HU from main: 5 spec lines, 5 identical
+word for word hu-HU from contentinfo: 5 spec lines, 5 identical
+10.5 days: "Data from 2 Nov 2026 · 10 days old · may be out of date"
+an unreadable osmDataAt: errors ["Invalid time value"], footer 1, map 1, app children 4
+no wikipediaAt: errors ["Invalid time value"], footer 1, map 1, app children 4
+following: no intro link, the footer link opens the panel
+keyboard: focus stays in the dialog on 5 Tabs: [true,true,true,true,true]
+panel Mi hová kerül 320x568: {"x":5,"y":0,"width":310,"height":568,"scrollHeight":617,"clientHeight":562}
+panel Névjegy 320x568: {"x":5,"y":97.5,"width":310,"height":373,"scrollHeight":367,"clientHeight":367}
+panel What is sent where 320x568: {"x":5,"y":0,"width":310,"height":568,"scrollHeight":579,"clientHeight":562}
+panel Mi hová kerül 375x667: {"x":5,"y":69.5,"width":365,"height":528,"scrollHeight":522,"clientHeight":522}
+panel Névjegy 375x667: {"x":5,"y":156.5,"width":365,"height":354,"scrollHeight":348,"clientHeight":348}
+panel What is sent where 375x667: {"x":5,"y":79,"width":365,"height":509,"scrollHeight":503,"clientHeight":503}
+footer at 899 px: x 0, y 610, width 899
+footer at 900 px: x 540, y 624, width 360
+New York: "Data from 1 Nov 2026 · 3 days old"
+outside Budapest: the age line shows, both panels open from the footer
+search mobile: line holds through a pick, the panel opens, scrollWidth 375
+search desktop: line holds through a pick, the panel opens, scrollWidth 1920
+page and console errors over the walk: []
+an unreadable date: 5 s after Explore: rows 0, pin 1, line 0, errors ["Invalid time value"]
+an unreadable date: after a tap on About: dialogs 0, rows 100, errors 7
+an unreadable date: after HU: html lang en, footer buttons ["What is sent where","About"], errors 9
+cells only, no dates: 5 s after Explore: rows 0, pin 1, line 0, errors ["Invalid time value"]
+cells only, no dates: after a tap on About: dialogs 0, rows 0, errors 8
+cells only, no dates: after HU: html lang en, footer buttons ["What is sent where","About"], errors 9

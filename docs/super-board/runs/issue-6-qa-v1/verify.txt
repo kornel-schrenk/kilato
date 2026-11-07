@@ -1,0 +1,105 @@
+$ npm ci && npm run verify   # head a7ab0f3, in the QA worktree
+13 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm ci exit=0
+
+> kilato@0.0.0 verify
+> npm run typecheck && npm test && npm run build && npm run test:e2e
+
+
+> kilato@0.0.0 typecheck
+> tsc
+
+
+> kilato@0.0.0 test
+> vitest run
+
+
+ RUN  v5.1.0 /home/kornel/Projects/kilato/.claude/worktrees/issue-6-qa
+
+
+ Test Files  4 passed (4)
+      Tests  14 passed (14)
+   Start at  11:17:39
+   Duration  3.64s (tests 73%, transform 13%, import 10%, worker 3%)
+
+
+> kilato@0.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 12 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                 0.54 kB │ gzip: 0.37 kB
+dist/assets/index-5DpY38a8.js  15.05 kB │ gzip: 6.47 kB
+
+✓ built in 301ms
+
+> kilato@0.0.0 test:e2e
+> playwright test
+
+
+Running 29 tests using 2 workers
+
+  ✘   1 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/ fails the test (722ms)
+  ✓   2 e2e/language.spec.ts:18:5 › with the locale hu-HU › the page is in the language hu (803ms)
+  ✘   3 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test (396ms)
+  ✓   4 e2e/language.spec.ts:18:5 › with the locale de-AT › the page is in the language en (558ms)
+  ✘   5 e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test (418ms)
+  ✓   6 e2e/language.spec.ts:18:5 › with the locale en-GB › the page is in the language en (530ms)
+  ✘   7 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test (396ms)
+  ✓   8 e2e/language.spec.ts:30:3 › with the phone languages de-AT, hu-HU, only the first counts (630ms)
+  ✘   9 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test (690ms)
+  ✓  10 e2e/language.spec.ts:30:3 › with the phone languages hu-HU, de-AT, only the first counts (561ms)
+  ✘  11 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test (643ms)
+  ✘  13 e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test (541ms)
+  ✓  12 e2e/language.spec.ts:47:5 › on a phone set to hu-HU › pressing EN switches at once and survives a reload (1.0s)
+  ✘  14 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test (581ms)
+  ✓  15 e2e/language.spec.ts:47:5 › on a phone set to en-GB › pressing HU switches at once and survives a reload (1.0s)
+  ✘  16 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test (657ms)
+  ✓  17 e2e/language.spec.ts:73:3 › on a phone set to hu-HU › opening the page saves nothing, so a later phone language still counts (585ms)
+  ✘  18 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test (578ms)
+  ✘  20 e2e/fixtures.spec.ts:37:1 › an unexpected WebSocket fails the test (368ms)
+  ✓  19 e2e/language.spec.ts:79:3 › on a phone set to hu-HU › pressing back to the phone language is kept too (1.1s)
+  ✓  21 e2e/fixtures.spec.ts:47:1 › a tile request gets the blank tile (539ms)
+  ✓  23 e2e/fixtures.spec.ts:61:1 › a data request gets the file from site-data (524ms)
+  ✓  22 e2e/language.spec.ts:94:3 › on a phone set to hu-HU › the name of the switch changes with the language (685ms)
+  ✓  24 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/cells/none.json, which is not a file, gets a 404 (435ms)
+  ✓  25 e2e/language.spec.ts:103:3 › on a phone set to hu-HU › the page keeps working when the browser blocks localStorage (684ms)
+  ✓  26 e2e/fixtures.spec.ts:70:3 › a data request to /kilato/data/, which is not a file, gets a 404 (474ms)
+  ✓  27 e2e/page.spec.ts:3:1 › the page at /kilato/ is titled Kilátó (418ms)
+  ✓  28 e2e/page.spec.ts:8:1 › the build serves its assets under /kilato/ (301ms)
+  ✓  29 e2e/page.spec.ts:13:1 › Preact renders into the page (366ms)
+
+  29 passed (15.8s)
+npm run verify exit=0
+
+===== the same page spec on the base build, which has no language code
+$ npx playwright test e2e/language.spec.ts   # the spec from a7ab0f3, on the base build 91f3b2d
+  ✘   1 e2e/language.spec.ts:18:5 › with the locale hu-HU › the page is in the language hu (5.4s)
+  ✘   2 e2e/language.spec.ts:18:5 › with the locale de-AT › the page is in the language en (5.4s)
+  ✘   3 e2e/language.spec.ts:18:5 › with the locale en-GB › the page is in the language en (5.5s)
+  ✘   4 e2e/language.spec.ts:30:3 › with the phone languages de-AT, hu-HU, only the first counts (6.0s)
+  ✘   5 e2e/language.spec.ts:30:3 › with the phone languages hu-HU, de-AT, only the first counts (5.7s)
+  ✘   6 e2e/language.spec.ts:47:5 › on a phone set to hu-HU › pressing EN switches at once and survives a reload (5.6s)
+  ✘   7 e2e/language.spec.ts:47:5 › on a phone set to en-GB › pressing HU switches at once and survives a reload (5.4s)
+  ✘   8 e2e/language.spec.ts:73:3 › on a phone set to hu-HU › opening the page saves nothing, so a later phone language still counts (5.4s)
+  ✘   9 e2e/language.spec.ts:79:3 › on a phone set to hu-HU › pressing back to the phone language is kept too (30.1s)
+  ✘  10 e2e/language.spec.ts:94:3 › on a phone set to hu-HU › the name of the switch changes with the language (5.4s)
+  ✘  11 e2e/language.spec.ts:103:3 › on a phone set to hu-HU › the page keeps working when the browser blocks localStorage (5.7s)
+  11 failed
+
+===== base moved during QA
+origin/develop is now 1b74610, ahead of the PR's merge base 91f3b2d. The two new commits change only AGENTS.md:  1 file changed, 1 insertion(+)
+git merge-tree --write-tree HEAD origin/develop: exit 0, so the PR merges without a conflict
+The new AGENTS.md rule, end every page test with an assertion after its last action: all 11 tests in e2e/language.spec.ts follow it
+
+===== repeat runs of the language spec, same tests as a7ab0f3
+$ npx playwright test e2e/language.spec.ts --repeat-each=5
+  55 passed (53.9s)
+$ CHROMIUM_PATH=/usr/bin/chromium npx playwright test e2e/language.spec.ts
+  11 passed (30.8s)

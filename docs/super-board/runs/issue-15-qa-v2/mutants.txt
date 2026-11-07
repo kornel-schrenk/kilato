@@ -1,0 +1,72 @@
+QA's mutants. Each one landed (the script checks the file changed), ran and was restored. None is committed.
+Unit mutants ran vitest on src/core, src/data and scripts/data/hours. Page mutants ran the build, then playwright test e2e/list.spec.ts --max-failures=1 -g "the open status", so each names only its first red test.
+
+===== round 1, on builder head e320c7a: 40 mutants, 38 red, 2 past the tests
+AC1 a pair opens a moment late: unit killed by 3: src/core/hours.test.ts > openStatus > counts real minutes across a clock change · src/core/hours.test.ts > openStatus > is open from the first moment of the window, and unknown before it
+AC1 a pair closes a moment late: unit killed by 1: src/core/hours.test.ts > openStatus > closes at the end of a pair
+AC1 the first moment of the window is outside: unit killed by 2: src/core/hours.test.ts > openStatus > is closed from the first moment of the window, and unknown before it · src/core/hours.test.ts > openStatus > is open from the first moment of the window, and unknown before it
+AC1 the end of the window is inside: unit killed by 2: src/core/hours.test.ts > openStatus > is closed up to the last moment of the window, and unknown from its end · src/core/hours.test.ts > openStatus > is open up to the last moment of the window, and unknown from its end
+AC1 no check before the window: unit killed by 2: src/core/hours.test.ts > openStatus > is closed from the first moment of the window, and unknown before it · src/core/hours.test.ts > openStatus > is open from the first moment of the window, and unknown before it
+AC1 no check past the window: unit killed by 2: src/core/hours.test.ts > openStatus > is closed up to the last moment of the window, and unknown from its end · src/core/hours.test.ts > openStatus > is open up to the last moment of the window, and unknown from its end
+AC1 a start that does not parse counts as inside: unit killed by 1: src/core/hours.test.ts > openStatus > is unknown when the window start does not parse
+AC1 only the first pair counts: unit killed by 1: src/core/hours.test.ts > openStatus > is open inside a later pair
+AC1 open and closed swapped: unit killed by 11: src/core/hours.test.ts > openStatus > closes at the end of a pair · src/core/hours.test.ts > openStatus > counts real minutes across a clock change
+AC1 an empty list counts as no hours: unit killed by 3: src/core/hours.test.ts > openStatus > is closed for a place with an empty list, which is closed throughout · src/core/hours.test.ts > openStatus > is closed from the first moment of the window, and unknown before it
+AC1 no hours counts as closed: unit killed by 1: src/core/hours.test.ts > openStatus > is unknown for a place with no hours
+AC1 a 7-day window: unit killed by 11: scripts/data/hours.test.ts > hoursInWindow > clips times that cross either end of the window · scripts/data/hours.test.ts > hoursInWindow > counts Hungary's public holidays
+AC1 a 15-day window: unit killed by 9: scripts/data/hours.test.ts > hoursInWindow > clips times that cross either end of the window · scripts/data/hours.test.ts > hoursInWindow > counts Hungary's public holidays
+AC1 minutes rounded up: unit killed by 7: src/core/hours.test.ts > openStatus > closes at the end of a pair · src/core/hours.test.ts > openStatus > counts real minutes across a clock change
+AC1 minutes rounded to nearest: unit killed by 7: src/core/hours.test.ts > openStatus > closes at the end of a pair · src/core/hours.test.ts > openStatus > counts real minutes across a clock change
+AC1 the loader never gives the window start: unit killed by 1: src/data/places.test.ts > placeLoader > gives the start of the hours window once the manifest has arrived
+AC1 the build gets a shorter window: unit killed by 9: scripts/data/hours.test.ts > hoursInWindow > clips times that cross either end of the window · scripts/data/hours.test.ts > hoursInWindow > counts Hungary's public holidays
+AC1 the page reads the wrong manifest time: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC1 the page reads local time as UTC: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC2 unknown reads Closed now: page killed by e2e/list.spec.ts:218:3 › the open status › shows nothing for a place with no hours
+AC2 an empty status line for unknown: page killed by e2e/list.spec.ts:218:3 › the open status › shows nothing for a place with no hours
+AC2 labels swapped: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC2 the English open label: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC2 the English closed label: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC2 the Hungarian open label: page killed by e2e/list.spec.ts:204:5 › the open status › on a Hungarian phone › is in Hungarian, and switching the language changes it
+AC2 the Hungarian closed label: page killed by e2e/list.spec.ts:204:5 › the open status › on a Hungarian phone › is in Hungarian, and switching the language changes it
+AC2 Hungarian labels on every phone: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC2 the page never asks for a status: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC2 the status only on the first row: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC2 the status after the link, outside the button: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC2 the status not on its own line: page killed by e2e/list.spec.ts:193:3 › the open status › shows Open now or Closed now as soon as the list is built
+AC3 no timer: page killed by e2e/list.spec.ts:235:3 › the open status › changes from Open now to Closed now within a minute of the closing time
+AC3 a five-minute timer: page killed by e2e/list.spec.ts:235:3 › the open status › changes from Open now to Closed now within a minute of the closing time
+AC3 a two-minute timer: page killed by e2e/list.spec.ts:235:3 › the open status › changes from Open now to Closed now within a minute of the closing time
+AC3 a 65-second timer: page killed by e2e/list.spec.ts:235:3 › the open status › changes from Open now to Closed now within a minute of the closing time
+AC3 a 61-second timer: SURVIVED page tests -g "the open status": 6 passed
+AC3 the clock read once, at load: page killed by e2e/list.spec.ts:235:3 › the open status › changes from Open now to Closed now within a minute of the closing time
+AC3 the clock read only when the list is built: page killed by e2e/list.spec.ts:235:3 › the open status › changes from Open now to Closed now within a minute of the closing time
+AC3 the clock read only by the timer: page killed by e2e/list.spec.ts:248:3 › the open status › is worked out again when the list is rebuilt, ahead of the next minute
+AC3 the timer rebuilds the rows, which redraws every marker: SURVIVED page tests -g "the open status": 6 passed
+
+===== round 2, on QA's 3 tests from dab05fa: each new test first passes on the real code, then fails on its mutant
+AC1 the page reads local time as UTC was red in round 1 only because this machine is in Europe/Budapest. With TZ=UTC, the zone of a GitHub runner, :193 passes it, and :309 fails it.
+--- no mutant
+  3 passed (16.0s)
+--- mutant: a 61-second timer, TZ=system
+  1) e2e/list.spec.ts:265:3 › the open status › is worked out again no later than 60 seconds after the last time 
+    Expected: "Closed now"
+    Received: "Open now"
+  1 failed
+restored src/ui/usePlaces.ts
+--- mutant: the timer rebuilds the rows, TZ=system
+  1) e2e/list.spec.ts:278:3 › the open status › leaves the markers alone as the minutes pass ───────
+    Expected: 847
+    Received: 1463
+  1 failed
+restored src/ui/usePlaces.ts
+--- mutant: the page reads local time as UTC, on a runner in UTC: the builder's first test, TZ=UTC
+  1 passed (8.4s)
+restored src/ui/usePlaces.ts
+--- mutant: the page reads local time as UTC, on a runner in UTC: the new test, TZ=UTC
+  1) e2e/list.spec.ts:309:5 › the open status › on a phone in another time zone › reads the same, because the window start and the clock are both instants 
+    Expected: "Closed now"
+    Received: "Open now"
+  1 failed
+restored src/ui/usePlaces.ts
+
+All 40 are red now: 38 in round 1 and 2 with QA's tests.

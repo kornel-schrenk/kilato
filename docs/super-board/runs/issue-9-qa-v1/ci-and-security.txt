@@ -1,0 +1,26 @@
+Tested head: 4c3b1c0.
+
+===== CI
+Check verify on 4c3b1c0: pass, GitHub Actions run 41853205562, job 126654755630.
+This file can't record CI on its own commit. The PR comment gives the state at handoff.
+
+===== merge with develop
+git merge-tree --write-tree 4c3b1c0 with develop 8c2bb16: exit 0, tree 256c8bf8c05596c2249809f9cec11f8e79d128d7, no conflicts.
+The only file develop changed since the merge base fb6dc0d is spec/2026-11-02-kilato-mvp.md, so verify wasn't run again on the merged tree.
+
+===== licence
+$ grep -rl -E "opening_hours|suncalc|i18next" dist | wc -l
+0
+$ grep -rln -E "opening_hours|suncalc" src e2e index.html | wc -l
+0
+package.json has opening_hours under devDependencies. package-lock.json marks opening_hours, i18next and suncalc as dev.
+
+===== pr-security-review
+Diff of develop...4c3b1c0, run inline: this lane has no sub-task tool, so the find and false-positive passes ran in one context.
+Result: 0 findings.
+- scripts/data/hours.ts runs only in the data build, and nothing under src/ or e2e/ imports it. It has no shell, file, network or HTML call: 0 matches for child_process, exec(, spawn, fetch(, readFile, writeFile, innerHTML.
+- opening_hours values are community-edited, so they are untrusted. They go only to the library's parser, and only numbers come out. The library file has 0 matches for eval( and new Function(.
+- The library logs a value when it fails on SH. Logging community text is outside this review's scope.
+- package-lock.json adds three dev packages, all resolved from registry.npmjs.org with integrity hashes. None has an install script: the only hasInstallScript in the file is fsevents, which was already there. npm ci reports 0 vulnerabilities.
+- vite.config.ts only sets TZ for tests. scripts/data/hours.test.ts is a test file, which the skill excludes.
+- Token shapes in the diff (GitHub, AWS, Slack and OpenAI tokens, private keys): 0 matches, counted before this folder was added.

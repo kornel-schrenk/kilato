@@ -1,0 +1,37 @@
+Test-gap check. Tested head: 0024ab7. Range: develop...0024ab7, base f57db15. Written from this round's own runs.
+Component column: n/a for every AC. The repo has no component test harness, and the page tests drive src/ui/.
+No project verifier: .agents/skills/verify-* doesn't exist. target.url is null, so there is no health check.
+QA changed one test: e2e/outside.spec.ts:67, after CI failed it. See ci-and-security.txt. No High gap is open.
+
+===== ledger
+AC1 unit src/core/point.test.ts:60 Explore, :70 errors, :91 error with no fix · e2e e2e/map.spec.ts:482 Explore, :488 refusal, :494 error, each at 375, 899 and 900 px, :514 from another zoom on a phone, e2e/outside.spec.ts:67 Go to Budapest at 899 and 900 px. #20 is closed, so that clause applies
+AC2 unit point.test.ts:41 first fix from the intro, :139 first fix on load, :212 My location · e2e map.spec.ts:809 on load at 10 viewports, :823 My location from another zoom at 375, 899 and 900 px
+AC3 unit point.test.ts:109 14.9 m stays, :116 15.1 m moves, :135 no later fix asks a zoom, :186 a drag's end leaves the view alone · e2e map.spec.ts:665 16 m at zoom 19, :687 40 m, :862 100 m on a phone, :848 drag while following, :1052 drag while exploring
+AC4 unit n/a: it needs a browser · e2e map.spec.ts:506 exploring, :841 following, both at 375x667, with :482, :488, :494 and :809 pinning 84%
+
+===== edge cases
+boundaries: 899 and 900 px pinned for all ways in · 14.9 and 15.1 m pinned in units, 14 and 16 m in pages · 80% pinned at 84% with a tolerance of 5 points, and AC4's own tests use >= 0.8
+money, dates, auth, text input: n/a, no such code in the diff
+volume: 0, 1 and many fixes pinned, point.test.ts:122 and :135
+error paths: refusal and location error pinned, map.spec.ts:488, :494 · a location error on load at 899 and 900 px: gap, Low, below
+idempotency and races: a press during a zoom pinned at 1280x720, map.spec.ts:400 · the same at 375x667: gap, Low, below · a press during a coast pinned, :427
+UI states: intro, following, exploring and outside the box pinned
+accessibility: this diff changes no control
+
+===== test the tests
+Expected zooms are literals from the spec, not recomputed with the code. zoomForScreen isn't imported by any test.
+The shares in startZooms are literals. By hand from the spec's radii: at 375x667 the map is 300 px tall, so the line leaves it where the circle's height passes 150 of 155 px, which leaves 84%. QA's own read of the SVG path gives 83.6%, probe.txt.
+The page tests of AC3 read the zoom after the pin has moved, so a reset at the end of a drag goes red, map.spec.ts:848 in mutants.txt.
+Every new page test ends with an assertion after its last action, as AGENTS.md asks.
+One weak test: outside.spec.ts:67 read the pin's place right after the click. It went red on CI and green on this slower machine. Fixed with a wait, ci-and-security.txt.
+Mutants: 14 of 14 go red on at least one rung, mutants.txt. The test files failed on develop's source as the builder said: 6 unit and 10 page, before-tests.txt.
+
+===== Test gaps (not written)
+Low: a location error on load at 899 and 900 px has no page test. map.spec.ts:711 runs at 1280x720. point.test.ts:91 pins the request and probe.txt reads 14 and 15.
+Low: a press during a zoom has no page test at a phone's width. map.spec.ts:400 runs at 1280x720, and probe.txt reads 14 at 375x667.
+Low: lineOnMap counts the line under the map's controls as on the map. See the note below.
+
+===== for the product owner, not gaps in this ticket
+AC4 says "on screen". The page test counts the line inside the map: 83.6%, and QA's read agrees. The attribution covers 5.7% of the line and the My location button 4%, so what a visitor sees is 73.9% exploring and 78.1% following. Below 80% if "on screen" means visible. I read it as position, the reading of the ticket's test and of #13's 84%, and passed it.
+A search pick from the intro at 375x667 stays at zoom 15 with 0% of the line on the map, note-search-pick-from-intro-mobile.png. The builder flagged this too. The spec's Start zoom doesn't name it and says the map otherwise keeps the user's zoom, though no user chose this one. No ticket filed, because no accepted spec asks for a change.
+The 80% holds at 375x667 only: 75.6% at 360x640, 61.9% at 320x568, 36.7% at 667x375, because the map is 45% of the viewport's height. AC4 names 375x667 only, and :809 already pins 62% at 320x568.

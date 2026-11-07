@@ -1,0 +1,55 @@
+Test-gap check. Tested head: 3832b14. Range: develop...3832b14. This change has no page, so the component and e2e rungs are n/a for every AC. The diff touches no auth, money or data-loss code, so the check ran in this lane, not in a read-only sub-agent.
+
+===== ledger, by clause of each AC
+Line numbers are in scripts/data/wikipedia.test.ts unless another file is named.
+AC1 tiles 0.05° tall and 0.075° wide, cut at the box: :40, with the 36 tiles of the real coverage box written out by hand
+AC1 gsbbox on each search: :40 · on the live API, every result in the recording is inside the box, checked by a separate script: 286 pages, 0 outside
+AC1 gslimit=500, gsprimary=primary, gsnamespace=0: :53 · on the wire for the split calls too: wire-check.txt A
+AC1 500 results splits into four and asks again: :78 · a full quarter splits again: :91 · 499 stays whole: :109
+AC2 50 page ids per call: :164 · 0 pages makes no call: :183 · 1, 49, 50, 51 and 100 pages, probe only: edge-probes.txt
+AC2 prop, ppprop, lllimit: :164
+AC2 follows continue until it ends: :191 · a real continuation: scripts/data/wikipedia-fixture.test.ts:153 · on the wire: wire-check.txt A
+AC3 User-Agent, maxlag=5, formatversion=2 on every kind of call: :299 · on the wire with real fetch: wire-check.txt A
+AC3 one at a time: :313, for tiles, details and editions. Not for the quarters of a split, see the gaps below · on the wire, split included: wire-check.txt A, at most 1 in flight
+AC3 retried up to 3 times with backoff, after an HTTP error, maxlag, another API error, non-JSON and a network error: :365 · with real timers: wire-check.txt B, 5.0, 10.1 and 20.0 s
+AC3 fails when a call still fails: :385, :393 · each call has its own retries: :399 · with real timers: wire-check.txt C, 4 attempts, 35.1 s, no later call
+AC4 one article per Wikidata id: :233, :261 · no id stays apart: :267
+AC4 positioned where the Hungarian one is: :233 · on real data: scripts/data/wikipedia-fixture.test.ts:130 · against an independent answer: oracle.txt, 233 of 233 articles, and 47 of the 53 merged articles have editions that disagree on the position
+AC5 records trimmed replies: wikipedia-fixture.test.ts:25, :32, :44, :74, :157
+AC5 the recording replays without calling the API: wikipedia-fixture.test.ts:122, with global fetch stubbed and asserted untouched
+AC5 `npm run record:wikipedia` itself: n/a for a committed test, because it calls the live API and the spec keeps tests off it. QA ran it: live-record.txt, 10 responses and 233 articles, and the 40 card tests pass on the fresh file
+
+===== edge cases
+boundaries: 499 and 500 results pinned, :109, :78 · 501: n/a, gslimit tops out at 500 · a box edge on a tile edge pinned, :128 · a box edge inside a tile pinned, :40
+0, null, empty: no pages pinned, :183 · an empty tile's real reply seen live, live-shapes.txt · no Wikidata id pinned, :267 · a page with no details pinned, :164
+money and dates: n/a, no such code
+input: non-ASCII titles pinned on real data, wikipedia-fixture.test.ts:145, :150 · markup in a title reaches the caller unchanged, probe only · a language code of __proto__ or constructor is plain data, probe only · CSV injection: n/a, no CSV
+volume: 0, 1, 2 and 120 pages pinned, :183, :128, :191, :164 · 800 after a split pinned, :78
+auth: n/a, the API takes no credentials here
+error paths: all 5 failures pinned, :365 · retries run out pinned, :385 · an unusual Retry-After pinned, :417, :427 · a deleted page's real reply seen live and probed, live-shapes.txt, edge-probes.txt
+idempotency and races: a page found by two tiles pinned, :128 · a failed call records nothing pinned, wikipedia-fixture.test.ts:74 · a re-record gives a file the tests accept, live-record.txt
+UI states and accessibility: n/a, no UI
+
+===== test the tests
+Expected values are hand-written or come from the API replies, not from the module: oracle.txt recomputed them separately and agrees. No test asserts on its own mock, apart from the two that exist to prove the stub stayed untouched and that the fake's replies pass through.
+QA's own breaks, separate from the Builder's 30: mutants.txt, with 39 of 43 failing a test.
+
+===== rank and act
+High: none. Every clause of every AC has a test, so QA wrote no test and changed no code.
+
+Medium, not written:
+- scripts/data/wikipedia.ts:127, the four quarters running at once isn't pinned by any assertion. AC3 says calls run one at a time, and the real build takes this path: the Builder saw a central tile return 500. Witness: the test at wikipedia.test.ts:313 with a box whose tile returns 500, expected mostRunning 1. Today's code is right: wire-check.txt A.
+- scripts/data/wikipedia.ts:16, raising the split floor from 0.0001° to 0.01° survives, since :120 only bounds the calls from above. Witness: a full tile 0.0094° wide, expected a split, and the raised floor fails the build instead. The floor is the Builder's decision, not an AC.
+
+Low, not written:
+- scripts/data/wikipedia.ts:91, a Retry-After carried over from an earlier attempt survives. Witness: Retry-After 30 and then a failure with no header, expected waits of 30 and 10 s. The break only waits longer.
+- scripts/data/wikipedia.ts:72, an unrounded midpoint survives. It only changes the text of a request.
+- scripts/data/wikipedia.ts:134, a `continue` that never ends has no limit, unlike the split. Witness: every reply carries `continue`, and the probe saw 2,001 calls in 3 s with no wait. The spec says to follow it until it ends, and the live API ends it.
+- scripts/data/wikipedia.ts:108, a Retry-After too large for a timer waits about 1 ms. Witness: `Retry-After: 99999999`, waited 0.04 s with a TimeoutOverflowWarning. Still bounded by the 3 retries, and the API sends small values.
+- scripts/data/wikipedia.ts:121, a 200 reply with no `query` throws a TypeError after 1 call, with no retry. It fails the fetch, which is the safe side. The two unusual live replies QA asked for both had `query`.
+- scripts/data/wikipedia.ts:143, a details reply naming a page nobody asked for throws a TypeError. It fails the fetch too, and without the `redirects` parameter the API has no reason to send one.
+- scripts/data/wikipedia-fixture.ts:48, replaying an unrecorded URL goes through the real retries: 35 s, then "HTTP 404", not the "Not recorded" message. Under Vitest that reads as a 5 s timeout. It matters if #11 replays a box other than FIXTURE_BOX.
+- scripts/data/wikipedia-fixture.test.ts:154 and :131 pin exactly one continuation and exact coordinates, so a later re-record could fail them with no bug. Today's fresh recording passes all 40.
+
+===== not proved here
+The fetch over the whole coverage box against the live API. edge-probes.txt runs it against a fake that honours the bbox and the 500 cap: 4,154 pages over the real box, 0 lost, including pages on tile, split and box edges, in 168 calls. That's near the spec's estimate of about 150, before continuations. #12's deploy is the first real run.

@@ -1,0 +1,49 @@
+Mutation pass on scripts/data, by mutate.py, on cc860ff with QA's three new tests in build.test.ts. It ran in a copy of the tree under `unshare -rn`, so no network, and no mutant reached a commit.
+37 mutants. 36 fail a test, 32 of them on the builder's tests and 4 only on QA's. The last one can't be reached.
+- edition ids swapped: an article with no Wikidata id keeps its two editions apart (wikipedia.ts:173), so it never has both page ids and the mutant changes nothing.
+- real clock replaced: it survived this run, so QA added two assertions to build.test.ts:376. Rerun alone: red with the mutant, green without it. See the end of this file.
+Each of QA's tests has been seen red: :360 and :368 on "cli: rejection swallowed" and "cli: real command has no Wikipedia", and :376 on "cli: pbf and out swapped" and "cli: real clock replaced".
+
+baseline: 102 tests in merge, write, build and hours, 0 failed
+killed                           merge: greedy parenthesis  (1 failing)
+killed                           merge: tag link keeps underscores  (2 failing)
+killed                           merge: tag match keeps underscores  (2 failing)
+killed                           merge: any language in tag link  (1 failing)
+killed                           merge: wikidata match still reaches the tag rule  (6 failing)
+killed                           merge: tag match overwrites wikidata match  (1 failing)
+killed                           merge: tag link beats attached article  (6 failing)
+killed                           merge: English name first  (4 failing)
+SURVIVED                         merge: edition ids swapped  (0 failing)
+killed                           merge: unrounded notable lat  (2 failing)
+killed                           merge: names.en kept when equal  (3 failing)
+killed                           merge: en tag rule dropped  (4 failing)
+killed                           merge: notable dropped  (20 failing)
+killed                           merge: opening_hours leaks  (3 failing)
+killed                           write: en gets a wiki file  (2 failing)
+killed                           write: stale folders stay  (1 failing)
+killed                           write: no-q article in wiki files  (1 failing)
+killed                           write: search carries wiki  (2 failing)
+killed                           write: no licence  (2 failing)
+killed                           write: wikiLangs lists nothing  (3 failing)
+killed                           build: 5,000 boundary  (10 failing)
+killed                           build: 1,500 boundary  (2 failing)
+killed                           build: 1,500 check gone  (3 failing)
+killed                           build: window starts at now  (4 failing)
+killed                           build: wikipediaAt is the finish  (1 failing)
+killed                           build: builtAt is the start  (1 failing)
+killed                           build: empty timestamp allowed  (1 failing)
+killed                           build: real build skips minimums  (5 failing)
+killed                           build: working folder stays  (3 failing)
+    npm run data:build exits 0 at the minimums, with the osmium steps, the hours, the fetch, the merge and the writer in Budapest time
+    npm run data:build exits 0 at the minimums, with the osmium steps, the hours, the fetch, the merge and the writer in Budapest time
+    npm run data:build exits non-zero when a Wikipedia call still fails after its retries, and writes nothing
+killed                           cli: TZ gone from the npm script  (2 failing)
+SURVIVED                         cli: real clock replaced  (0 failing)
+killed                           fixture: another clock  (1 failing)
+killed                           fixture: minimums applied  (1 failing)
+killed                           fixture: TZ gone from the npm script  (1 failing)
+restored: 0 failed
+
+Rerun alone, after the two new assertions:
+killed                           cli: real clock replaced  (1 failing, on build.test.ts:376: AssertionError: expected 1793620800000 to be greater than or equal to )
+restored: 1 passed | 24 skipped (25)

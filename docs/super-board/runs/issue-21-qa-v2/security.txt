@@ -1,0 +1,26 @@
+pr-security-review on PR #47, diff from origin/develop (c6b3c6b, also the merge base) to b5a2e17, plus QA's 2 test changes in e2e/footer.spec.ts
+
+How it ran: inline, in this lane. The skill asks for a sub-task to find and one per finding to filter.
+This lane has no sub-task tool: Agent and Task are not among its tools. There were no findings to filter.
+
+Read: the 15 changed source and test files. The evidence folder of v1 was read as data: it adds no code the page loads.
+The git status, name list, log and diff commands from the skill were run.
+Grep of the added lines in src/ and index.html for dangerouslySetInnerHTML, innerHTML, outerHTML, eval, new Function,
+document.write, localStorage, sessionStorage, fetch, XMLHttpRequest, sendBeacon, cookie, http:// and https://:
+  - the words "no cookies" in the panel text
+  - the constant repository URL at src/ui/Panel.tsx:6
+Grep of all added lines, .png left out, for tokens, private keys, passwords and auth headers: only QA v1's sentence
+"Auth, crypto, secrets  none of these in the diff" in its own security.txt.
+No change to .github, package.json, package-lock.json, vite.config.ts or public.
+
+Checked by category:
+  Injection and XSS  withBold builds <strong> vnodes from the translation files, with no raw HTML.
+                     The footer shows formatDate output and a number, never a string from the manifest.
+  Links              one constant https URL, with target=_blank and rel=noopener.
+  Data exposure      no new request. The footer reads the manifest placeLoader already holds, and the point goes nowhere new.
+                     e2e/footer.spec.ts:209 shows opening both panels asks for nothing.
+  Auth, crypto, secrets  none of these in the diff.
+  Test files         read repo files by fixed paths. Excluded by the skill's filter in any case.
+  The merge          b5a2e17 keeps both sides of each conflict. It adds no request, no raw HTML and no new link.
+
+Result: 0 findings.

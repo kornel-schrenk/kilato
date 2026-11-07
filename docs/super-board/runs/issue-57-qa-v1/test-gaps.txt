@@ -1,0 +1,49 @@
+Test-gap check for #57, round 1, on the diff from develop 21953af to 5cb3dcb
+
+Ledger: every AC, by rung
+This repo tests components through the page, so the component rung is n/a for all three.
+
+AC1 the heading, two closed entries, Close in view at 375×667, in both languages
+  unit  n/a: layout and text on the page
+  e2e   e2e/footer.spec.ts:295 heading, entry names, none open · :305 Close fully in view, panel not scrolled · each in en-GB and hu-HU
+  QA    probe: Close in view at 390×844, 375×667, 360×640 and 320×568, both languages, and again on reopening
+AC2 each LICENSE word for word, in English, in both languages
+  unit  n/a: the text is read at build time and only the page shows it
+  e2e   e2e/footer.spec.ts:313 per package and per language, whole text against node_modules/<package>/LICENSE, white space collapsed, lang="en"
+  QA    probe: textContent equals the file byte for byte, 1395 and 1087 chars, in both languages
+AC3 a test fails when dependencies lists a package with no entry
+  unit  n/a: it compares the page with package.json
+  e2e   e2e/footer.spec.ts:329 entry names against the keys of dependencies, ignoring case
+
+Edge cases, on each changed input or branch
+  boundaries   pinned: an entry is 44 px or more, :351. Probe only: the fit at 320×568
+  input        n/a: no input. Leaflet's file has CRLF line ends and Preact's LF, and the probe shows the CRs draw nothing: same rows and height with them taken out, at all 3 viewports
+  volume       pinned: both entries open at once, :360. A third package goes red at :329 until it has an entry
+  auth         n/a: no accounts
+  error paths  n/a: nothing can fail at run time. A missing LICENSE file fails the build
+  races        probe only: reopening starts closed again, after Close and after Esc
+  UI states    pinned: closed :295, open :313. Probe only: shutting an entry again
+  a11y         pinned: lang="en" on the text :322, role and name of the panel and heading. Probe only: Tab order, Enter and Space, and Tab reaching Close with an entry open
+
+Test the tests
+  19 mutants, mutants.txt, each rebuilt and run: 18 red through the test they aim at, 1 survived.
+  On develop's page, before-tests.txt, 10 of the 12 Software used tests fail. The other 2 are :305 in both languages: Close was already in view, and the
+  pushed-out-of-view mutant shows they can fail. The Builder's report says 9 failed. QA counted 10.
+  The expected values come from literals and from the installed LICENSE files and package.json, not from the code under test.
+
+Rank
+  High    none. Every AC has a test that can fail, and nothing here touches auth, money, security or data loss.
+  Medium  M1 the line breaks. With `white-space: normal` on .panel pre, each licence runs into one block and every test still passes, because
+             AC2 asks for white space to be collapsed. The words are all there, so AC2 holds. Witness: the surviving mutant. Expected: the file's line breaks show.
+             Rung: e2e, in the entry test at e2e/footer.spec.ts:313, reading the computed white-space or the text's height.
+  Low     L1 reopening starts closed: probe only, after Close and after Esc. The panel unmounts on close, so nothing keeps the state today.
+          L2 the keyboard on an entry: Enter, Space and Tab to Close are probe only. They are the browser's own behaviour for details and dialog.
+          L3 the fit below 375×667: probe only. Close is in view at 360×640 and 320×568, in both languages. The AC names 375×667 only.
+          L4 the entry order has to follow package.json, by reading :329: a new package that sorts first must also come first in `software`. It fails loudly, not silently.
+
+Test gaps (not written): M1, L1, L2, L3, L4. They don't block, by the rules of the check.
+
+Seen, not a defect
+  At phone width the files' own line breaks leave short lines mid-sentence, as ac2-leaflet-open-en-mobile.png shows. That follows from showing the file word for word.
+  With an entry open, Close takes a scroll, as the Builder flagged. The scroll and Tab both reach it, and the AC speaks of the entries closed.
+  Not tried on a real phone. All of this ran in Chromium with the viewport set.
