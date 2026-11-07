@@ -1,4 +1,4 @@
-import { COVERAGE_BOX } from '../../src/core/coverage.ts'
+import { COVERAGE_BOX, inCoverage } from '../../src/core/coverage.ts'
 import type { Place } from '../../src/core/types'
 import { categorize, tagsFilterExpressions, type Tags } from './categories.ts'
 
@@ -89,11 +89,6 @@ function featurePosition({ type, coordinates }: Feature['geometry']): Position |
   return undefined
 }
 
-function inCoverageBox([lon, lat]: Position): boolean {
-  const [west, south, east, north] = COVERAGE_BOX
-  return lon >= west && lon <= east && lat >= south && lat <= north
-}
-
 /** Coordinates to 5 decimals, about 1 m. */
 export const round5 = (value: number) => Math.round(value * 1e5) / 1e5
 
@@ -104,7 +99,7 @@ function placeFromFeature({ id, geometry, properties: tags }: Feature): OsmPlace
   const match = categorize(tags)
   const position = featurePosition(geometry)
   // ponytail: a ring with no area has a NaN position, which fails the box check, so it's left out too.
-  if (!match || !position || !inCoverageBox(position)) return undefined
+  if (!match || !position || !inCoverage({ lat: position[1], lon: position[0] })) return undefined
 
   const place: OsmPlace = { id: placeId(id), ...match, lat: round5(position[1]), lon: round5(position[0]), name }
 
