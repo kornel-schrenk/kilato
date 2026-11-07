@@ -164,7 +164,8 @@ export function MapView({ state, onEvent, rows, selection, onSelect, t }: Props)
     }
   }, [rows])
 
-  useEffect(() => {
+  // A layout effect too: the new marker of a selected place would draw bare until the next frame.
+  useLayoutEffect(() => {
     const marker = selection && markers.current.get(selection.place.id)
     if (!marker) return
     marker.setStyle(highlightStyle).bringToFront()
