@@ -192,6 +192,20 @@
       .panel button {
         min-height: 44px;
       }
+      .panel h3 {
+        margin-bottom: 0;
+        font-size: 1rem;
+      }
+      .panel summary {
+        line-height: 44px;
+      }
+      .panel pre {
+        margin: 0 0 0.75rem;
+        font: inherit;
+        font-size: 0.875rem;
+        /* The files break their lines at 80 columns, wider than a phone. */
+        white-space: pre-wrap;
+      }
       @media (min-width: 900px) {
         #app {
           display: grid;

@@ -50,4 +50,5 @@ export const hu = {
     'A szócikkek címei és helyzete a Wikipédiából származik, CC BY-SA 4.0 alatt.',
     'A térképet a Leaflet rajzolja.',
   ],
+  softwareUsed: 'Felhasznált szoftverek',
 }

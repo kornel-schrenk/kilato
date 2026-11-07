@@ -1,0 +1,21 @@
+page from 21953aff2b272624fafd95d814aa382654ced250, tests from 5cb3dcb
+dist/assets/index-D4JG5s6l.js   188.54 kB │ gzip: 60.05 kB
+✓ built in 405ms
+Agafonkin in the built JS: 0
+Jason Miller in the built JS: 0
+  3 passed (12.6s)
+the PR's Software used tests on develop's page: playwright exit=1
+  10 failed
+  2 passed (4.1m)
+e2e/footer.spec.ts:295:5 › Software used on a 375×667 phone set to en-GB › has its heading, with a Leaflet entry and a Preact entry, both closed 
+e2e/footer.spec.ts:295:5 › Software used on a 375×667 phone set to hu-HU › has its heading, with a Leaflet entry and a Preact entry, both closed 
+e2e/footer.spec.ts:313:7 › Software used on a 375×667 phone set to en-GB › the leaflet entry opens to its LICENSE file, word for word, in English 
+e2e/footer.spec.ts:313:7 › Software used on a 375×667 phone set to en-GB › the preact entry opens to its LICENSE file, word for word, in English 
+e2e/footer.spec.ts:313:7 › Software used on a 375×667 phone set to hu-HU › the leaflet entry opens to its LICENSE file, word for word, in English 
+e2e/footer.spec.ts:313:7 › Software used on a 375×667 phone set to hu-HU › the preact entry opens to its LICENSE file, word for word, in English 
+e2e/footer.spec.ts:329:3 › Software used › has an entry for every package in dependencies
+e2e/footer.spec.ts:335:3 › Software used › opening an entry asks for nothing
+e2e/footer.spec.ts:351:5 › Software used › at 375×667 › an entry is at least 44 px tall, to tap 
+e2e/footer.spec.ts:360:5 › Software used › at 375×667 › with both entries open, the panel fits the screen, nothing scrolls sideways, and Close shuts it 
+restored: 0 changed files
+dist/assets/index-CfE7GrRX.js   191.35 kB │ gzip: 61.47 kB

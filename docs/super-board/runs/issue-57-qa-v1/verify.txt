@@ -1,0 +1,93 @@
+The ✘ lines are the tests in e2e/fixtures.spec.ts marked test.fail(). They count as passed only because they fail.
+One line per passing page test is left out.
+
+A first run was thrown away. QA started it, then ran its probe, its mutants and a repeat run on the same 4 cores, and the load reached 22.
+It was stopped with 7 red tests, none in a file this PR changes:
+  ✘  138 e2e/list.spec.ts:652:5 › loading › on a Hungarian phone › the message and Show more are in Hungarian (11.0s)
+  ✘  177 e2e/map.spec.ts:687:3 › with the permission granted › a walk keeps the zoom the user chose (9.9s)
+  ✘  199 e2e/map.spec.ts:809:7 › with the permission granted › at 768x1024 › following starts at zoom 14, with 100% of the
+  ✘  228 e2e/map.spec.ts:894:3 › exploring › the end of a slow drag moves the pin to the map centre (14.9s)
+  ✘  231 e2e/map.spec.ts:904:3 › exploring › a quick drag coasts on, and the pin ends up at the centre of where the map st
+  ✘  238 e2e/map.spec.ts:933:3 › exploring › a tap while the map coasts keeps the pin at the tap when the map stops (15.1s
+  ✘  247 e2e/map.spec.ts:977:3 › exploring › tapping on the pin still counts as a tap (15.2s)
+The run below had this machine's tests to itself. All of those tests pass in it, and CI passed the same head: run 42304907586.
+
+head 5cb3dcb91e1270453ea93f7a14ec3a2b71330a52  dirty tracked files: 0
+started 2026-11-06T23:02:58Z  load 10.19 17.52 16.05
+$ npm ci
+added 49 packages, and audited 50 packages in 4s
+found 0 vulnerabilities
+npm ci exit=0
+$ CHROMIUM_PATH=/usr/bin/chromium npm run verify
+
+> kilato@0.0.0 verify
+> npm run typecheck && npm test && npm run build && npm run test:e2e
+
+
+> kilato@0.0.0 typecheck
+> tsc
+
+
+> kilato@0.0.0 test
+> vitest run
+
+
+ RUN  v5.1.0 /home/kornel/Projects/kilato/.claude/worktrees/issue-57-qa
+
+
+ Test Files  29 passed (29)
+      Tests  600 passed (600)
+   Start at  00:03:06
+   Duration  17.02s (tests 81%, import 9%, transform 7%, worker 3%)
+
+    Isolate  29 workers spawned · ~538ms startup each (spawn + environment, per file)
+             at least ~4.66s faster with isolate: false — reuses workers across files instead of one per file
+
+
+> kilato@0.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 39 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   3.01 kB │ gzip:  1.28 kB
+dist/assets/index-vh-t_kPv.css   15.09 kB │ gzip:  6.36 kB
+dist/assets/index-CfE7GrRX.js   191.35 kB │ gzip: 61.47 kB
+
+✓ built in 423ms
+
+> kilato@0.0.0 test:e2e
+> playwright test
+
+
+Running 298 tests using 2 workers
+
+  ✘    1 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/ fails the test (2.0s)
+  ✘    3 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/ fails the test (1.9s)
+  ✘    4 e2e/fixtures.spec.ts:13:3 › a request to https://tile.openstreetmap.org.example.invalid/1/0/0.png fails the test (1.3s)
+  ✘    6 e2e/fixtures.spec.ts:13:3 › a request to https://example.invalid/kilato/data/manifest.json fails the test (1.7s)
+  ✘    7 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside.json fails the test (4.7s)
+  ✘    9 e2e/fixtures.spec.ts:30:3 › a same-origin request to /outside/index.html fails the test (3.6s)
+  ✘   11 e2e/fixtures.spec.ts:30:3 › a same-origin request to /data/manifest.json fails the test (3.8s)
+  ✘   13 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/missing.js fails the test (4.0s)
+  ✘   15 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/assets/ fails the test (4.0s)
+  ✘   17 e2e/fixtures.spec.ts:30:3 › a same-origin request to /kilato/..%2fpackage.json fails the test (4.3s)
+  ✘   19 e2e/fixtures.spec.ts:37:1 › an unexpected WebSocket fails the test (1.7s)
+
+  Slow test file: e2e/map.spec.ts (8.3m)
+  Slow test file: e2e/list.spec.ts (7.9m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  298 passed (13.3m)
+npm run verify exit=0
+finished 2026-11-06T23:16:44Z  load 8.00 10.69 12.97
+
+Repeat runs, alone on the machine, on the same head:
+  e2e/footer.spec.ts:335 opening an entry asks for nothing, 30 times: 30 passed
+  e2e/footer.spec.ts:209 opening a panel asks for nothing, 30 times: 30 passed
+Under the load of the thrown-away run, :335 had 0 failures in 26 starts and :209 had 4 in 26, each waiting 5 s for the data-age line before it measured anything.
+Blame puts :209 on a0bcc9a5, not on this PR.
+
+$ npm run build && CHROMIUM_PATH=/usr/bin/chromium npx playwright test e2e/footer.spec.ts -g "Software used|About on a phone"
+  16 passed, exit 0

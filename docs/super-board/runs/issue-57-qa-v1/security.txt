@@ -1,0 +1,22 @@
+pr-security-review on PR #62, diff from origin/develop (21953af, also the merge base) to 5cb3dcb
+
+How it ran: inline, in this lane. The skill asks for a sub-task to find and one per finding to filter.
+This lane has no sub-task tool: a search for Agent and Task returned no such tool. There were no findings to filter.
+
+Read: the 5 changed source and test files in full. The Builder's .png is an image the PR body embeds. It sits under docs/, and the build copies nothing from there.
+The git status, name list, log and diff commands from the skill were run.
+Grep of the added lines in src/ and index.html for dangerouslySetInnerHTML, innerHTML, outerHTML, eval(, new Function,
+document.write, localStorage, sessionStorage, fetch(, XMLHttpRequest, sendBeacon, cookie, http:// and https://: 0 hits.
+Grep of all added lines, .png left out, for api keys, secrets, tokens, passwords, auth headers and private keys: 0 hits.
+No change to .github, package.json, package-lock.json, vite.config.ts or public.
+
+Checked by category:
+  Injection and XSS  <pre lang="en">{licence}</pre> at src/ui/Panel.tsx:61 passes the text to Preact as a child, which makes a text node.
+                     No raw HTML. A LICENSE file holding markup would show as text, and QA's probe read textContent byte for byte.
+  Path traversal     the two imports at src/ui/Panel.tsx:3-4 are constant paths, read once at build time. No path reaches the page at run time.
+  Links              none added. The licence text is plain text, so a URL in it would not be a link.
+  Data exposure      no new request: QA's probe counted 0 on toggling entries 4 times, after the network settled. Same for the Builder's test.
+  Supply chain       the text comes from packages package-lock.json already pins. No package added.
+  Auth, crypto       none of these in the diff.
+
+Result: pr-security-review: 0 findings

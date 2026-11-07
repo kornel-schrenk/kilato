@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { expect, siteManifest, test } from './fixtures'
 import { box, button } from './map-helpers'
 
@@ -254,7 +254,7 @@ for (const { locale, about, sentences, linkName } of [
       await footer(page).getByRole('button', { name: about, exact: true }).click()
 
       const panel = page.getByRole('dialog', { name: about })
-      await expect(panel.getByRole('heading')).toHaveText(about)
+      await expect(panel.getByRole('heading', { level: 2 })).toHaveText(about)
       for (const sentence of sentences) await expect(panel).toContainText(sentence)
     })
 
@@ -269,6 +269,116 @@ for (const { locale, about, sentences, linkName } of [
     })
   })
 }
+
+// What About has to carry, read here so the tests can't drift from the installed packages.
+const root = join(import.meta.dirname, '..')
+const dependencies = Object.keys(JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).dependencies)
+const licenceOf = (name: string) => readFileSync(join(root, 'node_modules', name, 'LICENSE'), 'utf8')
+
+const openAbout = async (page: Page, about: string) => {
+  await page.goto('/kilato/')
+  await footer(page).getByRole('button', { name: about, exact: true }).click()
+  return page.getByRole('dialog', { name: about })
+}
+
+/** An entry by its package's name. The page writes the name with a capital. */
+const entry = (panel: Locator, name: string) =>
+  panel.locator('details').filter({ has: panel.page().locator('summary', { hasText: new RegExp(`^${name}$`, 'i') }) })
+
+for (const { locale, about, softwareUsed, close } of [
+  { locale: 'en-GB', about: 'About', softwareUsed: 'Software used', close: 'Close' },
+  { locale: 'hu-HU', about: 'Névjegy', softwareUsed: 'Felhasznált szoftverek', close: 'Bezárás' },
+]) {
+  test.describe(`Software used on a 375×667 phone set to ${locale}`, () => {
+    test.use({ locale, viewport: { width: 375, height: 667 } })
+
+    test('has its heading, with a Leaflet entry and a Preact entry, both closed', async ({ page }) => {
+      const panel = await openAbout(page, about)
+
+      await expect(panel.getByRole('heading', { level: 3 })).toHaveText(softwareUsed)
+      await expect(panel.locator('summary')).toHaveText(['Leaflet', 'Preact'])
+      await expect(panel.locator('details[open]')).toHaveCount(0)
+      await expect(entry(panel, 'leaflet').locator('pre')).toBeHidden()
+      await expect(entry(panel, 'preact').locator('pre')).toBeHidden()
+    })
+
+    test('Close is in view without scrolling', async ({ page }) => {
+      const panel = await openAbout(page, about)
+
+      await expect(panel.getByRole('button', { name: close, exact: true })).toBeInViewport({ ratio: 1 })
+      expect(await panel.evaluate((dialog) => dialog.scrollTop)).toBe(0)
+    })
+
+    for (const name of dependencies) {
+      test(`the ${name} entry opens to its LICENSE file, word for word, in English`, async ({ page }) => {
+        const panel = await openAbout(page, about)
+
+        await entry(panel, name).locator('summary').click()
+
+        const text = entry(panel, name).locator('pre')
+        await expect(text).toBeVisible()
+        // With a string, toHaveText collapses runs of white space on both sides and matches the whole text.
+        await expect(text).toHaveText(licenceOf(name))
+        await expect(text).toHaveAttribute('lang', 'en')
+      })
+    }
+  })
+}
+
+test.describe('Software used', () => {
+  test('has an entry for every package in dependencies', async ({ page }) => {
+    const panel = await openAbout(page, 'About')
+
+    await expect(panel.locator('summary')).toHaveText(dependencies, { ignoreCase: true })
+  })
+
+  test('opening an entry asks for nothing', async ({ page }) => {
+    const panel = await openAbout(page, 'About')
+    await expect(panel).toBeVisible()
+    const requests: string[] = []
+    page.on('request', (request) => requests.push(request.url()))
+
+    await entry(panel, 'leaflet').locator('summary').click()
+    await entry(panel, 'preact').locator('summary').click()
+
+    await expect(entry(panel, 'preact').locator('pre')).toBeVisible()
+    expect(requests).toEqual([])
+  })
+
+  test.describe('at 375×667', () => {
+    test.use({ viewport: { width: 375, height: 667 } })
+
+    test('an entry is at least 44 px tall, to tap', async ({ page }) => {
+      const panel = await openAbout(page, 'About')
+
+      await expect(panel.locator('summary')).toHaveCount(dependencies.length)
+      for (const summary of await panel.locator('summary').all()) {
+        expect((await summary.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+      }
+    })
+
+    test('with both entries open, the panel fits the screen, nothing scrolls sideways, and Close shuts it', async ({
+      page,
+    }) => {
+      const panel = await openAbout(page, 'About')
+
+      await entry(panel, 'leaflet').locator('summary').click()
+      await entry(panel, 'preact').locator('summary').click()
+
+      await expect(entry(panel, 'preact').locator('pre')).toBeVisible()
+      const dialog = await box(page, 'dialog')
+      expect(dialog.x).toBeGreaterThanOrEqual(0)
+      expect(dialog.x + dialog.width).toBeLessThanOrEqual(375)
+      expect(dialog.y).toBeGreaterThanOrEqual(0)
+      expect(dialog.y + dialog.height).toBeLessThanOrEqual(667)
+      expect(await panel.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0)
+
+      await panel.getByRole('button', { name: 'Close', exact: true }).click()
+
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+    })
+  })
+})
 
 test.describe('the layout', () => {
   test.describe('at 375 px wide', () => {
