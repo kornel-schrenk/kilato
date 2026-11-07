@@ -1,6 +1,6 @@
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { useEffect, useRef } from 'preact/hooks'
+import { useEffect, useLayoutEffect, useRef } from 'preact/hooks'
 import { listRadius, type LatLon } from '../core/geo'
 import { deakTer, type PointEvent, type PointState } from '../core/point'
 import type { Row } from '../core/rank'
@@ -52,7 +52,8 @@ export function MapView({ state, onEvent, rows, selection, onSelect, t }: Props)
   select.current = onSelect
   const { point, mode, accuracy, view } = state
 
-  useEffect(() => {
+  // A layout effect, because the markers' one below needs the map on the first render.
+  useLayoutEffect(() => {
     const map = L.map(container.current!, { zoomControl: false }).setView(toLeaflet(deakTer), openingZoom)
     mapRef.current = map
 
@@ -139,7 +140,9 @@ export function MapView({ state, onEvent, rows, selection, onSelect, t }: Props)
     }
   }, [point, mode, accuracy])
 
-  useEffect(() => {
+  // A layout effect, so the markers change in the same commit as the list. Until the next frame, a
+  // marker of a row that has gone would take a tap meant for the map, and the point wouldn't move.
+  useLayoutEffect(() => {
     const group = L.layerGroup().addTo(mapRef.current!)
     markers.current = new Map(
       rows.map(({ place }) => [
