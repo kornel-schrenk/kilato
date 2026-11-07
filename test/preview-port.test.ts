@@ -32,6 +32,8 @@ it('gives at least 900 different ports across the pids, so parallel worktrees st
 it('keeps PREVIEW_PORT as the port when it is set, and passes it to workers', async () => {
   vi.stubEnv('PREVIEW_PORT', '5060')
   vi.resetModules()
-  await import('../playwright.config')
+  const { default: config } = await import('../playwright.config')
   expect(process.env.PREVIEW_PORT).toBe('5060')
+  expect(config.use?.baseURL).toBe('http://127.0.0.1:5060')
+  expect(config.webServer).toMatchObject({ command: expect.stringContaining('--port 5060') })
 }, 60_000)
