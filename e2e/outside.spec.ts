@@ -102,6 +102,28 @@ test.describe('while exploring', () => {
     await expect(page.getByText(message)).toHaveCount(0)
   })
 
+  // A busy phone, or a busy CI runner. Preact runs an effect on a timer, so what the page leaves to an
+  // effect comes a second late. A marker still on the map then takes a tap that is meant for the map.
+  test('a tap back into the box reaches the map while the page runs late', async ({ page }) => {
+    await page.goto('/kilato/')
+    await button(page, 'Explore the map').click()
+    await expect(page.locator('.place').first()).toBeVisible()
+    for (const zoom of [14, 13, 12, 11, 10]) await zoomTo(page, zoom)
+    const area = await box(page, '.leaflet-container')
+    const middle = centre(area)
+    await page.evaluate(() => {
+      const timer = window.setTimeout
+      window.setTimeout = ((run: TimerHandler, ms = 0, ...rest: unknown[]) =>
+        timer(run, ms + 1000, ...rest)) as typeof window.setTimeout
+    })
+
+    await page.mouse.click(area.x + area.width - 20, middle.y)
+    await expect(page.locator('.places')).toHaveCount(0)
+
+    await page.mouse.click(middle.x, middle.y)
+    await expect(page.locator('.place').first()).toBeVisible()
+  })
+
   test('the map takes a tap and a drag while the message is up', async ({ page }) => {
     await page.goto('/kilato/')
     await button(page, 'Explore the map').click()

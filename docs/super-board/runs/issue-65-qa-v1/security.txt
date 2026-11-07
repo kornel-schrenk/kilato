@@ -1,0 +1,17 @@
+$ gh pr view 69 --json baseRefName --jq .baseRefName
+develop
+$ git diff --name-only origin/develop...dee3027
+e2e/outside.spec.ts
+src/ui/MapView.tsx
+$ git log --no-decorate --format="%h %s" origin/develop..dee3027
+dee3027 🐛 [fix] map: stop a stale marker taking a tap meant for the map
+$ sinks added by the diff (innerHTML, eval, Function, html strings, fetch, storage, postMessage, dangerouslySetInnerHTML, secrets)
+none
+
+pr-security-review ran inline: this lane has no sub-task tool, so the finding and false-positive steps were done by the lane itself.
+
+Read: both changed files in full, and the whole diff.
+- src/ui/MapView.tsx: two effects change from useEffect to useLayoutEffect. No new input, no new output, no new request. The marker and popup text paths are not in the diff, and the popup still builds its name with textContent (MapView.tsx:181-182).
+- e2e/outside.spec.ts: a page test only, so excluded by the skill's rule 11. It patches window.setTimeout in the test's own page.
+
+Findings kept: 0.

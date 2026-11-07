@@ -1,0 +1,247 @@
+// Throwaway probe for #65's QA lane. Never committed as a test.
+import type { Page } from '@playwright/test'
+import { cellKey } from '../src/core/cells'
+import { expect, siteManifest, test } from './fixtures'
+import { box, button, centre, geography, zoomTo } from './map-helpers'
+
+const message = 'Kilátó covers Budapest only for now.'
+
+function logPage(page: Page, label: string) {
+  page.on('console', (entry) => {
+    if (entry.text().startsWith('[DEBUG-qa65]')) console.log(`${label} ${entry.text()}`)
+  })
+}
+
+async function zoomedOut(page: Page) {
+  await page.goto('/kilato/')
+  await button(page, 'Explore the map').click()
+  await expect(page.locator('.place').first()).toBeVisible()
+  for (const zoom of [14, 13, 12, 11, 10]) await zoomTo(page, zoom)
+  const area = await box(page, '.leaflet-container')
+  return { area, middle: centre(area) }
+}
+
+test.describe('probe', () => {
+  test.use({ locale: 'en-GB' })
+
+  // Real timers: nothing on the page is held back. Only the gap between the two taps shrinks.
+  test('P2 two taps with nothing between them', async ({ page }) => {
+    logPage(page, 'P2')
+    const { area, middle } = await zoomedOut(page)
+    await page.mouse.click(area.x + area.width - 20, middle.y)
+    await page.mouse.click(middle.x, middle.y)
+    await expect(page.locator('.place').first()).toBeVisible()
+    await expect(page.getByText(message)).toHaveCount(0)
+  })
+
+  // The real test's steps, with real timers, on a logged page: how long the markers stay, and when the second tap comes.
+  test('P3 the real steps with real timers', async ({ page }) => {
+    logPage(page, 'P3')
+    const { area, middle } = await zoomedOut(page)
+    await page.mouse.click(area.x + area.width - 20, middle.y)
+    await expect(page.getByText(message)).toBeVisible()
+    await expect(page.locator('.places')).toHaveCount(0)
+    await page.mouse.click(middle.x, middle.y)
+    await expect(page.locator('.place').first()).toBeVisible()
+    await expect(page.getByText(message)).toHaveCount(0)
+  })
+
+  // The ticket's other suggestion: every cell comes 3 s late. Loaded places stay in memory, so a tap back should need no new data.
+  test('P4 a delayed data response', async ({ page }) => {
+    await page.route('**/kilato/data/cells/**', async (route) => {
+      await new Promise((done) => setTimeout(done, 3000))
+      await route.fallback()
+    })
+    const { area, middle } = await zoomedOut(page)
+    await page.mouse.click(area.x + area.width - 20, middle.y)
+    await expect(page.getByText(message)).toBeVisible()
+    await expect(page.locator('.places')).toHaveCount(0)
+    await page.mouse.click(middle.x, middle.y)
+    await expect(page.locator('.place').first()).toBeVisible()
+    await expect(page.getByText(message)).toHaveCount(0)
+  })
+
+  // The patch's condition on a logged page: which layer takes the second tap.
+  test('P1 late timers on a logged page', async ({ page }) => {
+    logPage(page, 'P1')
+    const { area, middle } = await zoomedOut(page)
+    await page.evaluate(() => {
+      const timer = window.setTimeout
+      window.setTimeout = ((run: TimerHandler, ms = 0, ...rest: unknown[]) =>
+        timer(run, ms + 1000, ...rest)) as typeof window.setTimeout
+    })
+    await page.mouse.click(area.x + area.width - 20, middle.y)
+    await expect(page.getByText(message)).toBeVisible()
+    await expect(page.locator('.places')).toHaveCount(0)
+    await page.mouse.click(middle.x, middle.y)
+    await expect(page.locator('.place').first()).toBeVisible()
+    await expect(page.getByText(message)).toHaveCount(0)
+  })
+
+  // Whether the selected marker's highlight drops out for some frames when the rows change under it.
+  test('P5 the highlight as the rows change', async ({ page }) => {
+    const deak = { lat: 47.4975, lon: 19.0545 }
+    const at = (north: number) => ({ lat: deak.lat + (north / 111.19) * 0.001, lon: deak.lon })
+    const place = (id: string, north: number) => ({ id, cat: 'food', kind: 'cafe', name: id, ...at(north) })
+    const places = [place('Near', 200), place('Next', 400)]
+    const key = cellKey(places[0].lat, places[0].lon)
+    await page.route('**/kilato/data/manifest.json', (route) =>
+      route.fulfill({ json: { ...siteManifest, cells: [key], wikiLangs: [] } }),
+    )
+    await page.route('**/kilato/data/cells/*.json', (route) => route.fulfill({ json: { places } }))
+    await page.goto('/kilato/')
+    await button(page, 'Explore the map').click()
+    await expect(page.locator('.place')).toHaveCount(2)
+    await expect(page.locator('img.leaflet-tile-loaded').first()).toBeAttached()
+    await page.waitForTimeout(500)
+    const geo = await geography(page)
+    const near = geo.screen(places[0])
+    await page.mouse.click(near.x, near.y)
+    await expect(page.locator('.place', { has: page.getByText('Near', { exact: true }) })).toHaveAttribute('aria-current', 'true')
+    await page.waitForTimeout(500)
+
+    await page.evaluate(({ x, y }) => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.leaflet-places-pane canvas')!
+      const context = canvas.getContext('2d')!
+      const samples: { t: number; black: boolean }[] = []
+      Object.assign(window, { samples, tapAt: 0 })
+      document.querySelector('.leaflet-container')!.addEventListener('click', () => Object.assign(window, { tapAt: performance.now() }), true)
+      const step = () => {
+        const area = canvas.getBoundingClientRect()
+        const scale = canvas.width / area.width
+        const [r, g, b, a] = context.getImageData((x - area.x) * scale, (y - 8 - area.y) * scale, 1, 1).data
+        samples.push({ t: performance.now(), black: a > 0 && r === 0 && g === 0 && b === 0 })
+        requestAnimationFrame(step)
+      }
+      requestAnimationFrame(step)
+    }, near)
+    await page.waitForTimeout(300)
+
+    await page.mouse.click(near.x + 40, near.y)
+    await page.waitForTimeout(1500)
+    const { samples, tapAt } = await page.evaluate(() => ({
+      samples: (window as unknown as { samples: { t: number; black: boolean }[] }).samples,
+      tapAt: (window as unknown as { tapAt: number }).tapAt,
+    }))
+    const after = samples.filter(({ t }) => t >= tapAt)
+    const before = samples.filter(({ t }) => t < tapAt)
+    const dark = after.filter(({ black }) => !black)
+    console.log(
+      `P5 highlight: frames before the tap ${before.length}, all ringed ${before.every(({ black }) => black)}; ` +
+        `frames after ${after.length}, without the ring ${dark.length}` +
+        (dark.length ? `, from ${Math.round(dark[0].t - tapAt)} ms to ${Math.round(dark[dark.length - 1].t - tapAt)} ms after the tap` : ''),
+    )
+    await expect(page.locator('.place', { has: page.getByText('Near', { exact: true }) })).toHaveAttribute('aria-current', 'true')
+  })
+
+  for (const { name, width, height, zooms } of [
+    { name: 'desktop', width: 1920, height: 1080, zooms: [14, 13, 12, 11, 10] },
+    { name: 'tablet', width: 1024, height: 768, zooms: [14, 13, 12, 11, 10] },
+    { name: 'mobile', width: 375, height: 667, zooms: [13, 12, 11, 10, 9] },
+  ]) {
+    test(`P6 screenshot ${name}`, async ({ page }) => {
+      const late = process.env.QA65_LATE === '1'
+      await page.setViewportSize({ width, height })
+      await page.goto('/kilato/')
+      await button(page, 'Explore the map').click()
+      await expect(page.locator('.place').first()).toBeVisible()
+      for (const zoom of zooms) await zoomTo(page, zoom)
+      const area = await box(page, '.leaflet-container')
+      const middle = centre(area)
+      if (late) {
+        await page.evaluate(() => {
+          const timer = window.setTimeout
+          window.setTimeout = ((run: TimerHandler, ms = 0, ...rest: unknown[]) =>
+            timer(run, ms + 1000, ...rest)) as typeof window.setTimeout
+        })
+      }
+      await page.mouse.click(area.x + area.width - 20, middle.y)
+      await expect(page.getByText(message)).toBeVisible()
+      await expect(page.locator('.places')).toHaveCount(0)
+      await page.mouse.click(middle.x, middle.y)
+      if (process.env.QA65_EXPECT_LOST === '1') {
+        await page.waitForTimeout(5000)
+        await expect(page.getByText(message)).toBeVisible()
+        await expect(page.locator('.place')).toHaveCount(0)
+      } else {
+        await expect(page.locator('.place').first()).toBeVisible()
+        await expect(page.getByText(message)).toHaveCount(0)
+      }
+      await page.waitForTimeout(1500)
+      await page.screenshot({ path: `${process.env.QA65_SHOTS}/${process.env.QA65_PREFIX}-${name}.png` })
+    })
+  }
+
+  test('P7 page errors at load and through the two taps', async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    const { area, middle } = await zoomedOut(page)
+    await page.mouse.click(area.x + area.width - 20, middle.y)
+    await page.mouse.click(middle.x, middle.y)
+    await expect(page.locator('.place').first()).toBeVisible()
+    console.log(`P7 page errors: ${errors.length} ${JSON.stringify(errors)}`)
+  })
+
+  // The same kind of tap on the other layer that outlives a row: the popup of a row tapped earlier.
+  test('P8 a popup still up and the second tap', async ({ page }) => {
+    const { area, middle } = await zoomedOut(page)
+    await page.locator('.place').first().click()
+    const popup = page.locator('.leaflet-popup-content')
+    await expect(popup).toBeVisible()
+    await page.waitForTimeout(500)
+    const at = centre(await box(page, '.leaflet-popup-content'))
+    await page.mouse.click(area.x + area.width - 20, middle.y)
+    await page.mouse.click(at.x, at.y)
+    // Not a row: the spot under the popup is 3.7 km from the fixture's places, so a tap that arrives shows an empty list.
+    await expect(page.getByText(message)).toHaveCount(0)
+  })
+
+  // P8 with half a second between the taps: is the popup's window narrow, or does it stay in the way?
+  test('P9 a popup, and half a second between the taps', async ({ page }) => {
+    const { area, middle } = await zoomedOut(page)
+    await page.locator('.place').first().click()
+    const popup = page.locator('.leaflet-popup-content')
+    await expect(popup).toBeVisible()
+    await page.waitForTimeout(500)
+    const at = centre(await box(page, '.leaflet-popup-content'))
+    await page.mouse.click(area.x + area.width - 20, middle.y)
+    await page.waitForTimeout(500)
+    await page.mouse.click(at.x, at.y)
+    // Not a row: the spot under the popup is 3.7 km from the fixture's places, so a tap that arrives shows an empty list.
+    await expect(page.getByText(message)).toHaveCount(0)
+  })
+
+  // Traces why the first P8 and P9 went red, one step at a time.
+  test('P10 what the popup path does, step by step', async ({ page }) => {
+    const report = async (step: string, at: { x: number; y: number }) => {
+      const state = await page.evaluate(({ x, y }) => {
+        const hit = document.elementFromPoint(x, y)
+        return {
+          hit: hit && `${hit.tagName}.${hit.getAttribute('class') ?? ''}`.slice(0, 70),
+          popups: document.querySelectorAll('.leaflet-popup').length,
+          places: document.querySelectorAll('.place').length,
+          listShown: document.querySelectorAll('.places').length,
+          message: document.body.innerText.includes('covers Budapest only'),
+        }
+      }, at)
+      console.log(`P10 ${step}: ${JSON.stringify(state)}`)
+    }
+    const { area, middle } = await zoomedOut(page)
+    const right = { x: area.x + area.width - 20, y: middle.y }
+    await page.locator('.place').first().click()
+    await expect(page.locator('.leaflet-popup-content')).toBeVisible()
+    await page.waitForTimeout(500)
+    const at = centre(await box(page, '.leaflet-popup-content'))
+    await report('row tapped, popup open', at)
+    await page.mouse.click(right.x, right.y)
+    await page.waitForTimeout(1000)
+    await report('1 s after the tap out', at)
+    await page.mouse.click(at.x, at.y)
+    await page.waitForTimeout(1000)
+    await report('1 s after the tap where the popup was', at)
+    await page.mouse.click(middle.x, middle.y)
+    await page.waitForTimeout(1000)
+    await report('1 s after a tap on the middle', at)
+    await expect(page.locator('body')).toBeVisible()
+  })
+})

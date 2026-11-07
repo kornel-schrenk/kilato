@@ -1,0 +1,4 @@
+# mutant R1: src/ui/MapView.tsx:168 useLayoutEffect -> useEffect, new ring test x5 (assertion at e2e/list.spec.ts:929: bare frames not 0)
+  5 failed
+# restored 934843d: same test x5
+  5 passed
