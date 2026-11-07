@@ -1,0 +1,30 @@
+=== A. PREVIEW_PORT=5060 npx playwright test e2e/page.spec.ts --workers=2
+exit=1
+      3 Error: page.goto: net::ERR_UNSAFE_PORT at http://127.0.0.1:5060/kilato/
+  3 failed
+=== B. PREVIEW_PORT=20123 npx playwright test e2e/page.spec.ts --workers=2, with the server's own log
+exit=0
+     11 http://127.0.0.1:20123/kilato/
+      1 Local:   http://127.0.0.1:20123/kilato/
+Running 3 tests using 1 worker
+  3 passed (12.7s)
+=== C. PREVIEW_PORT=20123 npx playwright test e2e/page.spec.ts e2e/fixtures.spec.ts --workers=2
+exit=0
+Local:   http://127.0.0.1:20123/kilato/
+Running 18 tests using 2 workers
+  18 passed (41.7s)
+=== D. PREVIEW_PORT unset, same two files, --workers=2
+exit=0
+Running 18 tests using 2 workers
+  18 passed (47.5s)
+=== E. mutant: the config no longer writes the variable, so workers don't inherit it. PREVIEW_PORT unset, page.spec.ts + fixtures.spec.ts, --workers=2
+6,7c6
+< process.env.PREVIEW_PORT ??= String(previewPort(process.pid))
+< const port = process.env.PREVIEW_PORT
+---
+> const port = process.env.PREVIEW_PORT ?? String(previewPort(process.pid))
+exit=1
+     13 net::ERR_CONNECTION_REFUSED
+Running 18 tests using 2 workers
+  13 failed
+  5 passed (1.1m)

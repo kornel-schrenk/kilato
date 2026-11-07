@@ -1,0 +1,37 @@
+Test-gap check for #65, on dee3027 against 392fc7e. Probes are in probe.txt, mutants in mutants.txt.
+
+1. Ledger
+
+| AC | Unit | Component | Page test |
+|---|---|---|---|
+| AC1 the cause, and a way to bring on line 101 on the old code | n/a: a race between Preact's effect timer and Leaflet's canvas needs a browser | n/a: the repo has no component tests | e2e/outside.spec.ts:124, red 5 of 5 on 392fc7e · e2e/outside.spec.ts:101 with the PR's patch, red 10 of 10 on 392fc7e |
+| AC2 50 of 50 under those conditions | n/a: same | n/a: same | e2e/outside.spec.ts:101 with the PR's patch, 50 of 50 on dee3027 |
+| AC3 no retry, no longer timeout | n/a: config | n/a: config | n/a: read in ac3.txt |
+
+2. Edge cases
+
+| Class | State | Where |
+|---|---|---|
+| Races: two taps | pinned | e2e/outside.spec.ts:124. Probe P2, real timers and no gap: 6 of 10 lost on 392fc7e, 0 of 20 on dee3027 |
+| Races: a closing popup | gap, Low | Row tapped, tap out of the box, tap the popup straight after: the message stays, 10 of 10 on dee3027. With 500 ms between the taps, 4 of 4 pass. Leaflet keeps a closing popup for 200 ms, and this PR doesn't touch it |
+| Volume: 0 rows and many | pinned | e2e/outside.spec.ts:121 for 0, and e2e/list.spec.ts:295 for many |
+| First render: the map before the markers | pinned | e2e/map.spec.ts:322 goes red on mutant M2 |
+| UI states: the selected marker's ring as the rows change | gap, Low | A marker selected, a tap 40 px beside it: the ring is gone for 2 frames, 18 to 155 ms after the tap, in 4 of 4 runs on dee3027, and 0 frames in 4 of 4 on 392fc7e |
+| Boundaries, money, dates, input, auth, accessibility | n/a | The diff changes when two effects run. It adds no input, no branch and no markup |
+
+The ring is a cost of this fix: the markers now change before the paint, and the highlight's effect at src/ui/MapView.tsx:167 still runs after it. With that effect as a layout effect too, the ring stayed in 4 of 4 runs of the probe. The full suite was not run on that change.
+
+3. Test the tests
+
+- e2e/outside.spec.ts:107 patches the page's timers, but asserts on the page's own rows at :124. It can fail: red 5 of 5 on 392fc7e, and red 3 of 3 on mutant M1.
+- It ends with an assertion after its last action, as AGENTS.md asks.
+- M1, the markers' effect back to useEffect: :124 red 3 of 3.
+- M2, the map's effect back to useEffect: e2e/outside.spec.ts:107 still passes, as the page recovers after the error, but e2e/map.spec.ts:322 goes red on the TypeError. No survivor.
+
+4. Rank
+
+High: none. Medium: none. Low: the ring's 2 frames, and the closing popup.
+
+5. Act
+
+No High gap, so no test written. Test gaps (not written): the 2 Low ones above.

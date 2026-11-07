@@ -1,0 +1,5 @@
+# pr-security-review on 934843d against develop (ran inline; no sub-task tool in this lane)
+Diff vs 749adcb: src/ui/MapView.tsx line 168 useEffect -> useLayoutEffect, plus one page test in e2e/list.spec.ts.
+Whole PR source change: src/ui/MapView.tsx, three effects become layout effects. No new input, request, storage, HTML sink, dependency or secret.
+The test reads canvas pixels in the page under test only.
+Findings kept: 0

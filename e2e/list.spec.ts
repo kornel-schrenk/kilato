@@ -892,6 +892,44 @@ test.describe('tapping a marker', () => {
     await expect(firstMeta(page)).toHaveText('Café · 200 m')
   })
 
+  test('keeps the ring on the selected marker in every frame while the rows change under it', async ({ page }) => {
+    const near = cafe('Near', 200)
+    await serve(page, [near, cafe('Next', 400)])
+    await explore(page)
+    await expect(page.locator('.place')).toHaveCount(2)
+    await tapMarker(page, near)
+    await expect.poll(() => ringColor(page, near)).toBe('#000000')
+    // Once the ring is drawn, a frame without it is a gap a visitor can see.
+    const { x, y } = (await geography(page)).screen(near)
+    await page.evaluate(
+      ({ x, y }) => {
+        const container = document.querySelector('.leaflet-container')!
+        const canvas = document.querySelector<HTMLCanvasElement>('.leaflet-places-pane canvas')!
+        const context = canvas.getContext('2d')!
+        const seen = { tapped: false, bare: 0 }
+        Object.assign(window, { seen })
+        container.addEventListener('click', () => (seen.tapped = true), true)
+        const step = () => {
+          const area = canvas.getBoundingClientRect()
+          const scale = canvas.width / area.width
+          const [r, g, b, a] = context.getImageData((x - area.x) * scale, (y - 8 - area.y) * scale, 1, 1).data
+          if (seen.tapped && !(a > 0 && r === 0 && g === 0 && b === 0)) seen.bare++
+          requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      },
+      { x, y },
+    )
+
+    // A tap on the map moves the point, so the rows change while Near stays selected.
+    await page.mouse.click(x + 40, y)
+    await expect.poll(() => page.evaluate(() => (window as unknown as { seen: { tapped: boolean } }).seen.tapped)).toBe(true)
+    await page.waitForTimeout(500)
+
+    expect(await page.evaluate(() => (window as unknown as { seen: { bare: number } }).seen.bare)).toBe(0)
+    await expect(row(page, 'Near')).toHaveAttribute('aria-current', 'true')
+  })
+
   test('makes its row look different from the others', async ({ page }) => {
     const near = cafe('Near', 200)
     await serve(page, [near, cafe('Next', 400)])

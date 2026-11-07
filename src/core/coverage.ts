@@ -5,7 +5,6 @@ import type { Manifest } from './types'
 export const COVERAGE_BOX: Manifest['box'] = [18.925, 47.35, 19.335, 47.62]
 
 const [west, south, east, north] = COVERAGE_BOX
-export const coverageBox = { west, south, east, north }
 
 export function inCoverage({ lat, lon }: LatLon): boolean {
   return lat >= south && lat <= north && lon >= west && lon <= east

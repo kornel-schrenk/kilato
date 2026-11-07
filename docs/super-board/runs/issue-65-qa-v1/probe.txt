@@ -1,0 +1,133 @@
+QA's own probes for #65, beyond the ACs. Their source is probe.spec.ts.txt, run from a temporary file in e2e/ and never committed as a test.
+The Pi ran other lanes at the same time, with load between 5 and 16.
+
+P1 to P3 ran on the old page with three temporary log lines in src/ui/MapView.tsx, tagged [DEBUG-qa65]: at the map's click, at a marker's click, and at the markers' removal. Removed afterwards. Each time is ms since page load.
+
+== P1 and P3, and P2 once: which layer takes the second tap, on 392fc7e
+# old page 392fc7e, logged with temporary [DEBUG-qa65] lines
+P2 [DEBUG-qa65] map click 12544
+P2 [DEBUG-qa65] marker click 12633
+P2 [DEBUG-qa65] markers removed 12660 count 308
+  ✘  1 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (18.7s)
+P3 [DEBUG-qa65] map click 13775
+P3 [DEBUG-qa65] markers removed 13889 count 308
+P3 [DEBUG-qa65] map click 14104
+  ✓  2 e2e/qa65-tmp.spec.ts:37:3 › probe › P3 the real steps with real timers (15.7s)
+  ✓  3 e2e/qa65-tmp.spec.ts:49:3 › probe › P4 a delayed data response (16.0s)
+P1 [DEBUG-qa65] map click 10527
+P1 [DEBUG-qa65] marker click 10778
+P1 [DEBUG-qa65] markers removed 10795 count 308
+  ✘  4 e2e/qa65-tmp.spec.ts:64:3 › probe › P1 late timers on a logged page (16.7s)
+    Error: expect(locator).toBeVisible() failed
+        at e2e/qa65-tmp.spec.ts:32:50
+    Error: expect(locator).toBeVisible() failed
+        at e2e/qa65-tmp.spec.ts:76:50
+  2 failed
+  2 passed (1.5m)
+
+P1, late timers: map click, then marker click 251 ms later, then the markers came off. They came off 17 ms after the marker click, not 1 s after the first tap, because Preact runs pending effects before its next render.
+P2, real timers, no gap: map click, then marker click 89 ms later, then the markers came off 27 ms after that. Lost tap, with no patch on the page.
+P3, real timers, the real test's steps: the markers came off 114 ms after the first tap, and the second tap came 329 ms after it. So the test passes here by 215 ms.
+P4, every cell 3 s late: passed. Loaded places stay in memory, and the tap back needs no new data, so a delayed data response is not this failure.
+
+== P2 repeated, real timers, no gap between the taps
+# old page 392fc7e, real timers, nothing between the taps
+$ npx playwright test e2e/qa65-tmp.spec.ts -g 'P2 ' --repeat-each 10
+P2 [DEBUG-qa65] marker click 15252
+  ✓   2 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (16.5s)
+  ✘   1 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (22.0s)
+  ✓   3 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (20.0s)
+  ✓   4 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (17.9s)
+P2 [DEBUG-qa65] marker click 14625
+P2 [DEBUG-qa65] marker click 16088
+  ✘   6 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (20.8s)
+  ✘   5 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (22.6s)
+  ✓   7 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (17.3s)
+P2 [DEBUG-qa65] marker click 15641
+  ✘   8 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (22.1s)
+P2 [DEBUG-qa65] marker click 15571
+  ✘   9 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (21.9s)
+P2 [DEBUG-qa65] marker click 16126
+  ✘  10 e2e/qa65-tmp.spec.ts:27:3 › probe › P2 two taps with nothing between them (22.6s)
+  6 failed
+  4 passed (2.5m)
+
+# fixed page dee3027, real timers, nothing between the taps
+$ npx playwright test e2e/qa65-tmp.spec.ts -g 'P2 ' --repeat-each 20
+  20 passed (4.4m)
+
+Old page: 6 of 10 lost the tap, and the run logged 6 marker clicks. Fixed page: 0 of 20 lost it.
+
+== The new test on the old page
+$ npx playwright test e2e/outside.spec.ts:107 --repeat-each 5
+  ✘  1 e2e/outside.spec.ts:107:3 › while exploring › a tap back into the box reaches the map while the page runs late (13.6s)
+  ✘  2 e2e/outside.spec.ts:107:3 › while exploring › a tap back into the box reaches the map while the page runs late (13.8s)
+  ✘  3 e2e/outside.spec.ts:107:3 › while exploring › a tap back into the box reaches the map while the page runs late (17.4s)
+  ✘  4 e2e/outside.spec.ts:107:3 › while exploring › a tap back into the box reaches the map while the page runs late (18.7s)
+  ✘  5 e2e/outside.spec.ts:107:3 › while exploring › a tap back into the box reaches the map while the page runs late (13.0s)
+        at e2e/outside.spec.ts:124:50
+        at e2e/outside.spec.ts:124:50
+        at e2e/outside.spec.ts:124:50
+        at e2e/outside.spec.ts:124:50
+        at e2e/outside.spec.ts:124:50
+  5 failed
+
+== P5: the selected marker's ring when the rows change under it
+A marker is selected, then a tap 40 px beside it moves the point, so the rows change and the place stays selected. A requestAnimationFrame loop reads the ring's pixel on the markers' canvas each frame.
+# fixed page dee3027, the highlight
+P5 highlight: frames before the tap 20, all ringed true; frames after 87, without the ring 2, from 18 ms to 32 ms after the tap
+P5 highlight: frames before the tap 21, all ringed true; frames after 87, without the ring 2, from 51 ms to 104 ms after the tap
+P5 highlight: frames before the tap 21, all ringed true; frames after 87, without the ring 2, from 75 ms to 155 ms after the tap
+P5 highlight: frames before the tap 22, all ringed true; frames after 84, without the ring 2, from 59 ms to 99 ms after the tap
+  4 passed (47.0s)
+
+# old page 392fc7e, the highlight
+P5 highlight: frames before the tap 20, all ringed true; frames after 91, without the ring 0
+P5 highlight: frames before the tap 20, all ringed true; frames after 90, without the ring 0
+P5 highlight: frames before the tap 20, all ringed true; frames after 90, without the ring 0
+P5 highlight: frames before the tap 21, all ringed true; frames after 79, without the ring 0
+  4 passed (33.9s)
+
+# dee3027 with the highlight's effect (line 167) as a layout effect too
+-  useEffect(() => {
++  useLayoutEffect(() => {
+P5 highlight: frames before the tap 21, all ringed true; frames after 90, without the ring 0
+P5 highlight: frames before the tap 20, all ringed true; frames after 89, without the ring 0
+P5 highlight: frames before the tap 20, all ringed true; frames after 89, without the ring 0
+P5 highlight: frames before the tap 20, all ringed true; frames after 88, without the ring 0
+  4 passed (41.4s)
+The full suite was not run on that last change. It only shows where the 2 frames come from.
+
+== P7: page errors at load and through the two taps
+# fixed page dee3027
+P7 page errors: 0 []
+  1 passed (13.7s)
+# mutant M2: the map's effect back to useEffect
+P7 page errors: 1 ["Cannot read properties of null (reading 'addLayer')"]
+  1 passed (9.1s)
+
+== P8 to P10: a tap where a popup is closing
+The first P8 and P9 went red on both pages, and that was the probe's mistake: they waited for a row. P10 traced it. The spot under the popup is 36 px north of the middle, 3.7 km at zoom 10, so a tap that arrives shows an empty list, and the fixture has no places there.
+P10 middle {"x":384,"y":360} popup centre {"x":382,"y":324.5546875} right {"x":748,"y":360}
+P10 row tapped, popup open: {"hit":"SPAN.","popups":1,"places":100,"listShown":1,"message":false}
+P10 1 s after the tap out: {"hit":"CANVAS.leaflet-zoom-animated","popups":0,"places":0,"listShown":0,"message":true}
+P10 1 s after the tap where the popup was: {"hit":"CANVAS.leaflet-zoom-animated","popups":0,"places":0,"listShown":1,"message":false}
+P10 1 s after a tap on the middle: {"hit":"CANVAS.leaflet-zoom-animated","popups":0,"places":100,"listShown":1,"message":false}
+
+With the message as the witness:
+# fixed page dee3027, a popup still up: tap out of the box, then on the popup, and the message has to go
+  ✘   1 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (26.8s)
+  ✘   2 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (25.9s)
+  ✘   3 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (24.8s)
+  ✘   4 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (25.6s)
+  ✘   5 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (23.8s)
+  ✘   6 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (23.8s)
+  ✘   7 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (23.7s)
+  ✘   8 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (24.8s)
+  ✘   9 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (22.6s)
+  ✘  10 e2e/qa65-tmp.spec.ts:186:3 › probe › P8 a popup still up and the second tap (23.9s)
+  10 failed
+
+# fixed page dee3027, the same with half a second between the taps
+  4 passed (1.1m)
+Leaflet keeps a closing popup in the page for 200 ms (node_modules/leaflet/src/layer/DivOverlay.js:130), and a tap on it stays there. This PR doesn't touch the popup. The corrected probe wasn't rerun on 392fc7e.

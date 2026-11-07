@@ -1,0 +1,30 @@
+# mutants of dee3027
+## M1: the markers' effect back to useEffect (line 145), the map's stays a layout effect
+145c145
+<   useLayoutEffect(() => {
+---
+>   useEffect(() => {
+$ npx playwright test e2e/outside.spec.ts:107 --repeat-each 3
+  ✘  2 e2e/outside.spec.ts:107:3 › while exploring › a tap back into the box reaches the map while the page runs late (14.2s)
+  ✘  1 e2e/outside.spec.ts:107:3 › while exploring › a tap back into the box reaches the map while the page runs late (14.4s)
+  ✘  3 e2e/outside.spec.ts:107:3 › while exploring › a tap back into the box reaches the map while the page runs late (16.2s)
+        at e2e/outside.spec.ts:124:50
+        at e2e/outside.spec.ts:124:50
+        at e2e/outside.spec.ts:124:50
+  3 failed
+
+## M2: the map's effect back to useEffect (line 56), the markers' stays a layout effect
+56c56
+<   useLayoutEffect(() => {
+---
+>   useEffect(() => {
+$ npx playwright test e2e/outside.spec.ts:107
+  ✓  1 e2e/outside.spec.ts:107:3 › while exploring › a tap back into the box reaches the map while the page runs late (5.9s)
+  1 passed (12.0s)
+
+$ npx playwright test e2e/map.spec.ts:309   (the one test that listens for pageerror, on mutant M2)
+  ✘  1 e2e/map.spec.ts:309:3 › without a granted permission › the page does not ask for the location before a press (987ms)
+    + Received  + 3
+    +   [TypeError: Cannot read properties of null (reading 'addLayer')],
+        at e2e/map.spec.ts:322:20
+  1 failed
