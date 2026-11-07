@@ -1,0 +1,11 @@
+$ git diff --stat origin/develop...dee3027 -- playwright.config.ts .github   (no lines: neither is in the PR)
+$ grep -n -E "retries|timeout" playwright.config.ts   (no lines: no retries, and no longer expect timeout)
+$ grep -n -E "retries|repeat|timeout" .github/workflows/*   (no lines: CI adds none on the command line)
+$ grep -n "\"verify\"\|\"test:e2e\"" package.json
+16:    "test:e2e": "playwright test",
+17:    "verify": "npm run typecheck && npm test && npm run build && npm run test:e2e",
+$ sed -n 101p e2e/outside.spec.ts   (no timeout option)
+    await expect(page.locator('.place').first()).toBeVisible()
+$ git diff origin/develop...dee3027 -- e2e/outside.spec.ts | grep -E "^-[^-]"   (no lines: the PR only adds to this file)
+$ git blame -s -L 88,101 dee3027 -- e2e/outside.spec.ts | cut -c1-8 | sort -u   (none of these lines is from dee3027)
+c6b3c6bd
